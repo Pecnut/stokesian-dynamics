@@ -19,7 +19,8 @@ The resistance scalars are computed by two different methods. For two spheres of
 We use a mid-field method and a near-field method. The mid-field method works for *s*' ≳ 2.01386.
 
 The near-field method works for:
-| *λ*         | *s*'        |
+
+| *λ*         | *s*'         |
 | ----------- | ------------ |
 |       1     |      < 2.01  |
 |       0.1   |      < 2.001 |
