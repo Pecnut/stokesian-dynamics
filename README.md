@@ -163,7 +163,7 @@ The files **position_setups.py** and **input_setups.py** come with some example 
 
 This test case looks at horizontal chains of 5, 9 and 15 spheres sedimenting vertically. The instantaneous drag coefficient, *λ*=*F*/(6π*μaU*), is measured for each sphere in the chain, in each case. Here we set up the chain of length 15. Running for 1 timestep<sup>[[3]](#footnote3)</sup>, reading the velocity *U* and calculating *λ* reproduces this graph.
 
-Run `python run_simulation.py 1 1 1 1 fte` (position setup number 1, forces input 1, with a timestep of 0.1 [arbitrary choice] for 1 timestep, specifying forces, torques and rate of strain).
+Run `python run_simulation.py 1 1 1 1 fte` (position setup number 1, forces input 1, with a timestep of 1 [arbitrary choice] for 1 timestep, specifying forces, torques and rate of strain).
 
 ### (b) Fig. 5 of Durlofsky et al. (1987) (non-periodic)
 [Durlofsky, Brady & Bossis, 1987](https://doi.org/10.1017/S002211208700171X). Dynamic simulation of hydrodynamically interacting particles. *Journal of Fluid Mechanics* **180**, 21–49. Figure 5.
