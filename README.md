@@ -66,7 +66,7 @@ This is an implementation in Python, using Cython for speed. It has been tested 
 With the exception of Cython, you probably have most of these installed already. Your best bet is just to try setting up the software and then running the sample program below.
 
 ## 5. How to set up the software <a name="s5"></a> ##
-1. Download the software into its own folder. The easiest way to do this is to navigate to the folder in Terminal that you want to download the Stokesian Dynamics folder into, and to type `git clone` followed by the address you find at the top of this page when you change the SSH dropdown to HTTPS (the address you need should look something like `https://yourusername@bitbucket.org/Pecnut/stokesian-dynamics.git`).
+1. Download the software into its own folder. The easiest way to do this is to navigate to the folder in Terminal that you want to download the Stokesian Dynamics folder into, and to type `git clone` followed by the address you find at the top of this page when you change the SSH dropdown to HTTPS (the address you need should look something like `https://github.com/Pecnut/stokesian-dynamics.git`).
 1. Open up **function_email.py**. The software emails you when the simulation is complete. Change this function to include your email details. It is already set up for Gmail accounts, although you will need to alter some settings in your Gmail profile to allow external programs to send through it. If you want to remove this feature, simply comment out the contents of the function.
 1. The Cython files probably need compiling on your own system first (although macOS users might find that they work natively). Navigate to the folder **ewald_functions** and open the folder in Terminal. Run the command `python setup.py build_ext --inplace`.
 1. Open the subfolder **ewald_functions** which now exists within **ewald_functions** (yes, it's the same name). Copy and paste the contents of this child folder into the parent **ewald_functions** folder. Overwrite if appropriate. You can do this directly in Terminal by staying in the original folder and typing `cp ewald_functions/*.* .`.
@@ -81,7 +81,7 @@ The software should now be ready to run.
 
 This will run a simulation of particles, starting at the positions defined in position setup number `2`, under the forces defined in input setup number `1`, with timestep `0.5`, and for `1` frame.
 
-This simulation is of three spheres of radius 1, arranged horizontally at *x* = –5, 0 and 7. They are all given a downwards force<sup>[[2]](#footnote2)</sup> of *F* = 1. The domain is an infinite fluid (i.e. non-periodic).
+This simulation is of three spheres of radius 1, arranged horizontally at *x* = –5, 0 and 7. They are all given a downwards force of *F* = 1. The domain is an infinite fluid (i.e. non-periodic).
 
 A successful run will output something like:
 
@@ -131,7 +131,7 @@ The most important four, `setup_number`, `input_number`, `timestep`, `num_frames
 
 * The variable `setup_number` corresponds to the initial particle configuration in **position_setups.py**, containing initial particle positions and sizes in a big 'if' list.
 
-* The variable `input_number` corresponds to the forces<sup>[[2]](#footnote2)</sup>, torques and background fluid velocities (as well as anything else being imposed on the particles) in **input_setups.py**.
+* The variable `input_number` corresponds to the forces, torques and background fluid velocities (as well as anything else being imposed on the particles) in **input_setups.py**.
 
 When creating new setup_number and input_number cases, use the existing cases as templates.
 
@@ -161,7 +161,7 @@ The files **position_setups.py** and **input_setups.py** come with some example 
 ### (a) Fig. 1 of Durlofsky et al. (1987) (non-periodic)
 [Durlofsky, Brady & Bossis, 1987](https://doi.org/10.1017/S002211208700171X). Dynamic simulation of hydrodynamically interacting particles. *Journal of Fluid Mechanics* **180**, 21–49. Figure 5.
 
-This test case looks at horizontal chains of 5, 9 and 15 spheres sedimenting vertically. The instantaneous drag coefficient, *λ*=*F*/(6π*μaU*), is measured for each sphere in the chain, in each case. Here we set up the chain of length 15. Running for 1 timestep<sup>[[3]](#footnote3)</sup>, reading the velocity *U* and calculating *λ* reproduces this graph.
+This test case looks at horizontal chains of 5, 9 and 15 spheres sedimenting vertically. The instantaneous drag coefficient, *λ*=*F*/(6π*μaU*), is measured for each sphere in the chain, in each case. Here we set up the chain of length 15. Running for 1 timestep<sup>[[2]](#footnote3)</sup>, reading the velocity *U* and calculating *λ* reproduces this graph.
 
 Run `python run_simulation.py 1 1 1 1 fte` (position setup number 1, forces input 1, with a timestep of 1 [arbitrary choice] for 1 timestep, specifying forces, torques and rate of strain).
 
@@ -210,7 +210,7 @@ By default, the software comes with the precomputed resistance data for particle
 
 * Open the folder **find_resistance_scalars**
 * Add the size ratios to the file **values_of_lambda.txt**
-* Then follow the instructions in section 3 of **README.md**
+* Then follow the instructions in section 3 of [**find_resistance_scalars/README.md**](find_resistance_scalars/README.md)
 
 This last step requires you to compile some Fortran code and run a Mathematica script; the instructions are all in the aforementioned README file. Calculating this data can take about an hour on a contemporary laptop, so give yourself some time.
 
@@ -232,12 +232,10 @@ The files you need to switch are:
 
 
 ### (b) Memory usage estimates
-Line 534-ish in **run_simulation.py**: On Linux systems, you have to multiply by 1024 because `RUSAGE_SELF` is in KB on these systems. On MacOS, you do not want to do this, because `RUSAGE_SELF` is in bytes.
+Line 552 in **run_simulation.py**: On Linux systems, you have to multiply by 1024 because `RUSAGE_SELF` is in KB on these systems. On MacOS, you do not want to do this, because `RUSAGE_SELF` is in bytes. This is hopefully handled automatically, but you never know.
 
 <hr>
 
 <a name="footnote1">[1]</a> This means it solves the [Stokes equation](https://en.wikipedia.org/wiki/Stokes_flow#Stokes_equations) rather than the [Navier–Stokes equation](https://en.wikipedia.org/wiki/Navier%E2%80%93Stokes_equations#General_continuum_equations).
 
-<a name="footnote2">[2]</a> Forces are scaled by 6π*μ*, so that a single sphere of unit size sedimenting under a force of *F* = 1 will travel at *U* = 1.
-
-<a name="footnote3">[3]</a> Euler timestep: make sure `timestep_rk4 = False` in **inputs.py**
+<a name="footnote3">[2]</a> Euler timestep: make sure `timestep_rk4 = False` in **inputs.py**
