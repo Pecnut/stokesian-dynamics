@@ -241,7 +241,7 @@ Line 552 in **run_simulation.py**: On Linux systems, you have to multiply by 102
 
 <a name="footnote3">[2]</a> Euler timestep: make sure `timestep_rk4 = False` in **inputs.py**
 
-## 12. Possible errors <a name="s12"></a> ##
+## 12. Known issues <a name="s12"></a> ##
 
 ### (a) "RuntimeError: Invalid DISPLAY variable" error
 
