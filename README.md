@@ -16,6 +16,7 @@ This is a Python 2 implementation of [Stokesian Dynamics](http://authors.library
   * [9. Examples](#s9)
   * [10. Increasing the number of particle size ratios available](#s10)
   * [11. Idiosyncratic usage notes](#s11)
+  * [12. Known issues](#s12)
 
 
 ## 0. Whom do I talk to? <a name="s0"></a> ##
@@ -239,3 +240,25 @@ Line 552 in **run_simulation.py**: On Linux systems, you have to multiply by 102
 <a name="footnote1">[1]</a> This means it solves the [Stokes equation](https://en.wikipedia.org/wiki/Stokes_flow#Stokes_equations) rather than the [Navier–Stokes equation](https://en.wikipedia.org/wiki/Navier%E2%80%93Stokes_equations#General_continuum_equations).
 
 <a name="footnote3">[2]</a> Euler timestep: make sure `timestep_rk4 = False` in **inputs.py**
+
+## 12. Possible errors <a name="s12"></a> ##
+
+### (a) "RuntimeError: Invalid DISPLAY variable" error
+
+This error occurs when you try to plot an image on a remote server without a working display.
+
+**Remedy:** Set `view_graphics = False` in `inputs.py`.
+
+**Reason:** If `view_graphics = True`, the timesteps are looped over using `animation.FuncAnimation`, which allows you to see what's going on in the simulation in 'real time'. If `view_graphics = False`, then the timesteps are looped over just with a for loop, bypassing the plotting functionality completely.
+
+This is a common error when working on a remote server. If you set `view_graphics = False`, you can pick up the output data from the `/output/` folder and create the video yourself on your own machine.
+
+### (b) "NameError: global name 'saved_Fa_out' is not defined" error
+
+This error occurs when the main body of the code (`generate_frame`) has not been called before the code tries to finish.
+
+**Probable remedy:** Set `view_graphics = False` in `inputs.py` or, remove `matplotlib.use('agg')` if you have added this.
+
+**Reason:** If `view_graphics = True`, the timesteps are looped over using `animation.FuncAnimation`, which allows you to see what's going on in the simulation in 'real time'. If `view_graphics = False`, then the timesteps are looped over just with a for loop, bypassing the plotting functionality completely.
+
+The normal cause of this error is that `view_graphics = True`, but despite this, `animation.FuncAnimation` has not functioned correctly. This happens if you change the matplotlib backend to a backend such as `Agg` which does not require a working display: see [the Agg backend is not compatible with animation.FuncAnimation](https://github.com/matplotlib/matplotlib/issues/2552/).
