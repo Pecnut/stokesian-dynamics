@@ -4,6 +4,7 @@
 *.so
 *.c
 output/*
+!output/README.md
 output_videos/*
 plot_XYZ.py
 plan.txt
