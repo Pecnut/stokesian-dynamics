@@ -4,7 +4,7 @@
 Find resistance scalars for (s,lambda) as read in from a text file.
 
 Inputs: None directly, but inputs values of s and lambda from
-        'values_of_s.txt' and 'values_of_lambda.txt'.
+        'values_of_s_midfield.txt' and 'values_of_lambda.txt'.
 Outputs: Calls find_resistance_scalars(s,lam), which returns mobility scalars and
          resistance scalars in an array. So this takes this info and writes it to
          'resistance_scalars_human_readable.txt',

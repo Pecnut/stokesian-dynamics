@@ -42,7 +42,7 @@ for lam in lam_range_with_reciprocals:
         dumbbell_deltax = np.empty([0,3])
         posdata = (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax)
         (Minfinity, heading) = generate_Minfinity(posdata)
-        Rinfinity = np.linalg.inv(Minfinity)
+        Rinfinity = np.linalg.inv(Minfinity*6*np.pi)
 
         R = (sqrt(3)+3)/6
         S = sqrt(2)

@@ -61,6 +61,8 @@ for s_dash in s_dash_range:
 
 
 with open('scalars_general_resistance_text.txt', 'a') as outputfile:
+    heading = "Resistance scalars, combined " + time.strftime("%d/%m/%Y %H:%M:%S") + "."
+    np.savetxt(outputfile, np.array([heading]), fmt="%s")
     np.savetxt(outputfile, np.append(["s'", "lambda", "gamma"], general_resistance_scalars_names), newline=" ", fmt="%15s")
     outputfile.write("\n")
     np.savetxt(outputfile, XYZ_general_human, newline="\n", fmt="% .8e")

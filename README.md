@@ -235,11 +235,6 @@ The files you need to switch are:
 ### (b) Memory usage estimates
 Line 552 in **run_simulation.py**: On Linux systems, you have to multiply by 1024 because `RUSAGE_SELF` is in KB on these systems. On MacOS, you do not want to do this, because `RUSAGE_SELF` is in bytes. This is hopefully handled automatically, but you never know.
 
-<hr>
-
-<a name="footnote1">[1]</a> This means it solves the [Stokes equation](https://en.wikipedia.org/wiki/Stokes_flow#Stokes_equations) rather than the [Navier–Stokes equation](https://en.wikipedia.org/wiki/Navier%E2%80%93Stokes_equations#General_continuum_equations).
-
-<a name="footnote3">[2]</a> Euler timestep: make sure `timestep_rk4 = False` in **inputs.py**
 
 ## 12. Known issues <a name="s12"></a> ##
 
@@ -262,3 +257,10 @@ This error occurs when the main body of the code (`generate_frame`) has not been
 **Reason:** If `view_graphics = True`, the timesteps are looped over using `animation.FuncAnimation`, which allows you to see what's going on in the simulation in 'real time'. If `view_graphics = False`, then the timesteps are looped over just with a for loop, bypassing the plotting functionality completely.
 
 The normal cause of this error is that `view_graphics = True`, but despite this, `animation.FuncAnimation` has not functioned correctly. This happens if you change the matplotlib backend to a backend such as `Agg` which does not require a working display: see [the Agg backend is not compatible with animation.FuncAnimation](https://github.com/matplotlib/matplotlib/issues/2552/).
+
+
+<hr>
+
+<a name="footnote1">[1]</a> This means it solves the [Stokes equation](https://en.wikipedia.org/wiki/Stokes_flow#Stokes_equations) rather than the [Navier–Stokes equation](https://en.wikipedia.org/wiki/Navier%E2%80%93Stokes_equations#General_continuum_equations).
+
+<a name="footnote3">[2]</a> Euler timestep: make sure `timestep_rk4 = False` in **inputs.py**
