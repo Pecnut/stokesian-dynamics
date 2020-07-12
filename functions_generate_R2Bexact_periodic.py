@@ -14,6 +14,7 @@ from itertools import izip, chain
 from functions_shared import norm, levi, format_elapsed_time
 import time
 from inputs import cutoff_factor, num_frames, text_only, viewbox_bottomleft_topright, printout, setup_number, posdata, s_dash_range, range_len_of_s_dash_range, lam_range, lam_range_with_reciprocals, XYZ_raw, view_labels, fps, viewing_angle, timestep, trace_paths, two_d_plot, save_positions_every_n_timesteps, save_forces_every_n_timesteps, XYZf, use_XYZd_values, input_form, invert_m_every, fully_2d_problem, bead_bead_interactions
+import math
 '''
 from R2Bexact_functions.L1 import L1
 from R2Bexact_functions.L2 import L2
