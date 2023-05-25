@@ -97,7 +97,7 @@ if viewbox_bottomleft_topright.size == 0:
     elif num_dumbbells > 0 and num_spheres == 0:
         m = abs(dumbbell_positions).max()
     else:
-        print "PROBLEM"
+        print("PROBLEM")
         m = 3
     viewbox_bottomleft_topright = np.array([[-m,-m,-m],[m,m,m]])
 

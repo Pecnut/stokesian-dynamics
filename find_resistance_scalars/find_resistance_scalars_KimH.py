@@ -24,7 +24,7 @@ def run_fortran(s_dash, lam, case):
     Inputs: (s', lambda, case [as "F11", "F12" etc])
     Outputs: UOE as an array'''
     s = 0.5 * (1 + lam) * s_dash
-    print "  using s = " + str(s) + " and case = " + case
+    print("  using s = " + str(s) + " and case = " + case)
     if sys.platform == "win32":
         fortran_code_directory = "helen_fortran\\"
         starter = ""
@@ -321,7 +321,7 @@ def find_resistance_scalars(s_dash, lam):
                                    Z11M, Z12M, Z21M, Z22M])
 
     elapsed_time = time.time() - start_time
-    print "[s'=" + str('{0:.2f}'.format(s_dash)) + "][lam=" + str('{0:.2f}'.format(lam)) + "][time=" + str('{0:.1f}'.format(elapsed_time)) + "s]"
+    print("[s'=" + str('{0:.2f}'.format(s_dash)) + "][lam=" + str('{0:.2f}'.format(lam)) + "][time=" + str('{0:.1f}'.format(elapsed_time)) + "s]")
 
     return np.array([mobility_scalars, resistance_scalars])
 
@@ -377,7 +377,7 @@ XYZ_human = np.zeros((s_dash_length * lam_length, scalars_length + 2))
 # Now run loop
 for lam in lam_range:
     for s_dash in s_dash_range:
-        print "Running s' = ", str(s_dash), ", lambda = " + str(lam) + " ..."
+        print("Running s' = ", str(s_dash), ", lambda = " + str(lam) + " ...")
         s_dash_index = np.argwhere(s_dash_range == s_dash)[0, 0]
         lam_index = np.argwhere(lam_range == lam)[0, 0]
         mob_res_output = find_resistance_scalars(s_dash, lam)    # It appears that if lambda > 1, Helen's Fortran code breaks.
@@ -422,7 +422,7 @@ looper_elapsed_time = time.time() - looper_start_time
 let_m, let_s = divmod(looper_elapsed_time, 60)
 let_h, let_m = divmod(let_m, 60)
 looper_elapsed_time_hms = "%dh%02dm%02ds" % (let_h, let_m, let_s)
-print "Time elapsed " + looper_elapsed_time_hms
+print("Time elapsed " + looper_elapsed_time_hms)
 
 # Write XYZ_table and xyz_table to file (computer readable)
 with open('scalars_pairs_resistance_blob_midfield.txt', 'wb') as outputfile:

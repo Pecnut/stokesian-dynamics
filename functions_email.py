@@ -23,6 +23,6 @@ def send_email(subject, body):
         server.login(gmail_user, gmail_pwd)
         server.sendmail(FROM, TO, message)
         server.close()
-        print '[Email sent]'
+        print('[Email sent]')
     except:
-        print "[Failed to send email]"
+        print("[Failed to send email]")

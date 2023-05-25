@@ -108,7 +108,7 @@ def pos_setup(n):
     try:
         sphere_sizes
     except NameError:
-        print "ERROR: You have not inputted a valid position setup number."
+        print("ERROR: You have not inputted a valid position setup number.")
 
     posdata = (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax)
     return posdata, desc
@@ -119,7 +119,7 @@ def randomise_spheres(random_box_bottom_left,random_box_top_right,random_sphere_
     sphere_positions_out = current_sphere_positions
     num_current_spheres = current_sphere_sizes.shape[0]
     all_sphere_sizes = np.concatenate([current_sphere_sizes, random_sphere_sizes])
-    print "Randomly distributing " + str(len(random_sphere_sizes)) + " spheres (using a naive method in Python)... ",
+    print("Randomly distributing " + str(len(random_sphere_sizes)) + " spheres (using a naive method in Python)... ",end = " ")
     for i in range(len(random_sphere_sizes)):
         while 1 == 1:
             proposed_sphere_position = np.array([np.random.rand()*(random_box_top_right[0]-random_box_bottom_left[0])+random_box_bottom_left[0], np.random.rand()*(random_box_top_right[1]-random_box_bottom_left[1])+random_box_bottom_left[1],  np.random.rand()*(random_box_top_right[2]-random_box_bottom_left[2])+random_box_bottom_left[2]])
@@ -137,14 +137,14 @@ def randomise_spheres(random_box_bottom_left,random_box_top_right,random_sphere_
                 sys.stdout.flush()
                 break
         sphere_positions_out = np.append(sphere_positions_out,[proposed_sphere_position],axis=0)
-    print " succeeded."
+    print(" succeeded.")
 
     random_sphere_positions = sphere_positions_out[current_sphere_positions.shape[0]:all_sphere_sizes.shape[0]]
     distance_matrix = np.linalg.norm(random_sphere_positions-random_sphere_positions[:,None],axis=2)
     min_element_distance = np.min(distance_matrix[np.nonzero(distance_matrix)])
     two_closest_elements = np.where(distance_matrix == min_element_distance)
-    print "Min added sphere s': " + str(min_element_distance/random_sphere_sizes[0])
-    print "Closest two spheres: " + str(two_closest_elements[0])
+    print("Min added sphere s': " + str(min_element_distance/random_sphere_sizes[0]))
+    print("Closest two spheres: " + str(two_closest_elements[0]))
 
     box_dimensions = abs(np.asarray(random_box_top_right) - np.asarray(random_box_bottom_left))
 
@@ -155,7 +155,7 @@ def randomise_spheres(random_box_bottom_left,random_box_top_right,random_sphere_
         box_volume = box_dimensions[0]*box_dimensions[1]*box_dimensions[2]
         sphere_volumes = 4./3. * np.pi * np.sum(np.asarray(random_sphere_sizes)**3)
     volume_fraction = sphere_volumes/box_volume
-    print "Volume fraction: " + str("{:.1f}".format(volume_fraction * 100)) + "%"
+    print("Volume fraction: " + str("{:.1f}".format(volume_fraction * 100)) + "%")
 
     return random_sphere_positions
 
@@ -170,7 +170,7 @@ def randomise_dumbbells(random_box_bottom_left,random_box_top_right,dumbbell_siz
     if phi == 'r': random_phi = True
     else: random_phi = False
 
-    print "Randomly distributing " + str(len(dumbbell_sizes)) + " dumbbells... ",
+    print("Randomly distributing " + str(len(dumbbell_sizes)) + " dumbbells... ",end=" ")
 
     for i in range(len(dumbbell_sizes)):
         while 1 == 1:
@@ -201,7 +201,6 @@ def randomise_dumbbells(random_box_bottom_left,random_box_top_right,dumbbell_siz
                             bingo = 1
                             break
                 if bingo == 1:
-                    #print "G"
                     break
 
         sys.stdout.write('|')
@@ -210,14 +209,14 @@ def randomise_dumbbells(random_box_bottom_left,random_box_top_right,dumbbell_siz
         bead_positions[2*i+1] = proposed_bead2_position
         dumbbell_positions[i] = 0.5*(proposed_bead1_position+proposed_bead2_position)
         dumbbell_deltax[i] = (proposed_bead2_position-proposed_bead1_position)
-    print " succeeded."
+    print(" succeeded.")
 
     bead_positions = np.concatenate((dumbbell_positions + 0.5*dumbbell_deltax, dumbbell_positions - 0.5*dumbbell_deltax),axis = 0)
     distance_matrix = np.linalg.norm(bead_positions-bead_positions[:,None],axis=2)
     min_element_distance = np.min(distance_matrix[np.nonzero(distance_matrix)])
     two_closest_elements = np.where(distance_matrix == min_element_distance)
-    print "Min dumbbell s': " + str(min_element_distance/dumbbell_sizes[0])
-    print "Closest two elements: " + str(two_closest_elements[0])
+    print("Min dumbbell s': " + str(min_element_distance/dumbbell_sizes[0]))
+    print("Closest two elements: " + str(two_closest_elements[0]))
 
     box_dimensions = abs(np.asarray(random_box_top_right) - np.asarray(random_box_bottom_left))
 
@@ -228,14 +227,14 @@ def randomise_dumbbells(random_box_bottom_left,random_box_top_right,dumbbell_siz
         sphere_volumes = 4./3. * np.pi * np.sum(np.asarray(dumbbell_sizes)**3)*2
         area_fraction = sphere_areas/box_area
         volume_fraction = sphere_volumes/box_volume
-        print "Area fraction: " + str("{:.1f}".format(area_fraction * 100)) + "%"
-        print "Effective volume fraction: " + str("{:.1f}".format(volume_fraction * 100)) + "%"
+        print("Area fraction: " + str("{:.1f}".format(area_fraction * 100)) + "%")
+        print("Effective volume fraction: " + str("{:.1f}".format(volume_fraction * 100)) + "%")
 
     else: #3D
         box_volume = box_dimensions[0]*box_dimensions[1]*box_dimensions[2]
         sphere_volumes = 4./3. * np.pi * np.sum(np.asarray(dumbbell_sizes)**3)*2
         volume_fraction = sphere_volumes/box_volume
-        print "Volume fraction: " + str("{:.1f}".format(volume_fraction * 100)) + "%"
+        print("Volume fraction: " + str("{:.1f}".format(volume_fraction * 100)) + "%")
 
     return dumbbell_positions, dumbbell_deltax
 
@@ -258,7 +257,7 @@ def randomise_dumbbells_periodic(random_box_bottom_left,random_box_top_right,dum
 
     Dx,Dy,Dz = np.array(random_box_top_right) - np.array(random_box_bottom_left)
 
-    print "Randomly distributing " + str(len(dumbbell_sizes)) + " dumbbells... ",
+    print("Randomly distributing " + str(len(dumbbell_sizes)) + " dumbbells... ",end = " ")
 
     for i in range(len(dumbbell_sizes)):
         while 1 == 1:
@@ -307,7 +306,7 @@ def randomise_dumbbells_periodic(random_box_bottom_left,random_box_top_right,dum
                     q = min(q,np.linalg.norm(proposed_bead2_position - (p+dxy)))
                     qq = min(qq,np.linalg.norm(proposed_bead1_position - (p+dxy)))
         if min(q, qq) < 0.2:
-            print min(q,qq)
+            print(min(q,qq))
             from IPython import embed
             embed()
 
@@ -321,15 +320,15 @@ def randomise_dumbbells_periodic(random_box_bottom_left,random_box_top_right,dum
         # Move the dumbbell_positions (centre) to inside the periodic box
         dumbbell_positions[i] = np.mod(dumbbell_positions[i]-random_box_bottom_left,[Dx,1e6,Dz])+random_box_bottom_left
 
-    print " succeeded."
+    print(" succeeded.")
 
     bead_positions = np.concatenate((dumbbell_positions + 0.5*dumbbell_deltax, dumbbell_positions - 0.5*dumbbell_deltax),axis = 0)
     distance_matrix = np.linalg.norm(bead_positions-bead_positions[:,None],axis=2)
     min_element_distance = np.min(distance_matrix[np.nonzero(distance_matrix)])
     two_closest_elements = np.where(distance_matrix == min_element_distance)
-    print "Min dumbbell s': " + str(min_element_distance/dumbbell_sizes[0])
-    print "Closest two elements: " + str(two_closest_elements[0])
-    print "Mean dumbbell pitch: " + "%3.1f"%(np.mean(np.arccos(np.abs(np.dot(dumbbell_deltax/np.linalg.norm(dumbbell_deltax,axis=1)[:,None],np.array([1,0,0]))))*180/np.pi,axis=0)) + "°"
+    print("Min dumbbell s': " + str(min_element_distance/dumbbell_sizes[0]))
+    print("Closest two elements: " + str(two_closest_elements[0]))
+    print("Mean dumbbell pitch: " + "%3.1f"%(np.mean(np.arccos(np.abs(np.dot(dumbbell_deltax/np.linalg.norm(dumbbell_deltax,axis=1)[:,None],np.array([1,0,0]))))*180/np.pi,axis=0)) + "°")
 
     box_dimensions = abs(np.asarray(random_box_top_right) - np.asarray(random_box_bottom_left))
 
@@ -340,20 +339,20 @@ def randomise_dumbbells_periodic(random_box_bottom_left,random_box_top_right,dum
         sphere_volumes = 4./3. * np.pi * np.sum(np.asarray(dumbbell_sizes)**3)*2
         area_fraction = sphere_areas/box_area
         volume_fraction = sphere_volumes/box_volume
-        print "Area fraction: " + str("{:.1f}".format(area_fraction * 100)) + "%"
-        print "Effective volume fraction: " + str("{:.1f}".format(volume_fraction * 100)) + "%"
+        print("Area fraction: " + str("{:.1f}".format(area_fraction * 100)) + "%")
+        print("Effective volume fraction: " + str("{:.1f}".format(volume_fraction * 100)) + "%")
 
     else: #3D
         box_volume = box_dimensions[0]*box_dimensions[1]*box_dimensions[2]
         sphere_volumes = 4./3. * np.pi * np.sum(np.asarray(dumbbell_sizes)**3)*2
         volume_fraction = sphere_volumes/box_volume
-        print "Volume fraction: " + str("{:.1f}".format(volume_fraction * 100)) + "%"
+        print("Volume fraction: " + str("{:.1f}".format(volume_fraction * 100)) + "%")
 
     return dumbbell_positions, dumbbell_deltax
 
 def randomise_beads_inside_quadrilateral(quadrilateral, dumbbell_sizes, current_sphere_positions, current_sphere_size):
     # Works best for low densities
-    print "Randomly distributing dumbbells... "
+    print("Randomly distributing dumbbells... ")
     a = dumbbell_sizes[0]
     num_dumbbells = len(dumbbell_sizes)
     num_current_spheres = len(current_sphere_positions)
@@ -387,7 +386,7 @@ def randomise_beads_inside_quadrilateral(quadrilateral, dumbbell_sizes, current_
     pos3_dumbbell = 0.5*(pos3[0] + pos3[1])
     pos3_deltax = 0.5*(pos3[1] - pos3[0])
 
-    print "... succeeded."
+    print("... succeeded.")
 
     return pos3_dumbbell, pos3_deltax
 

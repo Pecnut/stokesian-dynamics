@@ -27,8 +27,8 @@ with open('scalars_general_resistance_text_nearfield_mathematica_for_python.txt'
     square_brackets = mathematica.replace("{", "[").replace("}", "]").replace("*^", "E").replace("\n", ",")      # Unix/Mac version
     XYZ_near_raw = np.array(eval(square_brackets)).transpose()
 
-print XYZ_mid_raw.shape
-print XYZ_near_raw.shape
+print(XYZ_mid_raw.shape)
+print(XYZ_near_raw.shape)
 
 
 XYZ_general_table = np.concatenate((XYZ_near_raw, XYZ_mid_raw), axis=2)

@@ -130,4 +130,4 @@ looper_elapsed_time = time.time() - looper_start_time
 let_m, let_s = divmod(looper_elapsed_time, 60)
 let_h, let_m = divmod(let_m, 60)
 looper_elapsed_time_hms = "%dh%02dm%02ds" % (let_h, let_m, let_s)
-print "Time elapsed " + looper_elapsed_time_hms
+print("Time elapsed " + looper_elapsed_time_hms)

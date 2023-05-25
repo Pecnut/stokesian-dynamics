@@ -210,7 +210,7 @@ def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoin
     bead_sizes = np.concatenate([sphere_sizes, dumbbell_sizes, dumbbell_sizes])
 
     if printout > 0 and feed_every_n_timesteps > 0:
-        print "number of dumbbells in functions_generate_R2Bexact: ", dumbbell_sizes.shape, num_dumbbells
+        print("number of dumbbells in functions_generate_R2Bexact: ", dumbbell_sizes.shape, num_dumbbells)
 
     closer_than_cutoff_pairs_scaled, displacements_pairs_scaled, distances_pairs_scaled, size_ratios = close_particles(bead_positions, bead_sizes, cutoff_factor)
 
@@ -264,7 +264,7 @@ def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoin
                     lam_p = bead_sizes[p_index] / bead_sizes[a1_index]
                     largest_size_p = max(bead_sizes[a1_index], bead_sizes[p_index])
                     if lam_p not in lam_range_with_reciprocals:
-                        print "ERROR (Code point D): lambda not in the table of calculated values"
+                        print("ERROR (Code point D): lambda not in the table of calculated values")
                     lam_index_p = np.where(lam_range_with_reciprocals == lam_p)[0][0]
                     lam_index_recip_p = np.where(lam_range_with_reciprocals == 1. / lam_p)[0][0]
                     r_p = nearby_beads_displacements[pp]
@@ -349,7 +349,7 @@ def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoin
                     lam_p = bead_sizes[p_index] / bead_sizes[a1_index]  # size_ratio_matrix[a1_index,p_index]
                     largest_size_p = max(bead_sizes[a1_index], bead_sizes[p_index])
                     if lam_p not in lam_range_with_reciprocals:
-                        print "ERROR (Code point D): lambda not in the table of calculated values"
+                        print("ERROR (Code point D): lambda not in the table of calculated values")
                     lam_index_p = np.where(lam_range_with_reciprocals == lam_p)[0][0]
                     lam_index_recip_p = np.where(lam_range_with_reciprocals == 1. / lam_p)[0][0]
                     r_p = nearby_beads_displacements[pp]
@@ -397,7 +397,7 @@ def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoin
                     lam_p = bead_sizes[p_index] / bead_sizes[a1_index]  # size_ratio_matrix[a1_index,p_index]
                     largest_size_p = max(bead_sizes[a1_index], bead_sizes[p_index])
                     if lam_p not in lam_range_with_reciprocals:
-                        print "ERROR (Code point D): lambda not in the table of calculated values"
+                        print("ERROR (Code point D): lambda not in the table of calculated values")
                     lam_index_p = np.where(lam_range_with_reciprocals == lam_p)[0][0]
                     lam_index_recip_p = np.where(lam_range_with_reciprocals == 1. / lam_p)[0][0]
                     r_p = nearby_beads_displacements[pp]

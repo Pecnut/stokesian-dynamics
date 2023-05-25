@@ -240,7 +240,7 @@ def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printou
                     lam_p = bead_sizes[a1_index]/bead_sizes[p_index]
                     largest_size_p = max(bead_sizes[a1_index],bead_sizes[p_index])
                     if lam_p not in lam_range_with_reciprocals:
-                        print "ERROR (Code point D): lambda not in the table of calculated values"
+                        print("ERROR (Code point D): lambda not in the table of calculated values")
                     lam_index_p = np.where(lam_range_with_reciprocals==lam_p)[0][0]
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
@@ -325,7 +325,7 @@ def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printou
                     lam_p = bead_sizes[a1_index]/bead_sizes[p_index]
                     largest_size_p = max(bead_sizes[a1_index],bead_sizes[p_index])
                     if lam_p not in lam_range_with_reciprocals:
-                        print "ERROR (Code point D): lambda not in the table of calculated values"
+                        print("ERROR (Code point D): lambda not in the table of calculated values")
                     lam_index_p = np.where(lam_range_with_reciprocals==lam_p)[0][0]
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
@@ -373,7 +373,7 @@ def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printou
                     lam_p = bead_sizes[a1_index]/bead_sizes[p_index]
                     largest_size_p = max(bead_sizes[a1_index],bead_sizes[p_index])
                     if lam_p not in lam_range_with_reciprocals:
-                        print "ERROR (Code point D): lambda not in the table of calculated values"
+                        print("ERROR (Code point D): lambda not in the table of calculated values")
                     lam_index_p = np.where(lam_range_with_reciprocals==lam_p)[0][0]
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]

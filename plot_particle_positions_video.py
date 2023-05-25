@@ -24,8 +24,8 @@ from position_setups import pos_setup
 from input_setups import input_ftsuoe
 posdata, setup_description = pos_setup(setup_number)
 
-print "Generating video [" + filename + ".mp4]"
-print "[Timestep " + str(timestep) + " | ]"
+print("Generating video [" + filename + ".mp4]")
+print("[Timestep " + str(timestep) + " | ]")
 
 num_frames_override_start = 0
 num_frames_override_end = 5
@@ -111,7 +111,7 @@ if viewbox_bottomleft_topright.size == 0:
     elif num_dumbbells > 0 and num_spheres == 0:
         m = abs(dumbbell_positions).max()
     else:
-        print "PROBLEM"
+        print("PROBLEM")
         m = 3
     viewbox_bottomleft_topright = np.array([[-m,-m,-m],[m,m,m]])
 
@@ -127,7 +127,7 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]), view_label
     frame_start_time = time.time()
     real_frameno = frameno*display_every_n_frames + num_frames_override_start
 
-    print "Generating frame " + ("{:" + str(len(str(num_frames))) + ".0f}").format(real_frameno) + " (" + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno) + "/" + str(num_frames) + ")...",
+    print("Generating frame " + ("{:" + str(len(str(num_frames))) + ".0f}").format(real_frameno) + " (" + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno) + "/" + str(num_frames) + ")...",end=" ")
 
     sphere_positions = positions_centres[real_frameno,0:num_spheres, :]
     sphere_rotations = positions_sphere_rotations[real_frameno,0:num_spheres, :]
@@ -240,7 +240,7 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]), view_label
     ax.set_title(filename, loc='center',y=1.05)
 
     pic_elapsed_time = time.time() - frame_start_time
-    print "[[" + "\033[1m" + format_elapsed_time(pic_elapsed_time) + "\033[0m" + "]]",
+    print("[[" + "\033[1m" + format_elapsed_time(pic_elapsed_time) + "\033[0m" + "]]",end = " ")
 
     times[frameno] = pic_elapsed_time
     timeaverage = sum(times) / (frameno+1)
@@ -260,7 +260,7 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]), view_label
 
     elapsed_time_formatted = start_color + format_elapsed_time((numberoftimesleft * timeaverage) * 1.05) + end_color
 
-    print "[" + elapsed_time_formatted + "]"
+    print("[" + elapsed_time_formatted + "]")
 
 
 total_time_start = time.time()
@@ -269,5 +269,5 @@ ani = animation.FuncAnimation(fig, generate_frame, frames=num_frames, fargs=gene
 mywriter = animation.FFMpegWriter(fps=8)
 ani.save('output_videos/' + filename + '.mp4', writer=mywriter)
 total_elapsed_time = time.time() - total_time_start
-print "[Total time to run " + format_elapsed_time(total_elapsed_time) + "]"
-print "Completed [" + filename + ".mp4]"
+print("[Total time to run " + format_elapsed_time(total_elapsed_time) + "]")
+print("Completed [" + filename + ".mp4]")

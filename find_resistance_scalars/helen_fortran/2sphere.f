@@ -36,7 +36,7 @@
 *     - If NFUDGE=.TRUE., a smaller than optimal N is allowed
 *
 *-----* Inputs
-c      print *, "bullshit"
+c      print *, "bull"
 
       call get_command_argument(1,s_input)
       call get_command_argument(2,r1_input)

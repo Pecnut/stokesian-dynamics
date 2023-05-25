@@ -30,8 +30,8 @@ def generate_grand_resistance_matrix(posdata, last_generated_Minfinity_inverse, 
             Minfinity_inverse_start_time = time.time()
             Minfinity_inverse = linalg.inv(Minfinity)
             if printout > 0:
-                print "Minfinity[0:12]"
-                print np.array_str(Minfinity[0:12, 0:12], max_line_width=100000)
+                print("Minfinity[0:12]")
+                print(np.array_str(Minfinity[0:12, 0:12], max_line_width=100000))
         else:
             Minfinity_elapsed_time = time.time() - Minfinity_start_time
             Minfinity_inverse_start_time = time.time()
@@ -44,24 +44,24 @@ def generate_grand_resistance_matrix(posdata, last_generated_Minfinity_inverse, 
         Minfinity_inverse_elapsed_time = 0
 
     if printout > 0:
-        print "Minfinity_inverse"
-        print np.array_str(Minfinity_inverse, max_line_width=100000)
+        print("Minfinity_inverse")
+        print(np.array_str(Minfinity_inverse, max_line_width=100000))
 
     if not use_Minfinity_only:
         R2Bexact_start_time = time.time()
         # Whether we use the d values or not is selected in inputs.py where we read in XYZ_raw.
         if printout > 1:
-            print "cutoff_factor is ", cutoff_factor
+            print("cutoff_factor is ", cutoff_factor)
         (R2Bexact, heading) = generate_R2Bexact(posdata, printout, cutoff_factor=cutoff_factor, frameno=frameno, checkpoint_start_from_frame=checkpoint_start_from_frame, feed_every_n_timesteps=feed_every_n_timesteps, mu=mu)
         R2Bexact_elapsed_time = time.time() - R2Bexact_start_time
         if printout > 0:
-            print "R2Bexact"
-            print np.array_str(R2Bexact.toarray(), max_line_width=100000)
+            print("R2Bexact")
+            print(np.array_str(R2Bexact.toarray(), max_line_width=100000))
 
         grand_resistance_matrix = Minfinity_inverse + R2Bexact.toarray()
         if printout > 0:
-            print "grand R"
-            print np.array_str(grand_resistance_matrix, max_line_width=100000)
+            print("grand R")
+            print(np.array_str(grand_resistance_matrix, max_line_width=100000))
 
     else:
         grand_resistance_matrix = Minfinity_inverse
@@ -70,12 +70,12 @@ def generate_grand_resistance_matrix(posdata, last_generated_Minfinity_inverse, 
         R2Bexact_elapsed_time = 0
 
     if (printout > 1):
-        print "M infinity"
-        print np.array_str(Minfinity, max_line_width=100000)
-        print "\n\nR2Bexact"
-        print np.array_str(R2Bexact.toarray(), max_line_width=100000)
-        print "\n\nGrand resistance matrix"
-        print np.array_str(grand_resistance_matrix, max_line_width=100000)
+        print("M infinity")
+        print(np.array_str(Minfinity, max_line_width=100000))
+        print("\n\nR2Bexact")
+        print(np.array_str(R2Bexact.toarray(), max_line_width=100000))
+        print("\n\nGrand resistance matrix")
+        print(np.array_str(grand_resistance_matrix, max_line_width=100000))
         save_matrix(grand_resistance_matrix, "Grand Resistance Matrix", "R-" + str(frameno) + ".txt")
 
     gen_times = [Minfinity_elapsed_time, Minfinity_inverse_elapsed_time, R2Bexact_elapsed_time]

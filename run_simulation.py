@@ -156,14 +156,14 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
     if not (error):
         time_start = time.time()
         if frameno % 20 == 0 and frameno > 0:
-            print "[Generating " + filename + "]"
-        print "Processing frame " + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno + 1) + "/" + str(num_frames) + "...",
+            print("[Generating " + filename + "]")
+        print("Processing frame " + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno + 1) + "/" + str(num_frames) + "...",end = " ")
 
         '''
         # If we're feeding particles in from the bottom as it falls, this is the function that does that. Otherwise it just passes through.
         posdata = feed_particles_from_bottom(posdata, feed_every_n_timesteps, feed_from_file, frameno)
         if feed_every_n_timesteps > 0 and printout>0:
-            print "num of dumbbells",posdata[3].shape
+            print("num of dumbbells",posdata[3].shape)
         '''
 
         if not np.array_equal(box_bottom_left - box_top_right, np.array([0, 0, 0])):
@@ -176,7 +176,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
 
         '''
         if feed_every_n_timesteps > 0 and printout>0:
-            print "number of dumbbells", dumbbell_sizes.shape
+            print("number of dumbbells", dumbbell_sizes.shape)
         '''
         # Error checking
         # Commented out for speed but you should put it back in if you're not doing a massive system.
@@ -231,10 +231,10 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                 Oa_out_plus_infinities_k1 = Oa_out_k1 + O_infinity_k1
 
                 if printout > 0:
-                    print "Ua_out_plus_infinities_k1"
-                    print Ua_out_plus_infinities_k1
-                    print "Oa_out_plus_infinities_k1"
-                    print Oa_out_plus_infinities_k1
+                    print("Ua_out_plus_infinities_k1")
+                    print(Ua_out_plus_infinities_k1)
+                    print("Oa_out_plus_infinities_k1")
+                    print(Oa_out_plus_infinities_k1)
 
                 if fully_2d_problem:
                     Ua_out_plus_infinities_k1[:, 1] = 0
@@ -470,7 +470,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
             force_on_wall_due_to_dumbbells = 1. / 6 * (np.asarray(force_on_wall_due_to_dumbbells_k1) + 2 * np.asarray(force_on_wall_due_to_dumbbells_k2) + 2 * np.asarray(force_on_wall_due_to_dumbbells_k3) + np.asarray(force_on_wall_due_to_dumbbells_k4))
 
         for i in gen_times:
-            print "[" + format_elapsed_time(i) + "]",
+            print("[" + format_elapsed_time(i) + "]",end=" ")
 
         posdata_final = (sphere_sizes, new_sphere_positions, new_sphere_rotations, dumbbell_sizes, new_dumbbell_positions, new_dumbbell_deltax)
 
@@ -509,7 +509,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                                 centres=saved_element_positions, deltax=saved_deltax, force_on_wall_due_to_dumbbells=saved_force_on_wall_due_to_dumbbells,
                                 sphere_rotations=saved_sphere_rotations)
         save_elapsed_time = time.time() - save_time_start
-        print "[" + format_elapsed_time(save_elapsed_time) + "]",
+        print("[" + format_elapsed_time(save_elapsed_time) + "]",end=" ")
 
         # Pictures
         pic_time_start = time.time()
@@ -525,7 +525,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                 elif num_dumbbells > 0 and num_spheres == 0:
                     m = abs(dumbbell_positions).max()
                 else:
-                    print "PROBLEM"
+                    print("PROBLEM")
                     m = 3
                 viewbox_bottomleft_topright = np.array([[-m, -m, -m], [m, m, m]])
             if num_spheres > 0:
@@ -553,10 +553,10 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
             multiply_by = 1
         else:
             multiply_by = 1024
-        print "[ " + sizeof_fmt(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * multiply_by) + "]",
+        print("[ " + sizeof_fmt(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * multiply_by) + "]",end = " ")
 
         elapsed_time = time.time() - time_start
-        print "[[" + "\033[1m" + format_elapsed_time(elapsed_time) + "\033[0m" + "]]",
+        print("[[" + "\033[1m" + format_elapsed_time(elapsed_time) + "\033[0m" + "]]",end = " ")
 
         times[frameno] = elapsed_time
         longtimes = [times[i] for i in xrange(checkpoint_start_from_frame, frameno + 1) if i % invert_m_every == 0]
@@ -592,7 +592,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
         else:
             elapsed_time_formatted = start_color + format_elapsed_time(timeleft) + end_color
 
-        print "[" + elapsed_time_formatted + "]",
+        print("[" + elapsed_time_formatted + "]",end=" ")
 
         now = datetime.datetime.now()
         finishtime = now + datetime.timedelta(0, timeleft)
@@ -602,10 +602,10 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
             finishtime_formatted = finishtime.strftime("%a %H:%M")
         else:
             finishtime_formatted = finishtime.strftime("%d/%m/%y %H:%M")
-        print "[" + finishtime_formatted + "]"
+        print("[" + finishtime_formatted + "]")
 
     if error:
-        print "No frame " + str(frameno + 1)
+        print("No frame " + str(frameno + 1))
 
     if text_only == 0:
         return spheres, dumbbell_lines, dumbbell_spheres, force_lines, force_text, torque_lines, velocity_lines, velocity_text, sphere_labels, angular_velocity_lines, sphere_lines, sphere_trace_lines, dumbbell_trace_lines
@@ -742,10 +742,10 @@ if error == 0:
             info_box = info_box.replace(i, warning_formatting_start + j.ljust(len(i)) + warning_formatting_end)
         else:
             info_box = info_box.replace(i, bold_start + j.ljust(len(i)) + bold_end)
-    print info_box.encode('utf-8')
+    print(info_box.encode('utf-8'))
 
-    print "[Generating " + filename + "]"
-    print "                      " + " " * 2 * len(str(num_frames)) + "[ Minfy  ] [invMinfy] [R2Bex'd'] [ U=R\F  ] [ Saving ] [MaxMemry] [[ Total  ]] [TimeLeft] [ ETA ]"
+    print("[Generating " + filename + "]")
+    print("                      " + " " * 2 * len(str(num_frames)) + "[ Minfy  ] [invMinfy] [R2Bex'd'] [ U=R\F  ] [ Saving ] [MaxMemry] [[ Total  ]] [TimeLeft] [ ETA ]")
 
     generate_frame_args = [grand_mobility_matrix, text_only, cutoff_factor, viewbox_bottomleft_topright, printout, view_labels, timestep, trace_paths, input_form, filename, output_folder, legion_random_id, box_bottom_left, box_top_right]
     if text_only == 0 and num_frames > 1:
@@ -763,14 +763,14 @@ if error == 0:
             os.remove(output_folder + '/' + filename + legion_random_id + '_TEMP.npz')
 
     total_elapsed_time = time.time() - total_time_start
-    print "[Total time to run " + format_elapsed_time(total_elapsed_time) + "]"
-    print "[Complete: " + filename + "]"
+    print("[Total time to run " + format_elapsed_time(total_elapsed_time) + "]")
+    print("[Complete: " + filename + "]")
     if send_email:
         send_email("SD job on " + socket.gethostname() + " complete", "The job on " + socket.gethostname() + ", with filename\n\n" + filename + ",\n\n which started on\n\n" + datetime.datetime.fromtimestamp(total_time_start).strftime('%A %-d %B %Y, %H:%M') + ",\n\nis now complete. It took " + format_elapsed_time(total_elapsed_time) + ".")
-    print ""
+    print("")
 
     if sys.platform == "win32" and text_only == 0:
-        print ""
-        print "Displaying"
+        print("")
+        print("Displaying")
     if text_only == 0:
         plt.show()

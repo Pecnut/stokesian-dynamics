@@ -18,15 +18,15 @@ def euler_timestep(x,u,timestep):
 def did_something_go_wrong_with_dumbells(error, dumbbell_deltax, new_dumbbell_deltax, explosion_protection):
 	for i in xrange(new_dumbbell_deltax.shape[0]):
 		if np.arccos(np.round(np.dot(dumbbell_deltax[i], new_dumbbell_deltax[i]) / (np.linalg.norm(dumbbell_deltax[i]) * np.linalg.norm(new_dumbbell_deltax[i])), 4)) > np.pi / 2:
-			print " "
-			print "Code point H# reached on dumbbell " + str(i)
-			print "Old delta x: " + str(dumbbell_deltax[i])
-			print "New delta x: " + str(new_dumbbell_deltax[i])
+			print(" ")
+			print("Code point H# reached on dumbbell " + str(i))
+			print("Old delta x: " + str(dumbbell_deltax[i]))
+			print("New delta x: " + str(new_dumbbell_deltax[i]))
 		if explosion_protection and np.linalg.norm(new_dumbbell_deltax[i]) > 5:
-			print "ERROR"
-			print "Dumbbell " + str(i) + " length (" + str(np.linalg.norm(new_dumbbell_deltax[i])) + ") has exceeded 5."
-			print "Something has probably gone wrong (normally your timestep is too large)."
-			print "Code exiting gracefully."
+			print("ERROR")
+			print("Dumbbell " + str(i) + " length (" + str(np.linalg.norm(new_dumbbell_deltax[i])) + ") has exceeded 5.")
+			print("Something has probably gone wrong (normally your timestep is too large).")
+			print("Code exiting gracefully.")
 			error = True
 	return error
 
@@ -111,9 +111,9 @@ def do_we_have_all_size_ratios(error, element_sizes, lam_range, num_spheres):
 				offending_element_str[i] = "dumbbell " + str(offending_elements[0][i] - num_spheres)
 			else:
 				offending_element_str[i] = "sphere " + str(offending_elements[0][i])
-		print "ERROR"
-		print "Element size ratio (" + str(offending_lambda_1) + " or " + str(1 / offending_lambda_1) + ") is not in our calculated list of size ratios"
-		print "Offending elements: " + offending_element_str[0] + " and " + offending_element_str[1] + " (counting from 0)"
+		print("ERROR")
+		print("Element size ratio (" + str(offending_lambda_1) + " or " + str(1 / offending_lambda_1) + ") is not in our calculated list of size ratios")
+		print("Offending elements: " + offending_element_str[0] + " and " + offending_element_str[1] + " (counting from 0)")
 		error = True
 	return error
 
@@ -132,15 +132,15 @@ def are_some_of_the_particles_too_close(error, printout, s_dash_range, sphere_po
 	two_closest_elements = np.where(distance_over_average_size == min_element_distance)
 
 	if printout > 0:
-		print ""
-		print "Positions"
-		print np.array_str(element_positions, max_line_width=100000, precision=5)
-		print "Dumbbell Delta x"
-		print np.array_str(dumbbell_deltax, max_line_width=100000, precision=5)
-		print "Separation distances (s)"
-		print np.array_str(distance_matrix, max_line_width=100000, precision=3)
-		print "Scaled Separation distances (s')"
-		print np.array_str(distance_over_average_size, max_line_width=100000, precision=3)
+		print("")
+		print("Positions")
+		print(np.array_str(element_positions, max_line_width=100000, precision=5))
+		print("Dumbbell Delta x")
+		print(np.array_str(dumbbell_deltax, max_line_width=100000, precision=5))
+		print("Separation distances (s)")
+		print(np.array_str(distance_matrix, max_line_width=100000, precision=3))
+		print("Scaled Separation distances (s')")
+		print(np.array_str(distance_over_average_size, max_line_width=100000, precision=3))
 
 	return error
 
@@ -161,7 +161,7 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
 		(Fa_out, Ta_out, Sa_out, Fb_out, DFb_out) = (Fa_in[:], Ta_in[:], Sa_in[:], Fb_in[:], DFb_in[:])
 		(Ua_out, Oa_out, Ea_out) = (Fa_in[:], Fa_in[:], Ea_in[:])
 		Ub_out = 0.5*(Ubeads[:Nbeads/2] + Ubeads[Nbeads/2:])
-		DUb_out = 0.5*(Ubeads[:Nbeads/2] - Ubeads[Nbeads/2:]) # Because DUb is actually Half Delta Ub (shit notation, I know)
+		DUb_out = 0.5*(Ubeads[:Nbeads/2] - Ubeads[Nbeads/2:]) # Because DUb is actually Half Delta Ub (bad notation, I know)
 		gen_times = [0,0,0]
 
 	else:
@@ -270,7 +270,7 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
 			DUb_out[0:num_fixed_velocity_dumbbells] = DUb_in[0:num_fixed_velocity_dumbbells]
 			DUb_out[num_fixed_velocity_dumbbells:num_dumbbells] = DFUb_out[num_fixed_velocity_dumbbells:num_dumbbells]
 			if extract_force_on_wall_due_to_dumbbells:
-			    print "WARNING: Cannot extract force on wall due to dumbbells in UFTEU mode. Use UFTE mode instead."
+			    print("WARNING: Cannot extract force on wall due to dumbbells in UFTEU mode. Use UFTE mode instead.")
 
 		elif input_form == 'duf': #Dumbbells only, some imposed velocities
 			num_fixed_velocity_dumbbells = num_dumbbells - Ub_in.count(['pippa', 'pippa', 'pippa'])
@@ -309,23 +309,23 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
 	gen_times.append(elapsed_solve_time)
 
 	if (printout > 0):
-		print "Velocities on particles 0-9"
-		print np.asarray(Ua_out[0:10])
-		print np.asarray(Ub_out[0:10])
-		print "Half Delta U velocity 0-9"
-		print np.asarray(DUb_out[0:10])
-		print "Omegas on particles 0-9"
-		print np.asarray(Oa_out[0:10])
-		print "Forces 0-9 (F)"
-		print np.asarray(Fa_out[0:10])
-		print np.asarray(Fb_out[0:10])
-		print "Delta F forces 0-9 (DF)"
-		print np.asarray(DFb_out[0:10])
-		print "Torques 0-9 (T)"
-		print np.asarray(Ta_out[0:10])
-		print "Strain rate"
-		print np.asarray(Ea_out)
-		print "Stresslets 0-9 (S)"
-		print np.asarray(Sa_out[0:10])
+		print("Velocities on particles 0-9")
+		print(np.asarray(Ua_out[0:10]))
+		print(np.asarray(Ub_out[0:10]))
+		print("Half Delta U velocity 0-9")
+		print(np.asarray(DUb_out[0:10]))
+		print("Omegas on particles 0-9")
+		print(np.asarray(Oa_out[0:10]))
+		print("Forces 0-9 (F)")
+		print(np.asarray(Fa_out[0:10]))
+		print(np.asarray(Fb_out[0:10]))
+		print("Delta F forces 0-9 (DF)")
+		print(np.asarray(DFb_out[0:10]))
+		print("Torques 0-9 (T)")
+		print(np.asarray(Ta_out[0:10]))
+		print("Strain rate")
+		print(np.asarray(Ea_out))
+		print("Stresslets 0-9 (S)")
+		print(np.asarray(Sa_out[0:10]))
 
 	return Fa_out, Ta_out, Sa_out, Fb_out, DFb_out, Ua_out, Oa_out, Ea_out, Ub_out, DUb_out, last_generated_Minfinity_inverse, gen_times, U_infinity, O_infinity, centre_of_background_flow, force_on_wall_due_to_dumbbells, last_velocity_vector

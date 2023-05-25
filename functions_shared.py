@@ -10,11 +10,11 @@ import sys
 def throw_error(message):
     word_error = "\033[41m\033[01m ERROR \033[0m "
     sys.exit(word_error + message)
-    return 1;
+    return 1
 
 def throw_warning(message):
     word_error = "\033[43m\033[30m WARNING \033[0m "
-    print word_error + message;
+    print(word_error + message)
 
 def norm(x):
     return (x[0]**2 + x[1]**2 + x[2]**2)**0.5
@@ -97,7 +97,7 @@ def is_sphere(posdata,a_index):
 def tick(clock,num):
     clock[num] = time.time()
 def tock(clock,num):
-    print "[" + format_elapsed_time(time.time() - clock[num]) + "]",
+    print("[" + format_elapsed_time(time.time() - clock[num]) + "]",end = " ")
 
 def format_elapsed_time(elapsed_time):
     if elapsed_time >= 86400:
@@ -150,8 +150,8 @@ def feed_particles_from_bottom(posdata, feed_every_n_timesteps, feed_from_file, 
         height_from_reference_particle_to_top_bead = np.max(bead_positions[:,2]-sphere_positions[reference_particle,2])
         height_from_reference_particle_to_bottom_bead = -np.min(bead_positions[:,2]-sphere_positions[reference_particle,2])
         height_needed_below = 0.5*(height_from_reference_particle_to_top_bead - height_from_reference_particle_to_bottom_bead)
-        print "sphere position", sphere_positions
-        print "height_needed_below", height_needed_below
+        print("sphere position", sphere_positions)
+        print("height_needed_below", height_needed_below)
         # chop off top
         keep_bead_positions = bead_positions[bead_positions[:,2] <= sphere_positions[reference_particle,2] + height_from_reference_particle_to_bottom_bead + height_needed_below]
         num_deleted_beads_from_top = num_beads_before - keep_bead_positions.shape[0]
@@ -162,14 +162,13 @@ def feed_particles_from_bottom(posdata, feed_every_n_timesteps, feed_from_file, 
         add_bead_positions_to_add = add_bead_positions[0:num_deleted_beads_from_top] # Then take the top num_deleted_beads_from_top beads.
         top_new_bead_position = np.max(add_bead_positions_to_add[:,2])
         add_bead_positions_to_add = add_bead_positions_to_add -  [0,0,top_new_bead_position - np.min(bead_positions[:,2])] # Shift down to the bottom of the box
-        print "add_bead_positions_to_add (size of)", add_bead_positions_to_add.shape
-        print "top of the add_bead_positions_to_add", np.max(add_bead_positions_to_add[:,2])
-        print "bottom of the add_bead_positions_to_add", np.min(add_bead_positions_to_add[:,2])
-        print "bottom of the beads that are already there", np.min(keep_bead_positions[:,2])
+        print("add_bead_positions_to_add (size of)", add_bead_positions_to_add.shape)
+        print("top of the add_bead_positions_to_add", np.max(add_bead_positions_to_add[:,2]))
+        print("bottom of the add_bead_positions_to_add", np.min(add_bead_positions_to_add[:,2]))
+        print("bottom of the beads that are already there", np.min(keep_bead_positions[:,2]))
         # check for overlaps
         add_bead_positions_to_add_really = np.empty([0,3])
         for s in add_bead_positions_to_add:
-            #print "checking ", s
             overlap = 0
             for t in keep_bead_positions:
                 if np.linalg.norm(s-t)<=2*dumbbell_sizes[0]:
@@ -177,7 +176,7 @@ def feed_particles_from_bottom(posdata, feed_every_n_timesteps, feed_from_file, 
             if overlap == 0:
                 add_bead_positions_to_add_really = np.append(add_bead_positions_to_add_really,np.array([s]),axis=0)
         # stitch together
-        print "add_bead_positions_to_add_really", add_bead_positions_to_add_really
+        ("add_bead_positions_to_add_really", add_bead_positions_to_add_really)
         new_bead_positions = np.concatenate((keep_bead_positions,add_bead_positions_to_add_really),axis = 0)
         # There is a problem if the overall number of dumbbells changes when saving. To fix this:
         # If the number of beads has increased, delete the last ones
@@ -221,7 +220,6 @@ def close_particles(bead_positions, bead_sizes, cutoff_factor, box_bottom_left =
         # NOTE: For OSCILLATORY shear, set the following (basically there isn't a way to find out shear given E)
         time_t = frameno*timestep
         gamma = amplitude*np.sin(time_t*frequency)
-        #print "a",amplitude
         Ot_infinity = np.array([0,0.5*gamma,0])
         Et_infinity = [[0,0,0.5*gamma],[0,0,0],[0.5*gamma,0,0]]
         sheared_basis_vectors_add_on = (np.cross(Ot_infinity,basis_canonical).transpose() + np.dot(Et_infinity,(basis_canonical).transpose())).transpose()
