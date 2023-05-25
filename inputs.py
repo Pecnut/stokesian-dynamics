@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Adam Townsend, adam@adamtownsend.com, 07/06/2017
 
-import sys # Overrides from command line at the bottom of this script
+import sys  # Overrides from command line at the bottom of this script
 import numpy as np
 from position_setups import pos_setup
 import glob
@@ -33,7 +33,7 @@ running_on_legion = 0
 
 try:
     if number_of_args >= 6:
-        extract_force_on_wall_due_to_dumbbells = (args[5] in ["True","true","t","T","1"])
+        extract_force_on_wall_due_to_dumbbells = (args[5] in ["True", "true", "t", "T", "1"])
     if number_of_args >= 5:
         input_form = args[4]
     if number_of_args >= 4:
@@ -62,7 +62,7 @@ checkpoint_start_from_frame = 0
 # NOTE: comment this section to disable Checkpointing
 # Otherwise read in list of temporary files
 checkpoint_start_from_frame = 0
-for filename in sorted(glob.glob("output/*_TEMP.npz"),reverse=True):
+for filename in sorted(glob.glob("output/*_TEMP.npz"), reverse=True):
     checkpoint_setup_number = int(filename.split("-")[1][1:])
     checkpoint_input_number = int(filename.split("-")[2][1:])
     checkpoint_num_frames = int(filename.split("-")[3][:-2])
@@ -70,7 +70,7 @@ for filename in sorted(glob.glob("output/*_TEMP.npz"),reverse=True):
         raw_timestep = filename.split("-")[4][1:] + "-" + filename.split("-")[5]
     else:
         raw_timestep = filename.split("-")[4][1:]
-    checkpoint_timestep = float(raw_timestep.replace("p","."))
+    checkpoint_timestep = float(raw_timestep.replace("p", "."))
     if checkpoint_setup_number == setup_number and checkpoint_input_number == input_number and checkpoint_num_frames == num_frames and checkpoint_timestep == timestep:
         ignored_posdata, setup_description = pos_setup(checkpoint_setup_number)
         try:
@@ -80,21 +80,21 @@ for filename in sorted(glob.glob("output/*_TEMP.npz"),reverse=True):
             num_particles = positions_centres.shape[1]
             num_dumbbells = positions_deltax.shape[1]
             num_spheres = num_particles - num_dumbbells
-            sphere_positions = positions_centres[-1,0:num_spheres, :]
-            dumbbell_positions = positions_centres[-1,num_spheres:num_particles,:]
-            dumbbell_deltax = positions_deltax[-1,:,:]
+            sphere_positions = positions_centres[-1, 0:num_spheres, :]
+            dumbbell_positions = positions_centres[-1, num_spheres:num_particles, :]
+            dumbbell_deltax = positions_deltax[-1, :, :]
             sphere_sizes = ignored_posdata[0]
             dumbbell_sizes = ignored_posdata[3]
-            sphere_rotations = add_sphere_rotations_to_positions(sphere_positions,sphere_sizes,np.array([[1,0,0],[0,0,1]]))
+            sphere_rotations = add_sphere_rotations_to_positions(sphere_positions, sphere_sizes, np.array([[1, 0, 0], [0, 0, 1]]))
             posdata = (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax)
 
             checkpoint_filename = filename
             checkpoint_start_from_frame = positions_centres.shape[0]
 
             word_checkpoint = "\033[42m\033[01m CHECKPOINT FOUND \033[0m\033[49m "
-            print word_checkpoint + "Continuing file '" + filename + "' from frame " + str(checkpoint_start_from_frame + 1) + "/" + str(num_frames)
+            print(word_checkpoint + "Continuing file '" + filename + "' from frame " + str(checkpoint_start_from_frame + 1) + "/" + str(num_frames))
         except:
-            print "Checkpoint possibly found but the file was corrupt (normally because power was lost midway through saving). Starting from beginning."
+            print("Checkpoint possibly found but the file was corrupt (normally because power was lost midway through saving). Starting from beginning.")
 
 # End checkpointing -----|
 
@@ -112,7 +112,7 @@ cutoff_factor = 2
 timestep_rk4 = False
 
 # Are we going to be feeding in new particles underneath the box? (Really just for certain types of simulations)
-feed_every_n_timesteps = 0 # 0 to turn off
+feed_every_n_timesteps = 0  # 0 to turn off
 feed_from_file = 'feed-from-file-name'
 
 # For periodic boxes, how many repeats of the box do we want to consider before the contribution decays away?
@@ -121,7 +121,7 @@ feed_from_file = 'feed-from-file-name'
 how_far_to_reproduce_gridpoints = 2
 
 # Set level of output to screen. # 0 = minimal output, 1 = separation distance and velocities, 2 = matrices, 3 = individual calculations
-printout=0
+printout = 0
 
 # Send email on completion?
 send_email = False
@@ -144,7 +144,7 @@ save_forces_and_positions_to_temp_file_as_well = True
 save_to_temp_file_every_n_timesteps = 120
 
 if start_saving_after_first_n_timesteps > num_frames:
-    print "WARNING: start_saving_after_first_n_timesteps > num_frames. Saving will fail."
+    print("WARNING: start_saving_after_first_n_timesteps > num_frames. Saving will fail.")
 
 # Just use diagonal terms of Minfinity. Good(?) approximation for dense suspensions only.
 use_drag_Minfinity = False
@@ -152,7 +152,7 @@ use_drag_Minfinity = False
 use_Minfinity_only = False
 
 # Use the "d" values of the XYZ scalars, i.e. use those with R2binfinity subtracted off in advance (it's quicker).
-use_XYZd_values = True # No longer works if you make this FAlse
+use_XYZd_values = True  # No longer works if you make this FAlse
 
 # Only relevant if  use_drag_Minfinity = True  and  use_XYZd_values = True
 # If use_drag_Minfinity = True, there is a choice of using 'd' scalars where the drag Minfinity
@@ -164,10 +164,10 @@ use_usual_scalars = False
 # VIDEO-RELATED INPUTS
 
 # If generating video, what should we be able to see?
-viewbox_bottomleft_topright = np.array([[-15,0,-15],[15,1,15]])
+viewbox_bottomleft_topright = np.array([[-15, 0, -15], [15, 1, 15]])
 
 # Viewing angle on video, (elev,azim). e.g. (0,-90) = x-z plane; (30,-60) = default
-viewing_angle = (0,-90)
+viewing_angle = (0, -90)
 
 # View labels and arrows on spheres in the video?
 view_labels = 0
@@ -198,7 +198,7 @@ for lam in lam_range:
         lam_range_with_reciprocals = np.append(lam_range_with_reciprocals, (1./lam))
 lam_range_with_reciprocals.sort()
 
-#Decide here whether we are going to use the d values or not
+# Decide here whether we are going to use the d values or not
 if use_XYZd_values:
     if use_drag_Minfinity:
         if use_usual_scalars:
@@ -210,13 +210,13 @@ if use_XYZd_values:
 else:
     filename = resistance_scalars_folder + '/scalars_general_resistance_blob.txt'
 try:
-    with open(filename,'rb') as inputfile:
+    with open(filename, 'rb') as inputfile:
         XYZ_raw = np.load(inputfile)
 except IOError:
-    XYZ_raw = [] # Only likely to be in this position when generating the resistance scalars.
+    XYZ_raw = []  # Only likely to be in this position when generating the resistance scalars.
 
 filename = resistance_scalars_folder + '/scalars_general_resistance_blob.txt'
-with open(filename,'rb') as inputfile:
+with open(filename, 'rb') as inputfile:
     XYZ_raw_no_d = np.load(inputfile)
 s_dash_range = np.loadtxt(resistance_scalars_folder + '/values_of_s_dash.txt')
 

@@ -157,7 +157,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
         time_start = time.time()
         if frameno % 20 == 0 and frameno > 0:
             print("[Generating " + filename + "]")
-        print("Processing frame " + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno + 1) + "/" + str(num_frames) + "...",end = " ")
+        print("Processing frame " + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno + 1) + "/" + str(num_frames) + "...", end=" ")
 
         '''
         # If we're feeding particles in from the bottom as it falls, this is the function that does that. Otherwise it just passes through.
@@ -470,7 +470,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
             force_on_wall_due_to_dumbbells = 1. / 6 * (np.asarray(force_on_wall_due_to_dumbbells_k1) + 2 * np.asarray(force_on_wall_due_to_dumbbells_k2) + 2 * np.asarray(force_on_wall_due_to_dumbbells_k3) + np.asarray(force_on_wall_due_to_dumbbells_k4))
 
         for i in gen_times:
-            print("[" + format_elapsed_time(i) + "]",end=" ")
+            print("[" + format_elapsed_time(i) + "]", end=" ")
 
         posdata_final = (sphere_sizes, new_sphere_positions, new_sphere_rotations, dumbbell_sizes, new_dumbbell_positions, new_dumbbell_deltax)
 
@@ -509,7 +509,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                                 centres=saved_element_positions, deltax=saved_deltax, force_on_wall_due_to_dumbbells=saved_force_on_wall_due_to_dumbbells,
                                 sphere_rotations=saved_sphere_rotations)
         save_elapsed_time = time.time() - save_time_start
-        print("[" + format_elapsed_time(save_elapsed_time) + "]",end=" ")
+        print("[" + format_elapsed_time(save_elapsed_time) + "]", end=" ")
 
         # Pictures
         pic_time_start = time.time()
@@ -549,14 +549,14 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
         # Maximum memory the program has used since starting.
         # Note that on Linux you have to multiply by 1024 (because RUSAGE_SELF is in KB on these systems)
         # whereas on the Mac, you do not want to do this (because RUSAGE_SELF is in bytes).
-        if platform.system() == "Darwin": # Darwin=Mac, Linux=Linux, Windows=Windows
+        if platform.system() == "Darwin":  # Darwin=Mac, Linux=Linux, Windows=Windows
             multiply_by = 1
         else:
             multiply_by = 1024
-        print("[ " + sizeof_fmt(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * multiply_by) + "]",end = " ")
+        print("[ " + sizeof_fmt(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * multiply_by) + "]", end=" ")
 
         elapsed_time = time.time() - time_start
-        print("[[" + "\033[1m" + format_elapsed_time(elapsed_time) + "\033[0m" + "]]",end = " ")
+        print("[[" + "\033[1m" + format_elapsed_time(elapsed_time) + "\033[0m" + "]]", end=" ")
 
         times[frameno] = elapsed_time
         longtimes = [times[i] for i in xrange(checkpoint_start_from_frame, frameno + 1) if i % invert_m_every == 0]
@@ -592,7 +592,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
         else:
             elapsed_time_formatted = start_color + format_elapsed_time(timeleft) + end_color
 
-        print("[" + elapsed_time_formatted + "]",end=" ")
+        print("[" + elapsed_time_formatted + "]", end=" ")
 
         now = datetime.datetime.now()
         finishtime = now + datetime.timedelta(0, timeleft)
