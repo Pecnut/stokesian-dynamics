@@ -51,7 +51,7 @@ error = False
 previous_step_posdata = posdata
 previous_timestamp = time.time()
 saved_element_positions = np.array([])
-times = [0 for i in xrange(num_frames)]
+times = [0 for i in range(num_frames)]
 output_folder = "output"
 legion_random_id = ""
 
@@ -198,11 +198,11 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                 previous_step_posdata = posdata
 
         if frameno == 0 or frameno == checkpoint_start_from_frame:
-            Ua_blank = np.array([[0, 0, 0] for i in xrange(num_spheres)])
-            Ub_blank = np.array([[0, 0, 0] for i in xrange(num_dumbbells)])
-            DUb_blank = np.array([[0, 0, 0] for i in xrange(num_dumbbells)])
+            Ua_blank = np.array([[0, 0, 0] for i in range(num_spheres)])
+            Ub_blank = np.array([[0, 0, 0] for i in range(num_dumbbells)])
+            DUb_blank = np.array([[0, 0, 0] for i in range(num_dumbbells)])
             last_velocities = [Ua_blank, Ub_blank, DUb_blank, Ua_blank]  # Oa_blank at the end there
-            last_velocity_vector = [0 for i in xrange(11 * num_spheres + 6 * num_dumbbells)]
+            last_velocity_vector = [0 for i in range(11 * num_spheres + 6 * num_dumbbells)]
 
         if not(timestep_rk4):
             # EULER TIMESTEP
@@ -223,7 +223,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
             if (num_spheres > 0):
                 O_infinity_cross_x_k1 = np.empty([sphere_positions.shape[0], sphere_positions.shape[1]])
                 E_infinity_dot_x_k1 = np.empty([sphere_positions.shape[0], sphere_positions.shape[1]])
-                for i in xrange(num_spheres):
+                for i in range(num_spheres):
                     O_infinity_cross_x_k1[i] = np.cross(O_infinity_k1, sphere_positions[i] - centre_of_background_flow)
                     E_infinity_dot_x_k1[i] = np.dot(Ea_out_k1[i], sphere_positions[i] - centre_of_background_flow)
 
@@ -249,7 +249,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                 O_infinity_cross_deltax_k1 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
                 E_infinity_dot_xbar_k1 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
                 E_infinity_dot_deltax_k1 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
-                for i in xrange(num_dumbbells):
+                for i in range(num_dumbbells):
                     O_infinity_cross_xbar_k1[i] = np.cross(O_infinity_k1, dumbbell_positions[i] - centre_of_background_flow)
                     O_infinity_cross_deltax_k1[i] = np.cross(O_infinity_k1, dumbbell_deltax[i])
                     E_infinity_dot_xbar_k1[i] = np.dot(Ea_out_k1[0], dumbbell_positions[i] - centre_of_background_flow)
@@ -294,7 +294,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
             if (num_spheres > 0):
                 O_infinity_cross_x_k1 = np.empty([sphere_positions.shape[0], sphere_positions.shape[1]])
                 E_infinity_dot_x_k1 = np.empty([sphere_positions.shape[0], sphere_positions.shape[1]])
-                for i in xrange(num_spheres):
+                for i in range(num_spheres):
                     O_infinity_cross_x_k1[i] = np.cross(O_infinity_k1, sphere_positions[i] - centre_of_background_flow)
                     E_infinity_dot_x_k1[i] = np.dot(Ea_out_k1[i], sphere_positions[i] - centre_of_background_flow)
                 Ua_out_plus_infinities_k1 = Ua_out_k1 + U_infinity_k1 + O_infinity_cross_x_k1 + E_infinity_dot_x_k1
@@ -306,7 +306,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                 O_infinity_cross_deltax_k1 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
                 E_infinity_dot_xbar_k1 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
                 E_infinity_dot_deltax_k1 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
-                for i in xrange(num_dumbbells):
+                for i in range(num_dumbbells):
                     O_infinity_cross_xbar_k1[i] = np.cross(O_infinity_k1, dumbbell_positions[i] - centre_of_background_flow)
                     O_infinity_cross_deltax_k1[i] = np.cross(O_infinity_k1, dumbbell_deltax[i])
                     E_infinity_dot_xbar_k1[i] = np.dot(Ea_out_k1[0], dumbbell_positions[i] - centre_of_background_flow)
@@ -333,7 +333,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
             if (num_spheres > 0):
                 O_infinity_cross_x_k2 = np.empty([sphere_positions.shape[0], sphere_positions.shape[1]])
                 E_infinity_dot_x_k2 = np.empty([sphere_positions.shape[0], sphere_positions.shape[1]])
-                for i in xrange(num_spheres):
+                for i in range(num_spheres):
                     O_infinity_cross_x_k2[i] = np.cross(O_infinity_k2, sphere_positions[i] - centre_of_background_flow)
                     E_infinity_dot_x_k2[i] = np.dot(Ea_out_k2[i], sphere_positions[i] - centre_of_background_flow)
                 Ua_out_plus_infinities_k2 = Ua_out_k2 + U_infinity_k2 + O_infinity_cross_x_k2 + E_infinity_dot_x_k2
@@ -345,7 +345,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                 O_infinity_cross_deltax_k2 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
                 E_infinity_dot_xbar_k2 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
                 E_infinity_dot_deltax_k2 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
-                for i in xrange(num_dumbbells):
+                for i in range(num_dumbbells):
                     O_infinity_cross_xbar_k2[i] = np.cross(O_infinity_k2, dumbbell_positions[i] - centre_of_background_flow)
                     O_infinity_cross_deltax_k2[i] = np.cross(O_infinity_k2, dumbbell_deltax[i])
                     E_infinity_dot_xbar_k2[i] = np.dot(Ea_out_k2[0], dumbbell_positions[i] - centre_of_background_flow)
@@ -362,7 +362,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                     dumbbell_positions_k2 = wrap_around(dumbbell_positions_k2, box_bottom_left, box_top_right, frameno + 0.5, timestep, O_infinity_k2, Ea_out_k2[0], frequency=frequency, amplitude=amplitude)
 
             posdata_k2 = (sphere_sizes, sphere_positions_k2, sphere_rotations_k2, dumbbell_sizes, dumbbell_positions_k2, dumbbell_deltax_k2)
-            for i in xrange(len(gen_times)):
+            for i in range(len(gen_times)):
                 gen_times[i] = gen_times[i] + gen_times_2[i]
 
             # K3
@@ -372,7 +372,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
             if (num_spheres > 0):
                 O_infinity_cross_x_k3 = np.empty([sphere_positions.shape[0], sphere_positions.shape[1]])
                 E_infinity_dot_x_k3 = np.empty([sphere_positions.shape[0], sphere_positions.shape[1]])
-                for i in xrange(num_spheres):
+                for i in range(num_spheres):
                     O_infinity_cross_x_k3[i] = np.cross(O_infinity_k3, sphere_positions[i] - centre_of_background_flow)
                     E_infinity_dot_x_k3[i] = np.dot(Ea_out_k3[i], sphere_positions[i] - centre_of_background_flow)
                 Ua_out_plus_infinities_k3 = Ua_out_k3 + U_infinity_k3 + O_infinity_cross_x_k3 + E_infinity_dot_x_k3
@@ -385,7 +385,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                 O_infinity_cross_deltax_k3 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
                 E_infinity_dot_xbar_k3 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
                 E_infinity_dot_deltax_k3 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
-                for i in xrange(num_dumbbells):
+                for i in range(num_dumbbells):
                     O_infinity_cross_xbar_k3[i] = np.cross(O_infinity_k3, dumbbell_positions[i] - centre_of_background_flow)
                     O_infinity_cross_deltax_k3[i] = np.cross(O_infinity_k3, dumbbell_deltax[i])
                     E_infinity_dot_xbar_k3[i] = np.dot(Ea_out_k3[0], dumbbell_positions[i] - centre_of_background_flow)
@@ -402,7 +402,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                     dumbbell_positions_k3 = wrap_around(dumbbell_positions_k3, box_bottom_left, box_top_right, frameno + 0.5, timestep, O_infinity_k3, Ea_out_k3[0], frequency=frequency, amplitude=amplitude)
 
             posdata_k3 = (sphere_sizes, sphere_positions_k3, sphere_rotations_k3, dumbbell_sizes, dumbbell_positions_k3, dumbbell_deltax_k3)
-            for i in xrange(len(gen_times)):
+            for i in range(len(gen_times)):
                 gen_times[i] = gen_times[i] + gen_times_2[i]
 
             # K4
@@ -411,7 +411,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
             if (num_spheres > 0):
                 O_infinity_cross_x_k4 = np.empty([sphere_positions.shape[0], sphere_positions.shape[1]])
                 E_infinity_dot_x_k4 = np.empty([sphere_positions.shape[0], sphere_positions.shape[1]])
-                for i in xrange(num_spheres):
+                for i in range(num_spheres):
                     O_infinity_cross_x_k4[i] = np.cross(O_infinity_k4, sphere_positions[i] - centre_of_background_flow)
                     E_infinity_dot_x_k4[i] = np.dot(Ea_out_k4[i], sphere_positions[i] - centre_of_background_flow)
                 Ua_out_plus_infinities_k4 = Ua_out_k4 + U_infinity_k4 + O_infinity_cross_x_k4 + E_infinity_dot_x_k4
@@ -421,7 +421,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                 O_infinity_cross_deltax_k4 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
                 E_infinity_dot_xbar_k4 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
                 E_infinity_dot_deltax_k4 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
-                for i in xrange(num_dumbbells):
+                for i in range(num_dumbbells):
                     O_infinity_cross_xbar_k4[i] = np.cross(O_infinity_k4, dumbbell_positions[i] - centre_of_background_flow)
                     O_infinity_cross_deltax_k4[i] = np.cross(O_infinity_k4, dumbbell_deltax[i])
                     E_infinity_dot_xbar_k4[i] = np.dot(Ea_out_k4[0], dumbbell_positions[i] - centre_of_background_flow)
@@ -430,7 +430,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                 Ub_out_plus_infinities_k4 = Ub_out_k4 + U_infinity_k4 + O_infinity_cross_xbar_k4 + E_infinity_dot_xbar_k4
                 DUb_out_plus_infinities_k4 = DUb_out_k4 + 0.5 * (O_infinity_cross_deltax_k4 + E_infinity_dot_deltax_k4)
 
-            for i in xrange(len(gen_times)):
+            for i in range(len(gen_times)):
                 gen_times[i] = gen_times[i] + gen_times_2[i]
 
             # Euler timestepping whole thing
@@ -559,18 +559,18 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
         print("[[" + "\033[1m" + format_elapsed_time(elapsed_time) + "\033[0m" + "]]", end=" ")
 
         times[frameno] = elapsed_time
-        longtimes = [times[i] for i in xrange(checkpoint_start_from_frame, frameno + 1) if i % invert_m_every == 0]
+        longtimes = [times[i] for i in range(checkpoint_start_from_frame, frameno + 1) if i % invert_m_every == 0]
         if len(longtimes) != 0:
             longtimeaverage = sum(longtimes) / float(len(longtimes))
         else:
             longtimeaverage = 0
-        shorttimes = [times[i] for i in xrange(checkpoint_start_from_frame, frameno + 1) if i % invert_m_every != 0]
+        shorttimes = [times[i] for i in range(checkpoint_start_from_frame, frameno + 1) if i % invert_m_every != 0]
         if len(shorttimes) != 0:
             shorttimeaverage = sum(shorttimes) / float(len(shorttimes))
         else:
             shorttimeaverage = longtimeaverage
-        numberoflongtimesleft = len([i for i in xrange(frameno + 1, num_frames) if i % invert_m_every == 0])
-        numberofshorttimesleft = len([i for i in xrange(frameno + 1, num_frames) if i % invert_m_every != 0])
+        numberoflongtimesleft = len([i for i in range(frameno + 1, num_frames) if i % invert_m_every == 0])
+        numberofshorttimesleft = len([i for i in range(frameno + 1, num_frames) if i % invert_m_every != 0])
 
         timeleft = (numberofshorttimesleft * shorttimeaverage + numberoflongtimesleft * longtimeaverage) * 1.03
         # The 1.03 is to sort of allow for the things this isn't counting. On average it appears to be a good guess.
@@ -752,7 +752,7 @@ if error == 0:
         ani = animation.FuncAnimation(fig, generate_frame, init_func=initialise_frame, frames=num_frames, fargs=generate_frame_args, repeat=False, interval=200, save_count=num_frames)
         plt.show()
     else:
-        for counter in xrange(checkpoint_start_from_frame, num_frames):
+        for counter in range(checkpoint_start_from_frame, num_frames):
             generate_frame(counter, grand_mobility_matrix, text_only, cutoff_factor, viewbox_bottomleft_topright, printout, view_labels, timestep, trace_paths, input_form, filename, output_folder, legion_random_id, box_bottom_left, box_top_right)
 
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax, num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)

@@ -39,22 +39,22 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities, input_form='und
     U_infinity = np.array([0, 0, 0])
     O_infinity = np.array([0, 0, 0])
     if input_form == "fte":
-        Fa_in[:] = [[0, 0, 0] for i in xrange(num_spheres)]
-        Ta_in[:] = [[0, 0, 0] for i in xrange(num_spheres)]
-        Ea_in[:] = [[[0, 0, 0], [0, 0, 0], [0, 0, 0]] for i in xrange(num_spheres)]
-        Fb_in[:] = [[0, 0, 0] for i in xrange(num_dumbbells)]
-        DFb_in[:] = [[0, 0, 0] for i in xrange(num_dumbbells)]
+        Fa_in[:] = [[0, 0, 0] for i in range(num_spheres)]
+        Ta_in[:] = [[0, 0, 0] for i in range(num_spheres)]
+        Ea_in[:] = [[[0, 0, 0], [0, 0, 0], [0, 0, 0]] for i in range(num_spheres)]
+        Fb_in[:] = [[0, 0, 0] for i in range(num_dumbbells)]
+        DFb_in[:] = [[0, 0, 0] for i in range(num_dumbbells)]
     elif input_form == "fts":
-        Fa_in[:] = [[0, 0, 0] for i in xrange(num_spheres)]
-        Ta_in[:] = [[0, 0, 0] for i in xrange(num_spheres)]
-        Sa_in[:] = [[[0, 0, 0], [0, 0, 0], [0, 0, 0]] for i in xrange(num_spheres)]
-        Fb_in[:] = [[0, 0, 0] for i in xrange(num_dumbbells)]
-        DFb_in[:] = [[0, 0, 0] for i in xrange(num_dumbbells)]
+        Fa_in[:] = [[0, 0, 0] for i in range(num_spheres)]
+        Ta_in[:] = [[0, 0, 0] for i in range(num_spheres)]
+        Sa_in[:] = [[[0, 0, 0], [0, 0, 0], [0, 0, 0]] for i in range(num_spheres)]
+        Fb_in[:] = [[0, 0, 0] for i in range(num_dumbbells)]
+        DFb_in[:] = [[0, 0, 0] for i in range(num_dumbbells)]
     if input_form == "ufte":
-        Ta_in[:] = [[0, 0, 0] for i in xrange(num_spheres)]
-        Ea_in[:] = [[[0, 0, 0], [0, 0, 0], [0, 0, 0]] for i in xrange(num_spheres)]
-        Fb_in[:] = [[0, 0, 0] for i in xrange(num_dumbbells)]
-        DFb_in[:] = [[0, 0, 0] for i in xrange(num_dumbbells)]
+        Ta_in[:] = [[0, 0, 0] for i in range(num_spheres)]
+        Ea_in[:] = [[[0, 0, 0], [0, 0, 0], [0, 0, 0]] for i in range(num_spheres)]
+        Fb_in[:] = [[0, 0, 0] for i in range(num_dumbbells)]
+        DFb_in[:] = [[0, 0, 0] for i in range(num_dumbbells)]
     centre_of_background_flow = np.array([0, 0, 0])
     amplitude = 0
     frequency = 0
@@ -62,12 +62,12 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities, input_form='und
 
     if n == 1:
         # Gravity
-        Fa_in[:] = [[0, 0, -1] for i in xrange(num_spheres)]
+        Fa_in[:] = [[0, 0, -1] for i in range(num_spheres)]
         desc = "gravity"
 
     elif n == 2:
         # Gravity in periodic domain
-        Fa_in[:] = [[0, 0, -1] for i in xrange(num_spheres)]
+        Fa_in[:] = [[0, 0, -1] for i in range(num_spheres)]
         sphere_positions, box_bottom_left, box_top_right = simple_cubic_8(8)
         # sphere_positions is ignored here, but to activate periodicity, you have to set box_bottom_left and box_top_right.
         desc = "gravity-periodic"
@@ -90,13 +90,13 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities, input_form='und
 
     elif n == 5:
         # Force half the spheres to move to the left with a given velocity, and force the rest to move to the right.
-        Ua_in[:] = [[-1, 0, 0] for i in xrange(num_spheres/2)] + [[1, 0, 0] for i in xrange(num_spheres/2, num_spheres)]
+        Ua_in[:] = [[-1, 0, 0] for i in range(num_spheres/2)] + [[1, 0, 0] for i in range(num_spheres/2, num_spheres)]
 
     elif n == 6:
         # Continuous shear
         gammadot = 1
         O_infinity = np.array([0, 0.5*gammadot, 0])
-        Ea_in = [[[0, 0, 0.5*gammadot], [0, 0, 0], [0.5*gammadot, 0, 0]] for i in xrange(max(1, num_spheres))]
+        Ea_in = [[[0, 0, 0.5*gammadot], [0, 0, 0], [0.5*gammadot, 0, 0]] for i in range(max(1, num_spheres))]
         desc = "continuous-shear"
 
     elif n == 7:
@@ -111,7 +111,7 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities, input_form='und
 
 
 def repulsion_forces(strength, tau, num_spheres, num_dumbbells, sphere_positions, dumbbell_positions, dumbbell_deltax, sphere_sizes, dumbbell_sizes, num_sphere_in_each_lid, Fa_in, Fb_in, DFb_in, last_velocities=[0, 0, 0]):
-    bead_force = [[0, 0, 0] for i in xrange(num_spheres + 2*num_dumbbells)]
+    bead_force = [[0, 0, 0] for i in range(num_spheres + 2*num_dumbbells)]
     bead_positions = np.concatenate([sphere_positions, dumbbell_positions - 0.5*dumbbell_deltax, dumbbell_positions + 0.5*dumbbell_deltax])
     bead_sizes = np.concatenate([sphere_sizes, dumbbell_sizes, dumbbell_sizes])
     distance_matrix = np.linalg.norm(bead_positions-bead_positions[:, None], axis=2)
@@ -175,8 +175,8 @@ def oscillatory_shear(amplitude, period, start_from_frame, frameno, timestep, ce
         opposite_minus = 1
     if unused_axis == 1:
         O_infinity = np.array([0, transpose_minus*0.5*gammadot, 0])
-        Ea_in = [[[0, 0, 0.5*gammadot], [0, 0, 0], [0.5*gammadot, 0, 0]] for i in xrange(max(1, num_spheres))]
+        Ea_in = [[[0, 0, 0.5*gammadot], [0, 0, 0], [0.5*gammadot, 0, 0]] for i in range(max(1, num_spheres))]
     elif unused_axis == 2:
         O_infinity = np.array([0, 0, opposite_minus*transpose_minus*-0.5*gammadot])
-        Ea_in = [[[0, opposite_minus*0.5*gammadot, 0], [opposite_minus*0.5*gammadot, 0, 0], [0, 0, 0]] for i in xrange(max(1, num_spheres))]
+        Ea_in = [[[0, opposite_minus*0.5*gammadot, 0], [opposite_minus*0.5*gammadot, 0, 0], [0, 0, 0]] for i in range(max(1, num_spheres))]
     return Ea_in, U_infinity, O_infinity, centre_of_background_flow, amplitude, angular_frequency

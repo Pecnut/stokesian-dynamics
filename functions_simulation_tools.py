@@ -15,26 +15,26 @@ def zero_force_vectors(posdata):
 
 def empty_vectors(posdata):
     (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
-    return ([['pippa' for j in xrange(3)] for i in xrange(num_spheres)],
-            [['pippa' for j in xrange(3)] for i in xrange(num_spheres)],
-            [[['pippa' for k in xrange(3)] for j in xrange(3)] for i in xrange(num_spheres)],
-            [['pippa' for j in xrange(5)] for i in xrange(num_spheres)],
-            [['pippa' for j in xrange(3)] for i in xrange(num_dumbbells)],
-            [['pippa' for j in xrange(3)] for i in xrange(num_dumbbells)],
-            [['pippa' for j in xrange(3)] for i in xrange(num_spheres)],
-            [['pippa' for j in xrange(3)] for i in xrange(num_spheres)],
-            [[['pippa' for k in xrange(3)] for j in xrange(3)] for i in xrange(num_spheres)],
-            [['pippa' for j in xrange(5)] for i in xrange(num_spheres)],
-            [['pippa' for j in xrange(3)] for i in xrange(num_dumbbells)],
-            [['pippa' for j in xrange(3)] for i in xrange(num_dumbbells)])
+    return ([['pippa' for j in range(3)] for i in range(num_spheres)],
+            [['pippa' for j in range(3)] for i in range(num_spheres)],
+            [[['pippa' for k in range(3)] for j in range(3)] for i in range(num_spheres)],
+            [['pippa' for j in range(5)] for i in range(num_spheres)],
+            [['pippa' for j in range(3)] for i in range(num_dumbbells)],
+            [['pippa' for j in range(3)] for i in range(num_dumbbells)],
+            [['pippa' for j in range(3)] for i in range(num_spheres)],
+            [['pippa' for j in range(3)] for i in range(num_spheres)],
+            [[['pippa' for k in range(3)] for j in range(3)] for i in range(num_spheres)],
+            [['pippa' for j in range(5)] for i in range(num_spheres)],
+            [['pippa' for j in range(3)] for i in range(num_dumbbells)],
+            [['pippa' for j in range(3)] for i in range(num_dumbbells)])
 
 
 def construct_force_vector_from_fts(posdata, f_spheres, t_spheres, s_spheres, f_dumbbells, deltaf_dumbbells):
     (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
-    s_spheres_condensed = [['pippa' for i in xrange(5)] for j in xrange(num_spheres)]
-    for i in xrange(num_spheres):
-        for j in xrange(5):
-            s_spheres_condensed[i][j] = sum([sum([contraction(j, k, l)*s_spheres[i][k][l] for k in xrange(3)]) for l in xrange(3)])
+    s_spheres_condensed = [['pippa' for i in range(5)] for j in range(num_spheres)]
+    for i in range(num_spheres):
+        for j in range(5):
+            s_spheres_condensed[i][j] = sum([sum([contraction(j, k, l)*s_spheres[i][k][l] for k in range(3)]) for l in range(3)])
 
     if num_spheres == 0 and num_dumbbells == 0:
         force_vector = np.array([])
@@ -68,7 +68,7 @@ def deconstruct_velocity_vector_for_fts(posdata, velocity_vector):
     u_dumbbells = velocity_vector[N3:N4].reshape(num_dumbbells, 3)
     half_deltau_dumbbells = velocity_vector[N4:N5].reshape(num_dumbbells, 3)
     e_spheres = np.zeros([num_spheres, 3, 3])
-    for i in xrange(num_spheres):
+    for i in range(num_spheres):
         e_spheres[i, 0, 0] = (np.sqrt(3)+3)/6. * e_spheres_condensed[i, 0] + (np.sqrt(3)-3)/6. * e_spheres_condensed[i, 2]
         e_spheres[i, 0, 1] = e_spheres_condensed[i, 1]/np.sqrt(2)
         e_spheres[i, 0, 2] = e_spheres_condensed[i, 3]/np.sqrt(2)
@@ -83,16 +83,16 @@ def deconstruct_velocity_vector_for_fts(posdata, velocity_vector):
 
 def vecmat_mat_vecmat(A, B, C, C5, items_in_vector, starts):
     D = np.zeros([C5, C5])
-    for Ai in xrange(items_in_vector):
-        for Ci in xrange(items_in_vector):
+    for Ai in range(items_in_vector):
+        for Ci in range(items_in_vector):
             D[starts[Ai]:starts[Ai+1], starts[Ci]:starts[Ci+1]] = np.dot(np.dot(A[Ai], B), C[Ci])
     return D
 
 
 def vec_mat_cross(A, B, C, C5, items_in_vector, starts, crosspoint):
     D = np.zeros([C5, C5])
-    for Ai in xrange(items_in_vector):
-        for Ci in xrange(items_in_vector):
+    for Ai in range(items_in_vector):
+        for Ci in range(items_in_vector):
             if Ai == crosspoint and Ci != crosspoint:  # it's on the horizontal cross but not the meeting point
                 D[starts[Ai]:starts[Ai+1], starts[Ci]:starts[Ci+1]] = np.dot(B, C[Ci])
             elif Ai != crosspoint and Ci == crosspoint:  # it's on the vertical cross but not the meeting point

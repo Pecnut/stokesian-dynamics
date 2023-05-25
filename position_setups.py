@@ -188,7 +188,7 @@ def randomise_dumbbells(random_box_bottom_left, random_box_top_right, dumbbell_s
                         too_close = too_close + 1
             if too_close == 0:
                 bingo = 0
-                for tries in xrange(100):
+                for tries in range(100):
                     if random_theta:
                         theta = np.random.rand()*np.pi*2
                     if random_phi:
@@ -199,7 +199,7 @@ def randomise_dumbbells(random_box_bottom_left, random_box_top_right, dumbbell_s
                             if np.linalg.norm(proposed_bead2_position - current_sphere_positions[j]) < (dumbbell_sizes[i]+current_sphere_sizes[j]):
                                 too_close = too_close + 1
                         if too_close == 0:
-                            for j in xrange(2*i):
+                            for j in range(2*i):
                                 if np.linalg.norm(proposed_bead2_position - bead_positions[j]) < (dumbbell_sizes[i]+dumbbell_sizes[j//2]):
                                     too_close = too_close + 1
                         if too_close == 0:
@@ -286,7 +286,7 @@ def randomise_dumbbells_periodic(random_box_bottom_left, random_box_top_right, d
                                 too_close = too_close + 1
             if too_close == 0:
                 bingo = 0
-                for tries in xrange(100):
+                for tries in range(100):
                     if random_theta:
                         theta = np.random.rand()*np.pi*2
                     if random_phi:
@@ -301,7 +301,7 @@ def randomise_dumbbells_periodic(random_box_bottom_left, random_box_top_right, d
                                     if np.linalg.norm(proposed_bead2_position - current_sphere_positions[j] - dxy) < (dumbbell_sizes[i]+current_sphere_sizes[j]):
                                         too_close = too_close + 1
                                 if too_close == 0:
-                                    for j in xrange(2*i):
+                                    for j in range(2*i):
                                         if np.linalg.norm(proposed_bead2_position - bead_positions[j] - dxy) < (dumbbell_sizes[i]+dumbbell_sizes[j//2]):
                                             too_close = too_close + 1
                         if too_close == 0:

@@ -18,7 +18,7 @@ def euler_timestep(x, u, timestep):
 
 
 def did_something_go_wrong_with_dumbells(error, dumbbell_deltax, new_dumbbell_deltax, explosion_protection):
-    for i in xrange(new_dumbbell_deltax.shape[0]):
+    for i in range(new_dumbbell_deltax.shape[0]):
         if np.arccos(np.round(np.dot(dumbbell_deltax[i], new_dumbbell_deltax[i]) / (np.linalg.norm(dumbbell_deltax[i]) * np.linalg.norm(new_dumbbell_deltax[i])), 4)) > np.pi / 2:
             print(" ")
             print("Code point H# reached on dumbbell " + str(i))
@@ -34,7 +34,7 @@ def did_something_go_wrong_with_dumbells(error, dumbbell_deltax, new_dumbbell_de
 
 
 def euler_timestep_rotation(sphere_positions, sphere_rotations, new_sphere_positions, new_sphere_rotations, Oa_out, timestep):
-    for i in xrange(sphere_positions.shape[0]):
+    for i in range(sphere_positions.shape[0]):
         R0 = sphere_positions[i]
         O = (Oa_out[i][0] ** 2 + Oa_out[i][1] ** 2 + Oa_out[i][2] ** 2) ** 0.5
 
@@ -60,7 +60,7 @@ def euler_timestep_rotation(sphere_positions, sphere_rotations, new_sphere_posit
                 perp1 = [1, 0, 0]
             rot_matrix = np.array([np.cross(Oa_out[i], perp1) / O, np.cross(Oa_out[i], np.cross(Oa_out[i], perp1)) / O ** 2,  Oa_out[i] / O]).transpose()
 
-        for j in xrange(2):
+        for j in range(2):
             ''' rb0 is the position ("r") of the endpoint of the pointy rotation vector in the
                 external (x,y,z) frame ("b") at the beginning of this process ("0") '''
             rb0 = sphere_rotations[i, j]
@@ -222,8 +222,8 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
             else:
                 velocity_vector = np.linalg.solve(grand_resistance_matrix_ufte, force_vector)
                 (FUa_out, Oa_out, Sa_out, Ub_out, DUb_out) = deconstruct_velocity_vector_for_fts(posdata, velocity_vector)
-                Fa_out = [['chen', 'chen', 'chen'] for i in xrange(num_spheres)]
-                Ua_out = [['chen', 'chen', 'chen'] for i in xrange(num_spheres)]
+                Fa_out = [['chen', 'chen', 'chen'] for i in range(num_spheres)]
+                Ua_out = [['chen', 'chen', 'chen'] for i in range(num_spheres)]
                 Fa_out[0:num_fixed_velocity_spheres] = FUa_out[0:num_fixed_velocity_spheres]
                 Fa_out[num_fixed_velocity_spheres:num_spheres] = Fa_in[num_fixed_velocity_spheres:num_spheres]
                 Ua_out[0:num_fixed_velocity_spheres] = Ua_in[0:num_fixed_velocity_spheres]
@@ -256,21 +256,21 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
             velocity_vector = np.linalg.solve(grand_resistance_matrix_ufteu, force_vector)
 
             (FUa_out, Oa_out, Sa_out, FUb_out, DFUb_out) = deconstruct_velocity_vector_for_fts(posdata, velocity_vector)
-            Fa_out = [['chen', 'chen', 'chen'] for i in xrange(num_spheres)]
-            Ua_out = [['chen', 'chen', 'chen'] for i in xrange(num_spheres)]
+            Fa_out = [['chen', 'chen', 'chen'] for i in range(num_spheres)]
+            Ua_out = [['chen', 'chen', 'chen'] for i in range(num_spheres)]
             Fa_out[0:num_fixed_velocity_spheres] = FUa_out[0:num_fixed_velocity_spheres]
             Fa_out[num_fixed_velocity_spheres:num_spheres] = Fa_in[num_fixed_velocity_spheres:num_spheres]
             Ua_out[0:num_fixed_velocity_spheres] = Ua_in[0:num_fixed_velocity_spheres]
             Ua_out[num_fixed_velocity_spheres:num_spheres] = FUa_out[num_fixed_velocity_spheres:num_spheres]
             (Ta_out, Ea_out) = (Ta_in[:], Ea_in[:])
-            Fb_out = [['chen', 'chen', 'chen'] for i in xrange(num_dumbbells)]
-            Ub_out = [['chen', 'chen', 'chen'] for i in xrange(num_dumbbells)]
+            Fb_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
+            Ub_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
             Fb_out[0:num_fixed_velocity_dumbbells] = FUb_out[0:num_fixed_velocity_dumbbells]
             Fb_out[num_fixed_velocity_dumbbells:num_dumbbells] = Fb_in[num_fixed_velocity_dumbbells:num_dumbbells]
             Ub_out[0:num_fixed_velocity_dumbbells] = Ub_in[0:num_fixed_velocity_dumbbells]
             Ub_out[num_fixed_velocity_dumbbells:num_dumbbells] = FUb_out[num_fixed_velocity_dumbbells:num_dumbbells]
-            DFb_out = [['chen', 'chen', 'chen'] for i in xrange(num_dumbbells)]
-            DUb_out = [['chen', 'chen', 'chen'] for i in xrange(num_dumbbells)]
+            DFb_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
+            DUb_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
             DFb_out[0:num_fixed_velocity_dumbbells] = DFUb_out[0:num_fixed_velocity_dumbbells]
             DFb_out[num_fixed_velocity_dumbbells:num_dumbbells] = DFb_in[num_fixed_velocity_dumbbells:num_dumbbells]
             DUb_out[0:num_fixed_velocity_dumbbells] = DUb_in[0:num_fixed_velocity_dumbbells]
@@ -288,10 +288,10 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
             grand_resistance_matrix_duf = fts_to_duf_matrix(num_fixed_velocity_dumbbells, posdata, grand_resistance_matrix)
             velocity_vector = np.linalg.solve(grand_resistance_matrix_duf, force_vector)
             (Fa_out, Oa_out, Sa_out, FUb_out, DFUb_out) = deconstruct_velocity_vector_for_fts(posdata, velocity_vector)
-            Fb_out = [['chen', 'chen', 'chen'] for i in xrange(num_dumbbells)]
-            Ub_out = [['chen', 'chen', 'chen'] for i in xrange(num_dumbbells)]
-            DFb_out = [['chen', 'chen', 'chen'] for i in xrange(num_dumbbells)]
-            DUb_out = [['chen', 'chen', 'chen'] for i in xrange(num_dumbbells)]
+            Fb_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
+            Ub_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
+            DFb_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
+            DUb_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
             Fb_out[0:num_fixed_velocity_dumbbells] = FUb_out[0:num_fixed_velocity_dumbbells]
             Fb_out[num_fixed_velocity_dumbbells:num_dumbbells] = Fb_in[num_fixed_velocity_dumbbells:num_dumbbells]
             Ub_out[0:num_fixed_velocity_dumbbells] = Ub_in[0:num_fixed_velocity_dumbbells]

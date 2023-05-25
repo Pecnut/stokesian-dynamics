@@ -39,7 +39,7 @@ def generate_grand_resistance_matrix(posdata, last_generated_Minfinity_inverse, 
         Minfinity_inverse_elapsed_time = time.time() - Minfinity_inverse_start_time
     else:
         (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
-        Minfinity_inverse = mu * np.diag([sphere_sizes[i / 3] for i in xrange(3 * num_spheres)] + [1 / 0.75 * sphere_sizes[i / 3]**3 for i in xrange(3 * num_spheres)] + [1 / 0.9 * sphere_sizes[i / 5]**3 for i in xrange(5 * num_spheres)] + [2 * dumbbell_sizes[i / 3] for i in xrange(3 * num_dumbbells)] + [2 * dumbbell_sizes[i / 3] for i in xrange(3 * num_dumbbells)])
+        Minfinity_inverse = mu * np.diag([sphere_sizes[i / 3] for i in range(3 * num_spheres)] + [1 / 0.75 * sphere_sizes[i / 3]**3 for i in range(3 * num_spheres)] + [1 / 0.9 * sphere_sizes[i / 5]**3 for i in range(5 * num_spheres)] + [2 * dumbbell_sizes[i / 3] for i in range(3 * num_dumbbells)] + [2 * dumbbell_sizes[i / 3] for i in range(3 * num_dumbbells)])
         Minfinity_elapsed_time = 0
         Minfinity_inverse_elapsed_time = 0
 
@@ -99,7 +99,7 @@ def generate_grand_resistance_matrix_periodic(posdata, last_generated_Minfinity_
         Minfinity_inverse_elapsed_time = time.time() - Minfinity_inverse_start_time
     else:
         (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
-        Minfinity_inverse = mu * np.diag([sphere_sizes[i / 3] for i in xrange(3 * num_spheres)] + [1 / 0.75 * sphere_sizes[i / 3]**3 for i in xrange(3 * num_spheres)] + [1 / 0.9 * sphere_sizes[i / 5]**3 for i in xrange(5 * num_spheres)] + [2 * dumbbell_sizes[i / 3] for i in xrange(3 * num_dumbbells)] + [2 * dumbbell_sizes[i / 3] for i in xrange(3 * num_dumbbells)])
+        Minfinity_inverse = mu * np.diag([sphere_sizes[i / 3] for i in range(3 * num_spheres)] + [1 / 0.75 * sphere_sizes[i / 3]**3 for i in range(3 * num_spheres)] + [1 / 0.9 * sphere_sizes[i / 5]**3 for i in range(5 * num_spheres)] + [2 * dumbbell_sizes[i / 3] for i in range(3 * num_dumbbells)] + [2 * dumbbell_sizes[i / 3] for i in range(3 * num_dumbbells)])
         Minfinity_elapsed_time = 0
         Minfinity_inverse_elapsed_time = 0
 

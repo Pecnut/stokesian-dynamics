@@ -44,7 +44,7 @@ def L3(d, i, j):
     if i==j:
         return 0
     else:
-        return sum([levi(i,j,k)*d[k] for k in xrange(3) if k!=i and k!=j])
+        return sum([levi(i,j,k)*d[k] for k in range(3) if k!=i and k!=j])
 
 def L4(d, i, j, k):
     return (d[i]*d[j] - kronmatrix[i][j]/3.)*d[k]
@@ -53,7 +53,7 @@ def L5(d, i, j, k):
     return (d[i]*kronmatrix[j][k] + d[j]*kronmatrix[i][k] - 2*d[i]*d[j]*d[k])
 
 def L6(d, i, j, k):
-    return sum([levi(i,k,l)*d[l]*d[j] for l in xrange(3) if l!=i and l!=k]) + sum([levi(j,k,l)*d[l]*d[i] for l in xrange(3) if l!=k and l!=j])
+    return sum([levi(i,k,l)*d[l]*d[j] for l in range(3) if l!=i and l!=k]) + sum([levi(j,k,l)*d[l]*d[i] for l in range(3) if l!=k and l!=j])
 
 def L7(d, i, j, k, l):
     return 1.5*(d[i]*d[j] - kronmatrix[i][j]/3.)*(d[k]*d[l] - kronmatrix[k][l]/3.)

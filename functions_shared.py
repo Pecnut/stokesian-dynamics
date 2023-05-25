@@ -151,8 +151,8 @@ def same_setup_as(filename, frameno=0, sphere_size=1, dumbbell_size=0.1, local=T
     sphere_positions = positions_centres[frameno, 0:num_spheres, :]
     dumbbell_positions = positions_centres[frameno, num_spheres:num_particles, :]
     dumbbell_deltax = positions_deltax[frameno, :, :]
-    sphere_sizes = np.array([sphere_size for i in xrange(num_spheres)])
-    dumbbell_sizes = np.array([dumbbell_size for i in xrange(num_dumbbells)])
+    sphere_sizes = np.array([sphere_size for i in range(num_spheres)])
+    dumbbell_sizes = np.array([dumbbell_size for i in range(num_dumbbells)])
     sphere_rotations = add_sphere_rotations_to_positions(sphere_positions, sphere_sizes, np.array([[1, 0, 0], [0, 0, 1]]))
     return (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax)
 
