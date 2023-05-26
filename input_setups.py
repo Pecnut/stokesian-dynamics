@@ -10,7 +10,7 @@ from position_setups import simple_cubic_8
 
 def input_ftsuoe(n, posdata, frameno, timestep, last_velocities, input_form='undefined', video=False, grand_resistance_matrix_fte=0):
     # Initialise all vectors in the left and right-hand sides. Then define num_spheres and num_dumbbells
-    (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, DUb_in) = empty_vectors(posdata)
+    (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in) = empty_vectors(posdata)
     (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
 
     # Fa_in:  Forces on spheres
@@ -22,7 +22,7 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities, input_form='und
     # Oa_in:  Angular velocity of spheres
     # Ea_in:  Rate of strain, E^infinity
     # Ub_in:  Velocity of dumbbells
-    # DUb_in: HALF the velocity difference of the dumbbells ((U2-U1)/2)
+    # HalfDUb_in: HALF the velocity difference of the dumbbells ((U2-U1)/2)
 
     # Give values. You must give at least half the total number of U/O/E/F/T/S values.
     # If you are giving a mix of F and U values for spheres,   you must put label the spheres   s.t. the fixed velocity spheres   are numbered first.
@@ -107,7 +107,7 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities, input_form='und
     else:
         Fa_in = np.array([[99999, -31415, 21718]])  # Just something to flag up on the other side that there's a problem
 
-    return Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, DUb_in, desc, U_infinity, O_infinity, centre_of_background_flow, amplitude, frequency, box_bottom_left, box_top_right, mu
+    return Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in, desc, U_infinity, O_infinity, centre_of_background_flow, amplitude, frequency, box_bottom_left, box_top_right, mu
 
 
 def repulsion_forces(strength, tau, num_spheres, num_dumbbells, sphere_positions, dumbbell_positions, dumbbell_deltax, sphere_sizes, dumbbell_sizes, num_sphere_in_each_lid, Fa_in, Fb_in, DFb_in, last_velocities=[0, 0, 0]):

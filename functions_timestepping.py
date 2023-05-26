@@ -153,7 +153,7 @@ def are_some_of_the_particles_too_close(error, printout, s_dash_range, sphere_po
 def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_generated_Minfinity_inverse, regenerate_Minfinity, input_form, cutoff_factor, printout, use_XYZd_values, use_drag_Minfinity, use_Minfinity_only, extract_force_on_wall_due_to_dumbbells, last_velocities, last_velocity_vector, checkpoint_start_from_frame,  box_bottom_left, box_top_right, feed_every_n_timesteps=0):
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax, num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
     # Get inputs first time in "video" mode, i.e. no complex calculations for Fa_in, etc. This is really just to get the values of box_bottom_left and box_top_right.
-    (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, DUb_in, input_description, U_infinity, O_infinity, centre_of_background_flow, amplitude, frequency,  box_bottom_left, box_top_right, mu) = input_ftsuoe(input_number, posdata, frameno, timestep, last_velocities, input_form=input_form, video=True)
+    (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in, input_description, U_infinity, O_infinity, centre_of_background_flow, amplitude, frequency,  box_bottom_left, box_top_right, mu) = input_ftsuoe(input_number, posdata, frameno, timestep, last_velocities, input_form=input_form, video=True)
 
     solve_time_start = time.time()
     force_on_wall_due_to_dumbbells = 0
@@ -167,7 +167,7 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
         (Fa_out, Ta_out, Sa_out, Fb_out, DFb_out) = (Fa_in[:], Ta_in[:], Sa_in[:], Fb_in[:], DFb_in[:])
         (Ua_out, Oa_out, Ea_out) = (Fa_in[:], Fa_in[:], Ea_in[:])
         Ub_out = 0.5*(Ubeads[:Nbeads/2] + Ubeads[Nbeads/2:])
-        DUb_out = 0.5*(Ubeads[:Nbeads/2] - Ubeads[Nbeads/2:])  # Because DUb is actually Half Delta Ub (bad notation, I know)
+        HalfDUb_out = 0.5*(Ubeads[:Nbeads/2] - Ubeads[Nbeads/2:])  # Because DUb is actually Half Delta Ub (bad notation, I know)
         gen_times = [0, 0, 0]
 
     else:
@@ -186,7 +186,7 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
             except:
                 throw_error("FTS mode has been selected but not all values of F, T and S have been provided.")
             velocity_vector = np.linalg.solve(grand_resistance_matrix, force_vector)
-            (Ua_out, Oa_out, Ea_out, Ub_out, DUb_out) = deconstruct_velocity_vector_for_fts(posdata, velocity_vector)
+            (Ua_out, Oa_out, Ea_out, Ub_out, HalfDUb_out) = deconstruct_velocity_vector_for_fts(posdata, velocity_vector)
             (Fa_out, Ta_out, Sa_out, Fb_out, DFb_out) = (Fa_in[:], Ta_in[:], Sa_in[:], Fb_in[:], DFb_in[:])
             if num_spheres == 0:
                 Ea_out = Ea_in
@@ -196,13 +196,13 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
             grand_resistance_matrix = fts_to_fte_matrix(posdata, grand_resistance_matrix)
 
             # Get inputs a second time not in video mode, putting in the grand resistance matrix which is needed for some calculations with friction.
-            (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, DUb_in, input_description, U_infinity, O_infinity, centre_of_background_flow, amplitude, frequency,  box_bottom_left, box_top_right, mu) = input_ftsuoe(input_number, posdata, frameno, timestep, last_velocities, input_form=input_form, grand_resistance_matrix_fte=grand_resistance_matrix)
+            (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in, input_description, U_infinity, O_infinity, centre_of_background_flow, amplitude, frequency,  box_bottom_left, box_top_right, mu) = input_ftsuoe(input_number, posdata, frameno, timestep, last_velocities, input_form=input_form, grand_resistance_matrix_fte=grand_resistance_matrix)
             try:
                 force_vector = construct_force_vector_from_fts(posdata, Fa_in, Ta_in, Ea_in, Fb_in, DFb_in)
             except:
                 throw_error("FTE mode has been selected but not all values of F, T and E have been provided.")
             velocity_vector = np.linalg.solve(grand_resistance_matrix, force_vector)
-            (Ua_out, Oa_out, Sa_out, Ub_out, DUb_out) = deconstruct_velocity_vector_for_fts(posdata, velocity_vector)
+            (Ua_out, Oa_out, Sa_out, Ub_out, HalfDUb_out) = deconstruct_velocity_vector_for_fts(posdata, velocity_vector)
             (Fa_out, Ta_out, Ea_out, Fb_out, DFb_out) = (Fa_in[:], Ta_in[:], Ea_in[:], Fb_in[:], DFb_in[:])
             if num_spheres == 0:
                 Ea_out = Ea_in
@@ -221,7 +221,7 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
                 velocity_vector = np.dot(grand_mobility_matrix_ufte, force_vector)
             else:
                 velocity_vector = np.linalg.solve(grand_resistance_matrix_ufte, force_vector)
-                (FUa_out, Oa_out, Sa_out, Ub_out, DUb_out) = deconstruct_velocity_vector_for_fts(posdata, velocity_vector)
+                (FUa_out, Oa_out, Sa_out, Ub_out, HalfDUb_out) = deconstruct_velocity_vector_for_fts(posdata, velocity_vector)
                 Fa_out = [['chen', 'chen', 'chen'] for i in range(num_spheres)]
                 Ua_out = [['chen', 'chen', 'chen'] for i in range(num_spheres)]
                 Fa_out[0:num_fixed_velocity_spheres] = FUa_out[0:num_fixed_velocity_spheres]
@@ -245,7 +245,7 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
             try:
                 force_vector = construct_force_vector_from_fts(posdata, Ua_in[0:num_fixed_velocity_spheres] + Fa_in[num_fixed_velocity_spheres:num_spheres], Ta_in, Ea_in,
                                                                Ub_in[0:num_fixed_velocity_dumbbells] + Fb_in[num_fixed_velocity_dumbbells:num_dumbbells],
-                                                               DUb_in[0:num_fixed_velocity_dumbbells] + DFb_in[num_fixed_velocity_dumbbells:num_dumbbells])
+                                                               HalfDUb_in[0:num_fixed_velocity_dumbbells] + DFb_in[num_fixed_velocity_dumbbells:num_dumbbells])
             except:
                 throw_error("UFTEU mode has been selected but not enough values of U, F, T and E and U(dumbbell) have been provided. At a guess, not all your spheres/dumbbells have either a U or an F.")
 
@@ -270,18 +270,18 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
             Ub_out[0:num_fixed_velocity_dumbbells] = Ub_in[0:num_fixed_velocity_dumbbells]
             Ub_out[num_fixed_velocity_dumbbells:num_dumbbells] = FUb_out[num_fixed_velocity_dumbbells:num_dumbbells]
             DFb_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
-            DUb_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
+            HalfDUb_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
             DFb_out[0:num_fixed_velocity_dumbbells] = DFUb_out[0:num_fixed_velocity_dumbbells]
             DFb_out[num_fixed_velocity_dumbbells:num_dumbbells] = DFb_in[num_fixed_velocity_dumbbells:num_dumbbells]
-            DUb_out[0:num_fixed_velocity_dumbbells] = DUb_in[0:num_fixed_velocity_dumbbells]
-            DUb_out[num_fixed_velocity_dumbbells:num_dumbbells] = DFUb_out[num_fixed_velocity_dumbbells:num_dumbbells]
+            HalfDUb_out[0:num_fixed_velocity_dumbbells] = HalfDUb_in[0:num_fixed_velocity_dumbbells]
+            HalfDUb_out[num_fixed_velocity_dumbbells:num_dumbbells] = DFUb_out[num_fixed_velocity_dumbbells:num_dumbbells]
             if extract_force_on_wall_due_to_dumbbells:
                 print("WARNING: Cannot extract force on wall due to dumbbells in UFTEU mode. Use UFTE mode instead.")
 
         elif input_form == 'duf':  # Dumbbells only, some imposed velocities
             num_fixed_velocity_dumbbells = num_dumbbells - Ub_in.count(['pippa', 'pippa', 'pippa'])
             try:
-                force_vector = construct_force_vector_from_fts(posdata, Fa_in, Ta_in, Ea_in, Ub_in[0:num_fixed_velocity_dumbbells] + Fb_in[num_fixed_velocity_dumbbells:num_dumbbells], DUb_in[0:num_fixed_velocity_dumbbells] + DFb_in[num_fixed_velocity_dumbbells:num_dumbbells])
+                force_vector = construct_force_vector_from_fts(posdata, Fa_in, Ta_in, Ea_in, Ub_in[0:num_fixed_velocity_dumbbells] + Fb_in[num_fixed_velocity_dumbbells:num_dumbbells], HalfDUb_in[0:num_fixed_velocity_dumbbells] + DFb_in[num_fixed_velocity_dumbbells:num_dumbbells])
             except:
                 throw_error("DUF mode has been selected but not enough values of U (dumbbell) and F (dumbbell) have been provided. At a guess, not all your dumbbells have either a U or an F.")
             force_vector = np.array(force_vector, np.float)
@@ -291,15 +291,15 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
             Fb_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
             Ub_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
             DFb_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
-            DUb_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
+            HalfDUb_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
             Fb_out[0:num_fixed_velocity_dumbbells] = FUb_out[0:num_fixed_velocity_dumbbells]
             Fb_out[num_fixed_velocity_dumbbells:num_dumbbells] = Fb_in[num_fixed_velocity_dumbbells:num_dumbbells]
             Ub_out[0:num_fixed_velocity_dumbbells] = Ub_in[0:num_fixed_velocity_dumbbells]
             Ub_out[num_fixed_velocity_dumbbells:num_dumbbells] = FUb_out[num_fixed_velocity_dumbbells:num_dumbbells]
             DFb_out[0:num_fixed_velocity_dumbbells] = DFUb_out[0:num_fixed_velocity_dumbbells]
             DFb_out[num_fixed_velocity_dumbbells:num_dumbbells] = DFb_in[num_fixed_velocity_dumbbells:num_dumbbells]
-            DUb_out[0:num_fixed_velocity_dumbbells] = DUb_in[0:num_fixed_velocity_dumbbells]
-            DUb_out[num_fixed_velocity_dumbbells:num_dumbbells] = DFUb_out[num_fixed_velocity_dumbbells:num_dumbbells]
+            HalfDUb_out[0:num_fixed_velocity_dumbbells] = HalfDUb_in[0:num_fixed_velocity_dumbbells]
+            HalfDUb_out[num_fixed_velocity_dumbbells:num_dumbbells] = DFUb_out[num_fixed_velocity_dumbbells:num_dumbbells]
             (Fa_out, Ta_out, Ea_out) = (Fa_in[:], Ta_in[:], Ea_in[:])
             Ua_out, Oa_out = np.array([]), np.array([])
 
@@ -309,7 +309,7 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
         Ua_out = np.asarray(Ua_out, np.float)
         Oa_out = np.asarray(Oa_out, np.float)
         Ub_out = np.asarray(Ub_out, np.float)
-        DUb_out = np.asarray(DUb_out, np.float)
+        HalfDUb_out = np.asarray(HalfDUb_out, np.float)
 
     elapsed_solve_time = time.time() - solve_time_start
     gen_times.append(elapsed_solve_time)
@@ -319,7 +319,7 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
         print(np.asarray(Ua_out[0:10]))
         print(np.asarray(Ub_out[0:10]))
         print("Half Delta U velocity 0-9")
-        print(np.asarray(DUb_out[0:10]))
+        print(np.asarray(HalfDUb_out[0:10]))
         print("Omegas on particles 0-9")
         print(np.asarray(Oa_out[0:10]))
         print("Forces 0-9 (F)")
@@ -334,4 +334,4 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
         print("Stresslets 0-9 (S)")
         print(np.asarray(Sa_out[0:10]))
 
-    return Fa_out, Ta_out, Sa_out, Fb_out, DFb_out, Ua_out, Oa_out, Ea_out, Ub_out, DUb_out, last_generated_Minfinity_inverse, gen_times, U_infinity, O_infinity, centre_of_background_flow, force_on_wall_due_to_dumbbells, last_velocity_vector
+    return Fa_out, Ta_out, Sa_out, Fb_out, DFb_out, Ua_out, Oa_out, Ea_out, Ub_out, HalfDUb_out, last_generated_Minfinity_inverse, gen_times, U_infinity, O_infinity, centre_of_background_flow, force_on_wall_due_to_dumbbells, last_velocity_vector
