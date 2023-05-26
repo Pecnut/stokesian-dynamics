@@ -9,3 +9,4 @@ output_videos/*
 plot_XYZ.py
 plan.txt
 .DS_Store
+*/build/*

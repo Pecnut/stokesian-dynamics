@@ -58,7 +58,7 @@ legion_random_id = ""
 # Pictures initialise
 if text_only == 0:
     rcParams.update({'font.size': 12})
-    rcParams.update({'figure.dpi': 120, 'figure.figsize': [8, 8], 'savefig.dpi': 140, 'savefig.jpeg_quality': 140})
+    rcParams.update({'figure.dpi': 120, 'figure.figsize': [8, 8], 'savefig.dpi': 140})
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.view_init(viewing_angle[0], viewing_angle[1])
@@ -737,12 +737,12 @@ if error == 0:
                 }
     bold_start = "\033[1m"
     bold_end = "\033[0m"
-    for i, j in dic.iteritems():
+    for i, j in dic.items():
         if warnings[i] == 1:
             info_box = info_box.replace(i, warning_formatting_start + j.ljust(len(i)) + warning_formatting_end)
         else:
             info_box = info_box.replace(i, bold_start + j.ljust(len(i)) + bold_end)
-    print(info_box.encode('utf-8'))
+    print(info_box)
 
     print("[Generating " + filename + "]")
     print("                      " + " " * 2 * len(str(num_frames)) + "[ Minfy  ] [invMinfy] [R2Bex'd'] [ U=R\F  ] [ Saving ] [MaxMemry] [[ Total  ]] [TimeLeft] [ ETA ]")

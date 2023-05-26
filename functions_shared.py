@@ -223,7 +223,6 @@ def feed_particles_from_bottom(posdata, feed_every_n_timesteps, feed_from_file, 
 
 def close_particles(bead_positions, bead_sizes, cutoff_factor, box_bottom_left=np.array([0, 0, 0]), box_top_right=np.array([0, 0, 0]), O_infinity=np.array([0, 0, 0]), E_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]), frameno=0, timestep=0.1, amplitude=1, frequency=1):
     from scipy.spatial.distance import pdist, squareform
-    from itertools import izip, chain
     cutoff = 2*cutoff_factor
     middle_of_box = 0.5*(box_bottom_left+box_top_right)-box_bottom_left
     box_dimensions = box_top_right - box_bottom_left
