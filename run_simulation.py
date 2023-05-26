@@ -29,7 +29,7 @@ import resource
 args = sys.argv[1:]
 number_of_args = len(args)
 if number_of_args == 0:
-    desc = raw_input('Optional brief description to append to filename: ')
+    desc = input('Optional brief description to append to filename: ')
 else:
     desc = ""
 

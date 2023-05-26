@@ -110,6 +110,8 @@ times = [0 for i in range(num_frames)]
 
 # Pictures
 if viewbox_bottomleft_topright.size == 0:
+    sphere_positions = positions_centres[0, 0:num_spheres, :]
+    dumbbell_positions = positions_centres[0, num_spheres:num_particles, :]
     if num_spheres > 0 and num_dumbbells > 0:
         m = np.array([abs(sphere_positions).max(), abs(dumbbell_positions).max()]).max()
     elif num_spheres > 0 and num_dumbbells == 0:
@@ -117,7 +119,7 @@ if viewbox_bottomleft_topright.size == 0:
     elif num_dumbbells > 0 and num_spheres == 0:
         m = abs(dumbbell_positions).max()
     else:
-        print("PROBLEM")
+        print("No viewbox defined, and no spheres or dumbbells detected")
         m = 3
     viewbox_bottomleft_topright = np.array([[-m, -m, -m], [m, m, m]])
 
