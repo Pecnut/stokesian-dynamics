@@ -1,4 +1,5 @@
 import numpy as np
+import time
 
 values_of_s_dash_nearfield = np.loadtxt('values_of_s_dash_nearfield.txt', ndmin=1)
 values_of_s_dash_midfield = np.loadtxt('values_of_s_dash_midfield.txt', ndmin=1)
