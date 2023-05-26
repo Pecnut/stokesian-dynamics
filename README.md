@@ -1,6 +1,6 @@
 # Stokesian Dynamics in Python: Readme #
 
-This is a Python 2 implementation of [Stokesian Dynamics](http://authors.library.caltech.edu/1600/1/BRAarfm88.pdf) for spherical particles of different sizes.
+This is a Python 3 implementation of [Stokesian Dynamics](http://authors.library.caltech.edu/1600/1/BRAarfm88.pdf) for spherical particles of different sizes.
 
 ## Table of contents ##
 
@@ -60,7 +60,7 @@ In particular, this software has the following features:
 Speed and memory are the greatest limitations of the software. Loosely speaking, for a concentrated system of *s* spheres and *d* dumbbells, the memory, in bytes, required, is 48(11*s* + 6*d*)².
 
 ## 4. System requirements <a name="s4"></a> ##
-This is an implementation in Python, using Cython for speed. It has been tested with Python 2.7.11 and requires the following Python packages:
+This is an implementation in Python, using Cython for speed. It has been tested with Python 3.9.12 and requires the following Python packages:
 
 * copy, Cython, datetime, glob, itertools, math, matplotlib, mpl_toolkits, numpy, os, pylab, resource, scipy, smtplib, socket, subprocess, sys, time.
 
