@@ -536,9 +536,9 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                 (dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines) = plot_all_dumbbells(ax, frameno, viewbox_bottomleft_topright, posdata_final, previous_step_posdata, trace_paths, dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines, Fb_out, DFb_out, no_line=no_line)
             if view_labels == 1:
                 (force_lines, force_text) = plot_all_force_lines(ax, viewbox_bottomleft_topright, posdata_final, Fa_out, force_lines)
-                torque_lines = plot_all_torque_lines(ax, viewbox_bottomleft_topright, posdata_final, Ta_out, torque_lines)
-                (velocity_lines, velocity_text, sphere_labels) = plot_all_velocity_lines(ax, viewbox_bottomleft_topright, posdata_final, Ua_out, velocity_lines)  # Velocity in green
-                angular_velocity_lines = plot_all_angular_velocity_lines(ax, viewbox_bottomleft_topright, posdata_final, Oa_out, angular_velocity_lines)  # Ang vel in white with green edging
+                # torque_lines = plot_all_torque_lines(ax, viewbox_bottomleft_topright, posdata_final, Ta_out, torque_lines)
+                # (velocity_lines, velocity_text, sphere_labels) = plot_all_velocity_lines(ax, viewbox_bottomleft_topright, posdata_final, Ua_out, velocity_lines)  # Velocity in green
+                # angular_velocity_lines = plot_all_angular_velocity_lines(ax, viewbox_bottomleft_topright, posdata_final, Oa_out, angular_velocity_lines)  # Ang vel in white with green edging
 
             ax.set_title("  frame " + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno + 1) + "/" + str(num_frames), loc='left', y=0.97)
             ax.set_title("$t$ = " + ("{:" + str(len(str(num_frames * timestep))) + ".2f}").format(frameno * timestep) + "/" + "{:.2f}".format((num_frames - 1) * timestep) + "  ", loc='right', y=0.97)
