@@ -112,9 +112,12 @@ def initialise_frame():
 def sizeof_fmt(num, suffix='B'):
     for unit in ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z']:
         if abs(num) < 1024.0:
-            return "%.3g %s%s" % (num, unit, suffix)
+            if num < 999.5:
+                return '{n:.3g} {u}{s}'.format(n=num, u=unit, s=suffix).rjust(7)
+            else:
+                return '{n:.4g} {u}{s}'.format(n=num, u=unit, s=suffix).rjust(7)
         num /= 1024.0
-    return "%.1f%s%s" % (num, 'Y', suffix)
+    return '{n:.1f}{y}{s}'.format(n=num, y='Y', s=suffix)
 
 
 def wrap_around(new_sphere_positions, box_bottom_left, box_top_right, frameno=0, timestep=0.1, O_infinity=np.array([0, 0, 0]), E_infinity=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]), frequency=1, amplitude=1):
