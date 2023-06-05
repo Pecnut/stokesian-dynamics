@@ -155,10 +155,10 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
     # Get inputs first time in "video" mode, i.e. no complex calculations for Fa_in, etc. This is really just to get the values of box_bottom_left and box_top_right.
     (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in, input_description, U_infinity, O_infinity, centre_of_background_flow, amplitude, frequency,  box_bottom_left, box_top_right, mu) = input_ftsuoe(input_number, posdata, frameno, timestep, last_velocities, input_form=input_form, video=True)
 
-    solve_time_start = time.time()
     force_on_wall_due_to_dumbbells = 0
 
     if input_form == "stokes_drag_dumbbells_only":
+        solve_time_start = time.time()
         Fbeads = 0.5*np.concatenate([np.array(Fb_in) + np.array(DFb_in), np.array(Fb_in) - np.array(DFb_in)])
         a = dumbbell_sizes[0]
         drag_coeff = mu*a
@@ -177,6 +177,8 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
         else:
             # non-periodic
             (grand_resistance_matrix, heading, last_generated_Minfinity_inverse, gen_times) = generate_grand_resistance_matrix(posdata, last_generated_Minfinity_inverse, regenerate_Minfinity=regenerate_Minfinity, cutoff_factor=cutoff_factor, printout=printout, use_XYZd_values=use_XYZd_values, use_drag_Minfinity=use_drag_Minfinity, use_Minfinity_only=use_Minfinity_only, frameno=frameno, checkpoint_start_from_frame=checkpoint_start_from_frame, feed_every_n_timesteps=feed_every_n_timesteps, mu=mu)
+
+        solve_time_start = time.time()
 
         num_spheres = len(Ua_in)
         num_dumbbells = len(Ub_in)
