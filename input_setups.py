@@ -124,7 +124,7 @@ def repulsion_forces(strength, tau, num_spheres, num_dumbbells, sphere_positions
     overlapping_or_close = np.where(np.logical_and(scaled_distance_matrix > 0, np.logical_and(scaled_distance_matrix < cutoff, index_matrix >= 0)))
     overlapping_or_close_pairs = zip(overlapping_or_close[0], overlapping_or_close[1])
 
-    numpairs = str(len(overlapping_or_close_pairs))
+    numpairs = str(len(list(overlapping_or_close_pairs)))
     constant = strength
 
     for pair in overlapping_or_close_pairs:
