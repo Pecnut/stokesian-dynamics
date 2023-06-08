@@ -7,7 +7,7 @@
 import numpy as np
 from numpy import sqrt, pi
 from functions_shared import posdata_data
-from inputs import posdata, bead_bead_interactions
+from inputs import bead_bead_interactions
 from scipy.sparse import coo_matrix
 from numba import njit
 

@@ -5,12 +5,12 @@
 # Reference: A. K. Townsend, 2017. The mechanics of suspensions. PhD thesis, UCL.
 
 import numpy as np
-from numpy import sqrt, linalg
-from functions_shared import lam, kron, contraction, symmetrise, save_matrix, posdata_data, add_sphere_rotations_to_positions, is_sphere, is_dumbbell
+from numpy import sqrt
+from functions_shared import posdata_data
 from scipy import sparse
 from scipy.sparse import lil_matrix, coo_matrix
-from functions_shared import norm, levi, format_elapsed_time
-from inputs import cutoff_factor, num_frames, text_only, viewbox_bottomleft_topright, printout, setup_number, posdata, s_dash_range, range_len_of_s_dash_range, lam_range, lam_range_with_reciprocals, XYZ_raw, view_labels, fps, viewing_angle, timestep, trace_paths, two_d_plot, save_positions_every_n_timesteps, save_forces_every_n_timesteps, XYZf, use_XYZd_values, input_form, invert_m_every, fully_2d_problem, bead_bead_interactions
+from functions_shared import levi
+from inputs import s_dash_range, range_len_of_s_dash_range, lam_range_with_reciprocals, XYZ_raw, fully_2d_problem, bead_bead_interactions
 import math
 '''
 from R2Bexact_functions.L1 import L1

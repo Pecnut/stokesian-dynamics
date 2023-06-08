@@ -4,12 +4,11 @@
 
 import numpy as np
 from numpy import sqrt, pi
-from functions_shared import posdata_data, add_sphere_rotations_to_positions
+from functions_shared import posdata_data
 from functions_shared import norm
-from inputs import posdata, how_far_to_reproduce_gridpoints, bead_bead_interactions
+from inputs import how_far_to_reproduce_gridpoints, bead_bead_interactions
 from scipy.sparse import coo_matrix
 from scipy.special import erfc, erf
-from scipy.integrate import tplquad
 import math
 
 # === DERIVATIVES OF r erfc (lambda r) ===
