@@ -10,28 +10,126 @@ from inputs import how_far_to_reproduce_gridpoints, bead_bead_interactions
 from scipy.sparse import coo_matrix
 from scipy.special import erfc, erf
 import math
+from numba import njit
+from math import erfc, pi, exp
 
 # === DERIVATIVES OF r erfc (lambda r) ===
 # 1st derivatives
-from ewald_functions.D_rerfclr import D_rerfclr
+
+# def D_rerfclr(rj, ss, erfc0, erfc1):
+#     return rj/ss*erfc0 + rj*erfc1
+
 # 2nd derivatives
-from ewald_functions.DD_rerfclr import DD_rerfclr
-from ewald_functions.Lap_rerfclr import Lap_rerfclr
+@njit
+def DD_rerfclr(ri, rj, ss, erfc0, erfc1, erfc2, i, j):
+    return ((i == j)/ss - ri*rj/ss**3)*erfc0 \
+        + ((i == j) + ri*rj/ss**2)*erfc1 \
+        + ri*rj/ss*erfc2
+
+@njit
+def Lap_rerfclr(ss, erfc0, erfc1, erfc2):
+    return 2/ss*erfc0 + 4*erfc1 + ss*erfc2
+
 # 3rd derivatives
-from ewald_functions.DDD_rerfclr import DDD_rerfclr
-from ewald_functions.DLap_rerfclr import DLap_rerfclr
+@njit
+def DDD_rerfclr(ri, rj, rl, ss, erfc0, erfc1, erfc2, erfc3, i, j, l):
+    a = -(i==j)*rl - (i==l)*rj - (j==l)*ri + 3*ri*rj*rl/ss**2
+    return 1/ss**3*(a)*erfc0 \
+        + 1/ss**2*(-a)*erfc1 \
+        + 1/ss*((i==j)*rl + (i==l)*rj + (j==l)*ri)*erfc2 \
+        + ri*rj*rl/ss**2*erfc3
+
+@njit
+def DLap_rerfclr(rl, ss, erfc0, erfc1, erfc2, erfc3):
+    return -2*rl/ss**3*erfc0 + 2*rl/ss**2*erfc1 + 5*rl/ss*erfc2 + rl*erfc3
+
 # 4th derivatives
-from ewald_functions.DDDD_rerfclr import DDDD_rerfclr
-from ewald_functions.DDLap_rerfclr import DDLap_rerfclr
-from ewald_functions.LapLap_rerfclr import LapLap_rerfclr
+@njit
+def DDDD_rerfclr(ri, rj, rl, rm, ss, erfc0, erfc1, erfc2, erfc3, erfc4, i, j, l, m):
+    kron_rr = (i==j)*rl*rm + (i==l)*rj*rm + (l==j)*ri*rm + (i==m)*rj*rl + (j==m)*ri*rl + (l==m)*ri*rj
+    kron3 = (i==j)*(l==m) + (j==l)*(i==m) + (i==l)*(j==m)
+    rirjrlrm = ri*rj*rl*rm
+
+    a = - kron3/ss**3 + 3*kron_rr/ss**5 - 15*rirjrlrm/ss**7
+
+    return (                                                  a)*erfc0 \
+         + (                                              -a*ss)*erfc1 \
+         + (  kron3/ss                      -  3*rirjrlrm/ss**5)*erfc2 \
+         + (                  kron_rr/ss**2 -  2*rirjrlrm/ss**4)*erfc3 \
+                                            +    rirjrlrm/ss**3 *erfc4
+
+@njit
+def DDLap_rerfclr(rl, rm, ss, erfc0, erfc1, erfc2, erfc3, erfc4, l, m):
+    kron_lm = (l==m)
+    rlrm = rl*rm
+    a = -2*kron_lm/ss**3 + 6*rlrm/ss**5
+    return (                           a)*erfc0 \
+        + (                       -a*ss)*erfc1 \
+        + (-3*rlrm/ss**3 + 5*kron_lm/ss)*erfc2 \
+        + ( 5*rlrm/ss**2 +   kron_lm   )*erfc3 \
+        +     rlrm/ss                   *erfc4
+
+@njit
+def LapLap_rerfclr(ss, erfc2, erfc3, erfc4):
+    return 12/ss*erfc2 + 8*erfc3 + ss*erfc4
+
 # 5th derivatives
-from ewald_functions.DDDLap_rerfclr import DDDLap_rerfclr
-from ewald_functions.DLapLap_rerfclr import DLapLap_rerfclr
+@njit
+def DDDLap_rerfclr(ri, rj, rk, ss, erfc0, erfc1, erfc2, erfc3, erfc4, erfc5, i, j, k):
+    kron_r = (i==j)*rk + (i==k)*rj + (j==k)*ri
+    a = 6*kron_r/ss**5 - 30*ri*rj*rk/ss**7
+    rirjrk = ri*rj*rk
+    return a*erfc0 \
+        + (-a*ss)*erfc1 \
+        + (-3*kron_r/ss**3 +  3*rirjrk/ss**5)*erfc2 \
+        + ( 5*kron_r/ss**2 - 13*rirjrk/ss**4)*erfc3 \
+        + (   kron_r/ss    +  4*rirjrk/ss**3)*erfc4 \
+                            +    rirjrk/ss**2 *erfc5
+
+@njit
+def DLapLap_rerfclr(rk, ss, erfc2, erfc3, erfc4, erfc5):
+    return -12*rk/ss**3*erfc2 \
+        +  12*rk/ss**2*erfc3 \
+        +  9*rk/ss*erfc4 \
+        +  rk*erfc5
+
 # 6th derivatives
-from ewald_functions.DDDDLap_rerfclr import DDDDLap_rerfclr
-from ewald_functions.DDLapLap_rerfclr import DDLapLap_rerfclr
+@njit
+def DDDDLap_rerfclr(ri, rj, rk, rl, ss, erfc0, erfc1, erfc2, erfc3, erfc4, erfc5, erfc6, i, j, k, l):
+    kron_rr = (i==j)*rk*rl + (i==k)*rj*rl + (k==j)*ri*rl + (i==l)*rj*rk + (j==l)*ri*rk + (k==l)*ri*rj
+    kron3 = (i==j)*(k==l) + (j==k)*(i==l) + (i==k)*(j==l)
+    rirjrkrl = ri*rj*rk*rl
+    a = 6*kron3/ss**5 - 30*kron_rr/ss**7 + 210*rirjrkrl/ss**9
+    return                                                       a*erfc0 \
+         + (                                                -a*ss)*erfc1 \
+         + (-3*kron3/ss**3 +  3*kron_rr/ss**5 + 15*rirjrkrl/ss**7)*erfc2 \
+         + ( 5*kron3/ss**2 - 13*kron_rr/ss**4 + 55*rirjrkrl/ss**6)*erfc3 \
+         + (   kron3/ss    +  4*kron_rr/ss**3 - 25*rirjrkrl/ss**5)*erfc4 \
+         + (                    kron_rr/ss**2 +  2*rirjrkrl/ss**4)*erfc5 \
+         + (                                       rirjrkrl/ss**3)*erfc6
+
+@njit
+def DDLapLap_rerfclr(rk, rl, ss, erfc2, erfc3, erfc4, erfc5, erfc6, k, l):
+   a = -12*(k==l)/ss**3 + 36*rk*rl/ss**5
+   return                         a    *erfc2 \
+        + (                      -a)*ss*erfc3 \
+        + (3*rk*rl/ss**3 + 9*(k==l)/ss)*erfc4 \
+        + (9*rk*rl/ss**2 + (k==l)     )*erfc5 \
+        +    rk*rl/ss                  *erfc6
+
+
 # Derivatives of erfc (lambda r)
-from ewald_functions.generate_erfcs import generate_erfcs
+@njit
+def generate_erfcs(s, lamb):
+    E = 2/pi**0.5*exp(-s**2*lamb**2)*lamb
+    erfc0 = erfc(lamb*s)
+    erfc1 = -E
+    erfc2 = 2*lamb**2*s*E
+    erfc3 = -2*lamb**2*E*(2*lamb**2*s**2-1)
+    erfc4 = 4*lamb**4*s*E*(2*lamb**2*s**2-3)
+    erfc5 = -4*lamb**4*E*(4*lamb**4*s**4-12*lamb**2*s**2+3)
+    erfc6 = 8*lamb**6*s*E*(4*lamb**4*s**4-20*lamb**2*s**2+15)
+    return erfc0,erfc1,erfc2,erfc3,erfc4,erfc5,erfc6
 
 # === CONSTANTS ===
 
@@ -64,74 +162,98 @@ kron3tracelessmatrix = [[[[1.3333333333333335, 0.0, 0.0, 0.0, 0.0],   [0.0, -0.6
   [[0.0, 0.0, 0.0, 0.0, 0.0],   [0.0, 0.0, 0.0, 0.0, 0.0],   [0.0, 0.0, 0.0, 0.0, 1.0],   [0.0, 0.0, 0.0, 0.0, 0.0],   [0.0, 0.0, 1.0, 0.0, 0.0]],
   [[0.0, 0.0, 0.0, 0.0, 0.0],   [0.0, 0.0, 0.0, 0.0, 0.0],   [0.0, 0.0, 0.0, 0.0, 0.0],   [0.0, 0.0, 0.0, 0.0, 1.0],   [0.0, 0.0, 0.0, 1.0, 0.0]],
   [[-0.6666666666666666, 0.0, 0.0, 0.0, 0.0],   [0.0, -0.6666666666666666, 0.0, 0.0, 0.0],   [0.0, 0.0, -0.6666666666666666, 0.0, 0.0],   [0.0, 0.0, 0.0, -0.6666666666666666, 0.0],   [0.0, 0.0, 0.0, 0.0, 1.3333333333333335]]]]
+kronmatrix = np.array(kronmatrix)
+kron3tracelessmatrix = np.array(kron3tracelessmatrix)
 
 # === DERIVATIVES OF J^r(r) ===
 # O(J)
+@njit
 def J(r,ss,i,j,erfcs):
     return kronmatrix[i][j]*Lap_rerfclr(ss,erfcs[0],erfcs[1],erfcs[2]) - DD_rerfclr(r[i],r[j],ss,erfcs[0],erfcs[1],erfcs[2],i,j)
 
 # O(D J)
+@njit
 def R(r,ss,i,j,erfcs):
     k = (j+1)%3
     l = (j+2)%3
     return -0.5*( D_J(r,ss,k,i,l,erfcs) - D_J(r,ss,l,i,k,erfcs))
 
+@njit
 def K(r,ss,i,j,k,erfcs):
     return 0.5*(D_J(r,ss,k,i,j,erfcs) + D_J(r,ss,j,i,k,erfcs))
 
+@njit
 def D_J(r,ss,l,i,j,erfcs):
     return kronmatrix[i][j]*DLap_rerfclr(r[l],ss,erfcs[0],erfcs[1],erfcs[2],erfcs[3]) - DDD_rerfclr(r[i],r[j],r[l],ss,erfcs[0],erfcs[1],erfcs[2],erfcs[3],i,j,l)
 
 # O(D^2 J)
-from ewald_functions.DD_J import DD_J
+@njit 
+def DD_J(r,ss,m,l,i,j,erfcs):
+    rl = r[l]
+    rm = r[m]
+    ri = r[i]
+    rj = r[j]
+    return (i==j)*DDLap_rerfclr(rl,rm,ss,erfcs[0],erfcs[1],erfcs[2],erfcs[3],erfcs[4],l,m) - DDDD_rerfclr(ri,rj,rl,rm,ss,erfcs[0],erfcs[1],erfcs[2],erfcs[3],erfcs[4],i,j,l,m)
 
+
+@njit
 def D_R(r,ss,l,i,j,erfcs):
     m = (j+1)%3
     n = (j+2)%3
     return -0.5 * ( DD_J(r,ss,l,m,i,n,erfcs) - DD_J(r,ss,l,n,i,m,erfcs) )
 
+@njit
 def D_K(r,ss,l,i,j,k,erfcs):
     return 0.5*(DD_J(r,ss,l,k,i,j,erfcs) + DD_J(r,ss,l,j,i,k,erfcs))
 
+@njit
 def Lap_J(r,ss,i,j,erfcs):
     return kronmatrix[i][j]*LapLap_rerfclr(ss,erfcs[2],erfcs[3],erfcs[4]) - DDLap_rerfclr(r[i],r[j],ss,erfcs[0],erfcs[1],erfcs[2],erfcs[3],erfcs[4],i,j)
 
 # O(D^3 J)
+@njit
 def DLap_J(r,ss,k,i,j,erfcs):
     rk = r[k]
     return kronmatrix[i][j]*DLapLap_rerfclr(rk,ss,erfcs[2],erfcs[3],erfcs[4],erfcs[5]) - DDDLap_rerfclr(r[i],r[j],rk,ss,erfcs[0],erfcs[1],erfcs[2],erfcs[3],erfcs[4],erfcs[5],i,j,k)
 
+@njit
 def Lap_R(r,ss,i,j,erfcs):
     k = (j+1)%3
     l = (j+2)%3
     return -0.5*( DLap_J(r,ss,k,i,l,erfcs) - DLap_J(r,ss,l,i,k,erfcs))
 
+@njit
 def Lap_K(r,ss,i,j,k,erfcs):
     return 0.5*(DLap_J(r,ss,k,i,j,erfcs) + DLap_J(r,ss,j,i,k,erfcs))
 
 # O(D^4 J)
+@njit
 def DDLap_J(r,ss,l,k,i,j,erfcs):
     rk = r[k]
     rl = r[l]
     return kronmatrix[i][j]*DDLapLap_rerfclr(rk,rl,ss,erfcs[2],erfcs[3],erfcs[4],erfcs[5],erfcs[6],k,l) - DDDDLap_rerfclr(r[i],r[j],rk,rl,ss,erfcs[0],erfcs[1],erfcs[2],erfcs[3],erfcs[4],erfcs[5],erfcs[6],i,j,k,l)
 
+@njit
 def DLap_K(r,ss,l,i,j,k,erfcs):
     return 0.5*(DDLap_J(r,ss,l,k,i,j,erfcs) + DDLap_J(r,ss,l,j,i,k,erfcs))
 
 # === TENSORS a^r(r) etc. ===
 #a^r
+@njit
 def ar(r,s,a1,a2, i, j,erfcs,c,mu):
     if s > 1e-10:
         return c*(J(r,s,i,j,erfcs) + (a1**2 + a2**2)/6. * Lap_J(r,s,i,j,erfcs))
     else:
         return kronmatrix[i][j]/(6*pi*mu*a1)
 
+@njit
 def btr(r,s,a1,a2,i,j,erfcs,c,mu):
     if s > 1e-10:
         return c*(R(r,s,i,j,erfcs) + a1**2/6. * Lap_R(r,s,i,j,erfcs))
     else:
         return 0
 
+@njit
 def cr(r,s,a1,a2, i, j,erfcs,c,mu):
     if abs(r[0]) + abs(r[1]) + abs(r[2]) > 1e-10:
         k = (i+1)%3
@@ -140,12 +262,14 @@ def cr(r,s,a1,a2, i, j,erfcs,c,mu):
     else:
         return kronmatrix[i][j]/(8*pi*mu*a1**3)
 
+@njit
 def gtr(r,s,a1,a2, i, j, k,erfcs,c,mu):
     if s > 1e-10:
         return -c*(K(r,s,i,j,k,erfcs) + (a1**2/6. + a2**2/10.) * Lap_K(r,s,i,j,k,erfcs))
     else:
         return 0
 
+@njit
 def htr(r,s,a1,a2,i,j,k,erfcs,c,mu):
     if abs(r[0]) + abs(r[1]) + abs(r[2]) > 1e-10:
         l = (i+1)%3
@@ -155,6 +279,7 @@ def htr(r,s,a1,a2,i,j,k,erfcs,c,mu):
     else:
         return 0
 
+@njit
 def mr(r,s,a1,a2, i, j, k, l,erfcs,c,mu):
     if s > 1e-10:
         return -0.5*c*((D_K(r,s,j,i,k,l,erfcs) + D_K(r,s,i,j,k,l,erfcs)) + (a1**2 + a2**2)/10. * (DLap_K(r,s,j,i,k,l,erfcs) + DLap_K(r,s,i,j,k,l,erfcs)))
@@ -164,13 +289,28 @@ def mr(r,s,a1,a2, i, j, k, l,erfcs,c,mu):
 
 # === FOURIER TRANSFORMED J^k(k) ===
 # The only ones required are Jtilde, DD_Jtilde, D_Rtilde, D_Ktilde, LapJ_tilde, DLapK_tilde.
-# All apart from D_Rtilde (for no good reason tbh) are in Cython files in the ewald_functions folder.
-from ewald_functions.Jtilde import Jtilde
-from ewald_functions.DD_Jtilde import DD_Jtilde
-from ewald_functions.Lap_Jtilde import Lap_Jtilde
-from ewald_functions.D_Ktilde import D_Ktilde
-from ewald_functions.DLap_Ktilde import DLap_Ktilde
 
+@njit
+def Jtilde(ki, kj, ss, i, j, RR):
+    return -((i==j)*ss**2 + ki*kj)*RR
+
+@njit
+def DD_Jtilde(kkm, kkl, kki, kkj, ss, m, l, i, j, RR):
+  return -kkm*kkl * Jtilde(kki,kkj,ss,i,j,RR)
+
+@njit
+def Lap_Jtilde(kki, kkj, ss, i, j, RR):
+    return -ss**2 * Jtilde(kki,kkj,ss,i,j,RR)
+
+@njit
+def D_Ktilde(kkl, kki, kkj, kkk, ss, l, i, j, k, RR):
+    return 0.5*(DD_Jtilde(kkl,kkk,kki,kkj,ss,l,k,i,j,RR) + DD_Jtilde(kkl,kkj,kki,kkk,ss,l,j,i,k,RR))
+
+@njit
+def DLap_Ktilde(kkl, kki, kkj, kkk, ss, l, i, j, k, RR):
+    return 0.5 * ( kkk*kkl*ss**2 * Jtilde(kki,kkj,ss,i,j,RR) + kkl*kkj*ss**2 * Jtilde(kki,kkk,ss,i,k,RR) )
+
+@njit
 def D_Rtilde(kk,ss,l,i,j,RR):
     kkl = kk[l]
     kki = kk[i]
@@ -181,16 +321,19 @@ def D_Rtilde(kk,ss,l,i,j,RR):
     return -0.5 * (DD_Jtilde(kkl,kkm,kki,kkn,ss,l,m,i,n,RR) - DD_Jtilde(kkl,kkn,kki,kkm,ss,l,n,i,m,RR))
 
 # === FOURIER TRANSFORMED TENSORS ===
+@njit
 def aktilde(kk,ss,a1,a2,i,j,RR,c,mu):
     kki = kk[i]
     kkj = kk[j]
     return c*(Jtilde(kki,kkj,ss,i,j,RR) + (a1**2 + a2**2)/6. * Lap_Jtilde(kki,kkj,ss,i,j,RR))
 
+@njit
 def cktilde(kk,ss,a1,a2,i,j,RR,c,mu):
     k = (i+1)%3
     l = (i+2)%3
     return c*0.5*(D_Rtilde(kk,ss,k,l,j,RR) - D_Rtilde(kk,ss,l,k,j,RR))
 
+@njit
 def htktilde(kk,ss,a1,a2,i,j,k,RR,c,mu):
     kki = kk[i]
     kkj = kk[j]
@@ -202,6 +345,8 @@ def htktilde(kk,ss,a1,a2,i,j,k,RR,c,mu):
     return c*-0.5*(   (D_Ktilde(kkl,kkm,kkj,kkk,ss,l,m,j,k,RR) + (a2**2/6.)*DLap_Ktilde(kkl,kkm,kkj,kkk,ss,l,m,j,k,RR))
                     - (D_Ktilde(kkm,kkl,kkj,kkk,ss,m,l,j,k,RR) + (a2**2/6.)*DLap_Ktilde(kkm,kkl,kkj,kkk,ss,m,l,j,k,RR))    )
 
+
+@njit
 def mktilde(kk,ss,a1,a2,i,j,k,l,RR,c,mu):
     kki = kk[i]
     kkj = kk[j]
