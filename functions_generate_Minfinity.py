@@ -242,7 +242,6 @@ def generate_Minfinity(posdata, printout=0,cutoff_factor=2,frameno=0, mu=1):
             Minfinity[Gt_coords] = [[con_M13(r,s,a1,a2,i,j,c,mu) for j in range(5)] for i in range(3)]
             Minfinity[Ht_coords] = [[con_M23(r,s,a1,a2,i,j,c,mu) for j in range(5)] for i in range(3)]
             Minfinity[M_coords] = [[con_M33(r,s,a1,a2,i,j,c,mu) for j in range(5)] for i in range(5)]
-            # NOTE Next line - and indeed all 12/21s stuff - is patently false if a1 != a2
             if a1 == a2:
                 Minfinity[Bt_coords_21] = -Minfinity[Bt_coords]
                 Minfinity[Gt_coords_21] = -Minfinity[Gt_coords]
