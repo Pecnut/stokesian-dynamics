@@ -531,8 +531,8 @@ def con_M33(r,s,a1,a2, n, m,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_S
 def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right, printout=0, cutoff_factor=2,frameno=0,O_infinity=np.array([0,0,0]),E_infinity=np.array([[0,0,0],[0,0,0],[0,0,0]]),timestep=0.1,centre_of_background_flow=np.array([0,0,0]),mu=1,frequency=1,amplitude=1):
     # NOTE: Centre of background flow currently not implemented - 27/1/2017
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
-    R2Bexact_sidelength = 11*num_spheres + 6*num_dumbbells
-    R2Bexact = np.zeros((R2Bexact_sidelength, R2Bexact_sidelength), dtype=np.float)
+    Minfinity_sidelength = 11*num_spheres + 6*num_dumbbells
+    Minfinity = np.zeros((Minfinity_sidelength, Minfinity_sidelength), dtype=np.float)
     bead_positions = np.concatenate([sphere_positions,dumbbell_positions - 0.5*dumbbell_deltax, dumbbell_positions + 0.5*dumbbell_deltax])
     bead_sizes = np.concatenate([sphere_sizes, dumbbell_sizes, dumbbell_sizes])
     c = 1./(8*pi*mu)
@@ -601,50 +601,50 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right, printou
             M_coords =  np.s_[6*num_spheres+a1_index*5 : 6*num_spheres+(a1_index+1)*5, 6*num_spheres+a2_index*5 : 6*num_spheres+(a2_index+1)*5]
 
             erfcs = generate_erfcs(s,lamb)
-            R2Bexact[A_coords] =  [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
-            R2Bexact[Bt_coords] = [[M12(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) for j in range(3)] for i in range(3)]
-            R2Bexact[Bt_coords_21] = -R2Bexact[Bt_coords]
-            R2Bexact[C_coords] =  [[M22(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) for j in range(3)] for i in range(3)]
-            R2Bexact[Gt_coords] = [[con_M13(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) for j in range(5)] for i in range(3)]
-            R2Bexact[Gt_coords_21] = -R2Bexact[Gt_coords]
-            R2Bexact[Ht_coords] = [[con_M23(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) for j in range(5)] for i in range(3)]
-            R2Bexact[Ht_coords_21] = R2Bexact[Ht_coords]
-            R2Bexact[M_coords] = [[con_M33(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) for j in range(5)] for i in range(5)]
+            Minfinity[A_coords] =  [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
+            Minfinity[Bt_coords] = [[M12(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) for j in range(3)] for i in range(3)]
+            Minfinity[Bt_coords_21] = -Minfinity[Bt_coords]
+            Minfinity[C_coords] =  [[M22(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) for j in range(3)] for i in range(3)]
+            Minfinity[Gt_coords] = [[con_M13(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) for j in range(5)] for i in range(3)]
+            Minfinity[Gt_coords_21] = -Minfinity[Gt_coords]
+            Minfinity[Ht_coords] = [[con_M23(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) for j in range(5)] for i in range(3)]
+            Minfinity[Ht_coords_21] = Minfinity[Ht_coords]
+            Minfinity[M_coords] = [[con_M33(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) for j in range(5)] for i in range(5)]
 
 
         elif a1_index < num_spheres and a2_index >= num_spheres and a2_index < num_spheres + num_dumbbells:
             # Sphere to dumbbell bead 1
             mr = [-r[0],-r[1],-r[2]]
             a2_index_d = a2_index-num_spheres
-            R14_coords = np.s_[a1_index*3:(a1_index+1)*3,                             11*num_spheres+a2_index_d*3 : 11*num_spheres +(a2_index_d+1)*3]
-            R24_coords = np.s_[3*num_spheres+a1_index*3:3*num_spheres+(a1_index+1)*3, 11*num_spheres+a2_index_d*3 : 11*num_spheres +(a2_index_d+1)*3]
-            R34_coords = np.s_[6*num_spheres+a1_index*5:6*num_spheres+(a1_index+1)*5, 11*num_spheres+a2_index_d*3 : 11*num_spheres +(a2_index_d+1)*3]
+            M14_coords = np.s_[a1_index*3:(a1_index+1)*3,                             11*num_spheres+a2_index_d*3 : 11*num_spheres +(a2_index_d+1)*3]
+            M24_coords = np.s_[3*num_spheres+a1_index*3:3*num_spheres+(a1_index+1)*3, 11*num_spheres+a2_index_d*3 : 11*num_spheres +(a2_index_d+1)*3]
+            M34_coords = np.s_[6*num_spheres+a1_index*5:6*num_spheres+(a1_index+1)*5, 11*num_spheres+a2_index_d*3 : 11*num_spheres +(a2_index_d+1)*3]
 
-            R2Bexact[R14_coords] = [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
-            R2Bexact[R24_coords] = [[M12(mr,s,a2,a1,j,i,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
-            R2Bexact[R34_coords] = [[con_M13(mr,s,a1,a2,j,i,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(5)]
+            Minfinity[M14_coords] = [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
+            Minfinity[M24_coords] = [[M12(mr,s,a2,a1,j,i,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
+            Minfinity[M34_coords] = [[con_M13(mr,s,a1,a2,j,i,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(5)]
 
 
         elif a1_index < num_spheres and a2_index >= num_spheres + num_dumbbells:
             # Sphere to dumbbell bead 2
             mr = [-r[0],-r[1],-r[2]]
             a2_index_d = a2_index-num_spheres-num_dumbbells
-            R15_coords = np.s_[a1_index*3:(a1_index+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3 : 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
-            R25_coords = np.s_[3*num_spheres+a1_index*3:3*num_spheres+(a1_index+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3 : 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
-            R35_coords = np.s_[6*num_spheres+a1_index*5:6*num_spheres+(a1_index+1)*5, 11*num_spheres+3*num_dumbbells+a2_index_d*3 : 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
+            M15_coords = np.s_[a1_index*3:(a1_index+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3 : 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
+            M25_coords = np.s_[3*num_spheres+a1_index*3:3*num_spheres+(a1_index+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3 : 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
+            M35_coords = np.s_[6*num_spheres+a1_index*5:6*num_spheres+(a1_index+1)*5, 11*num_spheres+3*num_dumbbells+a2_index_d*3 : 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
 
-            R2Bexact[R15_coords] = [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
-            R2Bexact[R25_coords] = [[M12(mr,s,a2,a1,j,i,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
-            R2Bexact[R35_coords] = [[con_M13(mr,s,a1,a2,j,i,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(5)]
+            Minfinity[M15_coords] = [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
+            Minfinity[M25_coords] = [[M12(mr,s,a2,a1,j,i,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
+            Minfinity[M35_coords] = [[con_M13(mr,s,a1,a2,j,i,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(5)]
 
         elif a1_index >= num_spheres and a1_index < num_spheres + num_dumbbells and a2_index >= num_spheres and a2_index < num_spheres + num_dumbbells:
             # Dumbbell bead 1 to dumbbell bead 1
             a1_index_d = a1_index-num_spheres
             a2_index_d = a2_index-num_spheres
             if bead_bead_interactions or a1_index_d == a2_index_d:
-                R44_coords = np.s_[11*num_spheres+a1_index_d*3:11*num_spheres+(a1_index_d+1)*3, 11*num_spheres+a2_index_d*3 : 11*num_spheres+(a2_index_d+1)*3]
+                M44_coords = np.s_[11*num_spheres+a1_index_d*3:11*num_spheres+(a1_index_d+1)*3, 11*num_spheres+a2_index_d*3 : 11*num_spheres+(a2_index_d+1)*3]
                 erfcs = generate_erfcs(s,lamb)
-                R2Bexact[R44_coords] = [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
+                Minfinity[M44_coords] = [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
 
                 s_lmn = np.linalg.norm(r + X_lmn,axis=1)
 
@@ -653,21 +653,21 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right, printou
             a1_index_d = a1_index-num_spheres
             a2_index_d = a2_index-num_spheres-num_dumbbells
             if bead_bead_interactions or a1_index_d == a2_index_d:
-                R45_coords = np.s_[11*num_spheres+a1_index_d*3:11*num_spheres+(a1_index_d+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3 : 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
+                M45_coords = np.s_[11*num_spheres+a1_index_d*3:11*num_spheres+(a1_index_d+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3 : 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
                 erfcs = generate_erfcs(s,lamb)
-                R2Bexact[R45_coords] = [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
+                Minfinity[M45_coords] = [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
 
         else:
             # Dumbbell bead 2 to dumbbell bead 2
             a1_index_d = a1_index-num_spheres-num_dumbbells
             a2_index_d = a2_index-num_spheres-num_dumbbells
             if bead_bead_interactions or a1_index_d == a2_index_d:
-                R55_coords = np.s_[11*num_spheres+3*num_dumbbells+a1_index_d*3:11*num_spheres+3*num_dumbbells+(a1_index_d+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3 : 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
+                M55_coords = np.s_[11*num_spheres+3*num_dumbbells+a1_index_d*3:11*num_spheres+3*num_dumbbells+(a1_index_d+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3 : 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
                 erfcs = generate_erfcs(s,lamb)
-                R2Bexact[R55_coords] = [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
+                Minfinity[M55_coords] = [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
 
     #symmetrise
-    R2Bexact = np.triu(R2Bexact) + np.triu(R2Bexact,k=1).transpose()
+    Minfinity = np.triu(Minfinity) + np.triu(Minfinity,k=1).transpose()
 
     # Row and column ops I want are equivalent to doing
     #   [ 1    0    0 ]   [ a b c ]   [ 1    0    0 ]
@@ -681,4 +681,4 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right, printou
     Ldata = np.array([1 for i in range(11*num_spheres)] + [0.5 for i in range(9*num_dumbbells)] + [-0.5 for i in range(3*num_dumbbells)])
     L = coo_matrix((Ldata, (Lrow, Lcol)), shape=(11*num_spheres+6*num_dumbbells, 11*num_spheres+6*num_dumbbells))
     R = L.transpose()
-    return ((L*R2Bexact*R), "Minfinity")
+    return ((L*Minfinity*R), "Minfinity")
