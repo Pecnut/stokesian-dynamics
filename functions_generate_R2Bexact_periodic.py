@@ -425,12 +425,8 @@ def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printou
     # Scale by 6pi
     R2Bexact = R2Bexact * 6 * math.pi
 
-    print("Norm of R2Bexact is", np.sum(R2Bexact))
-
     #symmetrise
     R2Bexact = sparse.triu(R2Bexact) + sparse.triu(R2Bexact,k=1).transpose()
-
-
 
     # Row and column ops I want are equivalent to doing
     # [ 1  0  0 ]   [ a b c ]   [ 1  0  0 ]
