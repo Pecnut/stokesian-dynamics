@@ -27,17 +27,15 @@ def levi(i, j, k):
         return -1
 
 
-def x(posdata, a1_index, a2_index):
-    (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
-    return (element_positions[a2_index] - element_positions[a1_index])
-
 @njit
 def L1(d, i, j):
     return d[i] * d[j]
 
+
 @njit
 def L2(d, i, j):
     return kronmatrix[i][j] - d[i] * d[j]
+
 
 @njit
 def L3(d, i, j):
@@ -46,73 +44,91 @@ def L3(d, i, j):
     else:
         return sum([levi(i, j, k) * d[k] for k in range(3) if k != i and k != j])
 
+
 @njit
 def L4(d, i, j, k):
     return (d[i] * d[j] - kronmatrix[i][j] / 3.) * d[k]
+
 
 @njit
 def L5(d, i, j, k):
     return (d[i] * kronmatrix[j][k] + d[j] * kronmatrix[i][k] - 2 * d[i] * d[j] * d[k])
 
+
 @njit
 def L6(d, i, j, k):
     return sum([levi(i, k, l) * d[l] * d[j] for l in range(3) if l != i and l != k]) + sum([levi(j, k, l) * d[l] * d[i] for l in range(3) if l != k and l != j])
+
 
 @njit
 def L7(d, i, j, k, l):
     return 1.5 * (d[i] * d[j] - kronmatrix[i][j] / 3.) * (d[k] * d[l] - kronmatrix[k][l] / 3.)
 
+
 @njit
 def L8(d, i, j, k, l):
     return 0.5 * (d[i] * kronmatrix[j][l] * d[k] + d[j] * kronmatrix[i][l] * d[k] + d[i] * kronmatrix[j][k] * d[l] + d[j] * kronmatrix[i][k] * d[l] - 4 * d[i] * d[j] * d[k] * d[l])
+
 
 @njit
 def L9(d, i, j, k, l):
     return 0.5 * (kronmatrix[i][k] * kronmatrix[j][l] + kronmatrix[j][k] * kronmatrix[i][l] - kronmatrix[i][j] * kronmatrix[k][l] + d[i] * d[j] * kronmatrix[k][l] + kronmatrix[i][j] * d[k] * d[l] - d[i] * kronmatrix[j][l] * d[k] - d[j] * kronmatrix[i][l] * d[k] - d[i] * kronmatrix[j][k] * d[l] - d[j] * kronmatrix[i][k] * d[l] + d[i] * d[j] * d[k] * d[l])
 
+
 @njit
 def XA(gam, s, lam_index):
     return XYZ(0, gam, s, lam_index)  # s:=s'
+
 
 @njit
 def YA(gam, s, lam_index):
     return XYZ(1, gam, s, lam_index)
 
+
 @njit
 def YB(gam, s, lam_index):
     return XYZ(2, gam, s, lam_index)
+
 
 @njit
 def XC(gam, s, lam_index):
     return XYZ(3, gam, s, lam_index)
 
+
 @njit
 def YC(gam, s, lam_index):
     return XYZ(4, gam, s, lam_index)
+
 
 @njit
 def XG(gam, s, lam_index):
     return XYZ(5, gam, s, lam_index)
 
+
 @njit
 def YG(gam, s, lam_index):
     return XYZ(6, gam, s, lam_index)
+
 
 @njit
 def YH(gam, s, lam_index):
     return XYZ(7, gam, s, lam_index)
 
+
 @njit
 def XM(gam, s, lam_index):
     return XYZ(8, gam, s, lam_index)
+
 
 @njit
 def YM(gam, s, lam_index):
     return XYZ(9, gam, s, lam_index)
 
+
 @njit
 def ZM(gam, s, lam_index):
     return XYZ(10, gam, s, lam_index)
+
 
 @njit
 def Af(gamma, d, lam_index, ss, i, j, fully_2d_problem=False):
@@ -120,10 +136,12 @@ def Af(gamma, d, lam_index, ss, i, j, fully_2d_problem=False):
     YAg = YA(gamma, ss, lam_index)
     return XAg * L1(d, i, j) + YAg * L2(d, i, j)
 
+
 @njit
 def Bf(gamma, d, lam_index, ss, i, j, fully_2d_problem=False):
     YBg = YB(gamma, ss, lam_index)
     return YBg * L3(d, i, j)
+
 
 @njit
 def Cf(gamma, d, lam_index, ss, i, j, fully_2d_problem=False):
@@ -131,16 +149,19 @@ def Cf(gamma, d, lam_index, ss, i, j, fully_2d_problem=False):
     YCg = YC(gamma, ss, lam_index)
     return XCg * L1(d, i, j) + YCg * L2(d, i, j)
 
+
 @njit
 def Gf(gamma, d, lam_index, ss, i, j, k, fully_2d_problem=False):
     XGg = XG(gamma, ss, lam_index)
     YGg = YG(gamma, ss, lam_index)
     return XGg * L4(d, i, j, k) + YGg * L5(d, i, j, k)
 
+
 @njit
 def Hf(gamma, d, lam_index, ss, i, j, k, fully_2d_problem=False):
     YHg = YH(gamma, ss, lam_index)
     return YHg * L6(d, i, j, k)
+
 
 @njit
 def Mf(gamma, d, lam_index, ss, i, j, k, l, fully_2d_problem=False):
@@ -163,6 +184,7 @@ def con_Gf(gamma, d, lam_index, s_dash, m, i, fully_2d_problem=False):
     else:
         return s2 * Gf(gamma, d, lam_index, s_dash, 1, 2, i, fully_2d_problem)
 
+
 @njit
 def con_Hf(gamma, d, lam_index, s_dash, m, i, fully_2d_problem=False):
     if m == 0:
@@ -175,6 +197,7 @@ def con_Hf(gamma, d, lam_index, s_dash, m, i, fully_2d_problem=False):
         return s2 * Hf(gamma, d, lam_index, s_dash, 0, 2, i, fully_2d_problem)
     else:
         return s2 * Hf(gamma, d, lam_index, s_dash, 1, 2, i, fully_2d_problem)
+
 
 @njit
 def con1_Mf(gamma, d, lam_index, s_dash, n, k, l, fully_2d_problem=False):
@@ -189,6 +212,7 @@ def con1_Mf(gamma, d, lam_index, s_dash, n, k, l, fully_2d_problem=False):
     else:
         return s2 * Mf(gamma, d, lam_index, s_dash, 1, 2, k, l, fully_2d_problem)
 
+
 @njit
 def con_Mf(gamma, d, lam_index, s_dash, n, m, fully_2d_problem=False):
     if m == 0:
@@ -201,6 +225,7 @@ def con_Mf(gamma, d, lam_index, s_dash, n, m, fully_2d_problem=False):
         return s2 * con1_Mf(gamma, d, lam_index, s_dash, n, 0, 2, fully_2d_problem)
     else:
         return s2 * con1_Mf(gamma, d, lam_index, s_dash, n, 1, 2, fully_2d_problem)
+
 
 @njit
 def XYZ(scalar_index, gamma, s_dash, lam_index):
@@ -424,7 +449,7 @@ def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoin
         ii = ii + 1
 
     # Scale by 6pi
-    R2Bexact = R2Bexact * 6 * np.pi        
+    R2Bexact = R2Bexact * 6 * np.pi
 
     # symmetrise
     R2Bexact = sparse.triu(R2Bexact) + sparse.triu(R2Bexact, k=1).transpose()
