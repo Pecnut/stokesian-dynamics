@@ -295,7 +295,7 @@ def Jtilde(ki, kj, ss, i, j, RR):
     return -((i==j)*ss**2 + ki*kj)*RR
 
 @njit
-def DD_Jtilde(kkm, kkl, kki, kkj, ss, m, l, i, j, RR):
+def DD_Jtilde(kkm, kkl, kki, kkj, ss, i, j, RR):
   return -kkm*kkl * Jtilde(kki,kkj,ss,i,j,RR)
 
 @njit
@@ -303,11 +303,11 @@ def Lap_Jtilde(kki, kkj, ss, i, j, RR):
     return -ss**2 * Jtilde(kki,kkj,ss,i,j,RR)
 
 @njit
-def D_Ktilde(kkl, kki, kkj, kkk, ss, l, i, j, k, RR):
-    return 0.5*(DD_Jtilde(kkl,kkk,kki,kkj,ss,l,k,i,j,RR) + DD_Jtilde(kkl,kkj,kki,kkk,ss,l,j,i,k,RR))
+def D_Ktilde(kkl, kki, kkj, kkk, ss, i, j, k, RR):
+    return 0.5*(DD_Jtilde(kkl,kkk,kki,kkj,ss,i,j,RR) + DD_Jtilde(kkl,kkj,kki,kkk,ss,i,k,RR))
 
 @njit
-def DLap_Ktilde(kkl, kki, kkj, kkk, ss, l, i, j, k, RR):
+def DLap_Ktilde(kkl, kki, kkj, kkk, ss, i, j, k, RR):
     return 0.5 * ( kkk*kkl*ss**2 * Jtilde(kki,kkj,ss,i,j,RR) + kkl*kkj*ss**2 * Jtilde(kki,kkk,ss,i,k,RR) )
 
 @njit
@@ -318,56 +318,56 @@ def D_Rtilde(kk,ss,l,i,j,RR):
     n = (j+2)%3
     kkm = kk[m]
     kkn = kk[n]
-    return -0.5 * (DD_Jtilde(kkl,kkm,kki,kkn,ss,l,m,i,n,RR) - DD_Jtilde(kkl,kkn,kki,kkm,ss,l,n,i,m,RR))
+    return -0.5 * (DD_Jtilde(kkl,kkm,kki,kkn,ss,i,n,RR) - DD_Jtilde(kkl,kkn,kki,kkm,ss,i,m,RR))
 
 # === FOURIER TRANSFORMED TENSORS ===
 @njit
-def aktilde(kk,ss,a1,a2,i,j,RR,c,mu):
+def aktilde(kk,ss,a1,a2,i,j,RR,c):
     kki = kk[i]
     kkj = kk[j]
     return c*(Jtilde(kki,kkj,ss,i,j,RR) + (a1**2 + a2**2)/6. * Lap_Jtilde(kki,kkj,ss,i,j,RR))
 
 @njit
-def cktilde(kk,ss,a1,a2,i,j,RR,c,mu):
+def cktilde(kk,ss,a1,a2,i,j,RR,c):
     k = (i+1)%3
     l = (i+2)%3
     return c*0.5*(D_Rtilde(kk,ss,k,l,j,RR) - D_Rtilde(kk,ss,l,k,j,RR))
 
 @njit
-def htktilde(kk,ss,a1,a2,i,j,k,RR,c,mu):
-    kki = kk[i]
+def htktilde(kk,ss,a1,a2,i,j,k,RR,c):
     kkj = kk[j]
     kkk = kk[k]
     l = (i+1)%3
     m = (i+2)%3
     kkl = kk[l]
     kkm = kk[m]
-    return c*-0.5*(   (D_Ktilde(kkl,kkm,kkj,kkk,ss,l,m,j,k,RR) + (a2**2/6.)*DLap_Ktilde(kkl,kkm,kkj,kkk,ss,l,m,j,k,RR))
-                    - (D_Ktilde(kkm,kkl,kkj,kkk,ss,m,l,j,k,RR) + (a2**2/6.)*DLap_Ktilde(kkm,kkl,kkj,kkk,ss,m,l,j,k,RR))    )
+    return c*-0.5*(   (D_Ktilde(kkl,kkm,kkj,kkk,ss,m,j,k,RR) + (a2**2/6.)*DLap_Ktilde(kkl,kkm,kkj,kkk,ss,m,j,k,RR))
+                    - (D_Ktilde(kkm,kkl,kkj,kkk,ss,l,j,k,RR) + (a2**2/6.)*DLap_Ktilde(kkm,kkl,kkj,kkk,ss,l,j,k,RR))    )
 
 
 @njit
-def mktilde(kk,ss,a1,a2,i,j,k,l,RR,c,mu):
+def mktilde(kk,ss,a1,a2,i,j,k,l,RR,c):
     kki = kk[i]
     kkj = kk[j]
     kkk = kk[k]
     kkl = kk[l]
-    return -0.5*c*(  D_Ktilde(kkj,kki,kkk,kkl,ss,j,i,k,l,RR) + D_Ktilde(kki,kkj,kkk,kkl,ss,i,j,k,l,RR) + (a1**2 + a2**2)/10. * (DLap_Ktilde(kkj,kki,kkk,kkl,ss,j,i,k,l,RR) + DLap_Ktilde(kki,kkj,kkk,kkl,ss,i,j,k,l,RR))  )
+    return -0.5*c*(  D_Ktilde(kkj,kki,kkk,kkl,ss,i,k,l,RR) + D_Ktilde(kki,kkj,kkk,kkl,ss,j,k,l,RR) + (a1**2 + a2**2)/10. * (DLap_Ktilde(kkj,kki,kkk,kkl,ss,i,k,l,RR) + DLap_Ktilde(kki,kkj,kkk,kkl,ss,j,k,l,RR))  )
 
 # === MATRIX DEFINITIONS ===
-def M11(r,s,a1,a2, i, j, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu):
+
+
+@njit
+def M11(r,s,a1,a2, i, j, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn):
     if s > 1e-10:
         # a_ab,rep = SUM_lmn a^r (x + x_lmn) + 1/L^3 SUM'_lmn exp(i k_lmn.x) atilde^k(k_lmn)
         #            --------(2)-------------   ---------------(4)---------------------------
         #            Copies of itself real          Copies of itself wavespace
 
         # (2)
-        s_lmn = np.linalg.norm(r + X_lmn,axis=1)
-        erfcs_lmn = [generate_erfcs(S,lamb) for S in s_lmn]
         sum_ar = sum([  ar(r + X_lmn[q],s_lmn[q],a1,a2,i,j,erfcs_lmn[q],c,mu)   for q in range(num_X_points) ])
         # (4)
         # Imaginary part of e(i*k.r) always cancels out over the sum I think (should probably try to show this but I'm pretty certain)
-        sum_ak = 1./L**3 * (sum([  math.cos(np.dot(K_lmn[q],r)) * aktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,RR_K[q],c,mu)   for q in range(num_K_points) ]))
+        sum_ak = 1./L**3 * (sum([  math.cos(np.dot(K_lmn[q],r)) * aktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,RR_K[q],c)   for q in range(num_K_points) ]))
         M11_ab = sum_ar + sum_ak
         return M11_ab
 
@@ -381,17 +381,16 @@ def M11(r,s,a1,a2, i, j, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdas
         # (2)
         sum_ar = sum([   ar(Xdash_lmn[q],Sdash_lmn[q],a1,a1,i,j,erfcs_Sdash_lmn[q],c,mu)   for q in range(num_Xdash_points) ])
         # (4)
-        sum_ak = 1./L**3 * (sum([  aktilde(K_lmn[q],Ks_lmn[q],a1,a1,i,j,RR_K[q],c,mu)   for q in range(num_K_points) ]))
+        sum_ak = 1./L**3 * (sum([  aktilde(K_lmn[q],Ks_lmn[q],a1,a1,i,j,RR_K[q],c)   for q in range(num_K_points) ]))
         # (5)
         a_k0 = c*kronmatrix[i][j]*(8*lamb/math.sqrt(math.pi) + (a1**2+a2**2)/6.*(-160*lamb**3/( 3*math.sqrt(math.pi))))
         M11_aa = a_aa + sum_ar + sum_ak - a_k0
         return M11_aa
 
-def M12(r,s,a1,a2, i, j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu):
+@njit
+def M12(r, s, a1, a2, i, j, X_lmn, num_X_points, c, mu, s_lmn, erfcs_lmn):
     if s > 1e-10:
         # (2)
-        s_lmn = np.linalg.norm(r + X_lmn,axis=1)
-        erfcs_lmn = [generate_erfcs(S,lamb) for S in s_lmn]
         sum_btr = sum([  btr(r + X_lmn[q],s_lmn[q],a1,a2,i,j,erfcs_lmn[q],c,mu)   for q in range(num_X_points) ])
         # (4)
         # I think sum_btk always ends up being 0 (given that it's imaginary, over the sum it looks like it cancels out)
@@ -401,11 +400,11 @@ def M12(r,s,a1,a2, i, j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash
     else:
         return 0
 
-def M13(r,s,a1,a2, i, j, k,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu):
+@njit
+# def M13(r, s, a1, a2, i, j, k, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points, c, mu, s_lmn, erfcs_lmn):
+def M13(r, s, a1, a2, i, j, k, X_lmn, num_X_points, c, mu, s_lmn, erfcs_lmn):
     if s > 1e-10:
         # (2)
-        s_lmn = np.linalg.norm(r + X_lmn,axis=1)
-        erfcs_lmn = [generate_erfcs(S,lamb) for S in s_lmn]
         sum_gtr = sum([  gtr(r + X_lmn[q],s_lmn[q],a1,a2,i,j,k,erfcs_lmn[q],c,mu)   for q in range(num_X_points) ])
         # (4)
         #I think gtk always ends up being 0 (given that it's imaginary, over the sum it looks like it cancels out)
@@ -414,116 +413,112 @@ def M13(r,s,a1,a2, i, j, k,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sd
     else:
         return 0
 
-def M22(r,s,a1,a2, i, j, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu):
+@njit
+def M22(r,s,a1,a2, i, j, erfcs, L, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn):
     if s > 1e-10:
         # (2)
-        s_lmn = np.linalg.norm(r + X_lmn,axis=1)
-        erfcs_lmn = [generate_erfcs(S,lamb) for S in s_lmn]
         sum_cr = sum([  cr(r + X_lmn[q],s_lmn[q],a1,a2,i,j,erfcs_lmn[q],c,mu)   for q in range(num_X_points) ])
         # (4)
-        sum_ck = 1./L**3 * (sum([  math.cos(np.dot(K_lmn[q],r)) * cktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,RR_K[q],c,mu)   for q in range(num_K_points) ]))
+        sum_ck = 1./L**3 * (sum([  math.cos(np.dot(K_lmn[q],r)) * cktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,RR_K[q],c)   for q in range(num_K_points) ]))
         M22_ab = sum_cr + sum_ck
         return M22_ab
     else:
         # (1)
-        c_aa = cr(r,s,a1,a2,i,j,erfcs,c,mu) # Technically this calls ar rather than a but when s = 0 it's the same response
+        c_aa = cr(r,s,a1,a2,i,j,erfcs,c,mu) # Technically this calls cr rather than c but when s = 0 it's the same response
         # (2)
         sum_cr = sum([  cr(Xdash_lmn[q],Sdash_lmn[q],a1,a1,i,j,erfcs_Sdash_lmn[q],c,mu)   for q in range(num_Xdash_points) ])
         # (4)
-        sum_ck = 1./L**3 * (sum([  cktilde(K_lmn[q],Ks_lmn[q],a1,a1,i,j,RR_K[q],c,mu)   for q in range(num_K_points) ]))
+        sum_ck = 1./L**3 * (sum([  cktilde(K_lmn[q],Ks_lmn[q],a1,a1,i,j,RR_K[q],c)   for q in range(num_K_points) ]))
         # (5) = 0
         M22_aa = c_aa + sum_cr + sum_ck
         return M22_aa
 
-
-def M23(r,s,a1,a2, i, j, k,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu):
+@njit
+def M23(r,s,a1,a2, i, j, k, L, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn):
     if s > 1e-10:
         # (2)
-        s_lmn = np.linalg.norm(r + X_lmn,axis=1)
-        erfcs_lmn = [generate_erfcs(S,lamb) for S in s_lmn]
         sum_htr = sum([  htr(r + X_lmn[q],s_lmn[q],a1,a2,i,j,k,erfcs_lmn[q],c,mu)   for q in range(num_X_points) ])
         # (4)
-        sum_htk = 1./L**3 * (sum([  math.cos(np.dot(K_lmn[q],r)) * htktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,k,RR_K[q],c,mu)   for q in range(num_K_points) ]))
+        sum_htk = 1./L**3 * (sum([  math.cos(np.dot(K_lmn[q],r)) * htktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,k,RR_K[q],c)   for q in range(num_K_points) ]))
         M23_ab = sum_htr + sum_htk
         return M23_ab
     else:
         # (2)
         sum_hr = sum([   htr(Xdash_lmn[q],Sdash_lmn[q],a1,a1,i,j,k,erfcs_Sdash_lmn[q],c,mu)   for q in range(num_Xdash_points) ])
         # (4)
-        sum_hk = 1./L**3 * (sum([  htktilde(K_lmn[q],Ks_lmn[q],a1,a1,i,j,k,RR_K[q],c,mu)   for q in range(num_K_points) ]))
+        sum_hk = 1./L**3 * (sum([  htktilde(K_lmn[q],Ks_lmn[q],a1,a1,i,j,k,RR_K[q],c)   for q in range(num_K_points) ]))
         M23_aa = sum_hr + sum_hk
         return M23_aa
 
-def M33(r,s,a1,a2, i, j, k, l,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu):
+@njit
+def M33(r,s,a1,a2, i, j, k, l,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn):
     if s > 1e-10:
         # (2)
-        s_lmn = np.linalg.norm(r + X_lmn,axis=1)
-        erfcs_lmn = [generate_erfcs(S,lamb) for S in s_lmn]
         sum_mr = sum([  mr(r + X_lmn[q],s_lmn[q],a1,a2,i,j,k,l,erfcs_lmn[q],c,mu)   for q in range(num_X_points) ])
         # (4)
-        sum_mk = 1./L**3 * (sum([  math.cos(np.dot(K_lmn[q],r)) * mktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,k,l,RR_K[q],c,mu)   for q in range(num_K_points) ]))
+        sum_mk = 1./L**3 * (sum([  math.cos(np.dot(K_lmn[q],r)) * mktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,k,l,RR_K[q],c)   for q in range(num_K_points) ]))
         M33_ab = sum_mr + sum_mk
         return M33_ab
     else:
         # (1)
-        m_aa = mr(r,s,a1,a2,i,j,k,l,erfcs,c,mu) # Technically this calls ar rather than a but when s = 0 it's the same response
+        m_aa = mr(r,s,a1,a2,i,j,k,l,erfcs,c,mu) # Technically this calls mr rather than m but when s = 0 it's the same response
         # (2)
         sum_mr = sum([  mr(Xdash_lmn[q],Sdash_lmn[q],a1,a1,i,j,k,l,erfcs_Sdash_lmn[q],c,mu)   for q in range(num_Xdash_points) ])
         # (4)
-        sum_mk = 1./L**3 * (sum([  mktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,k,l,RR_K[q],c,mu)   for q in range(num_K_points) ]))
+        sum_mk = 1./L**3 * (sum([  mktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,k,l,RR_K[q],c)   for q in range(num_K_points) ]))
         # (5)
         m_k0 = c*(-8*lamb**3/(3*math.sqrt(math.pi)) + (a1**2 + a2**2)/10. * (168*lamb**5)/(5*math.sqrt(math.pi)) ) * -3*kron3tracelessmatrix[i][j][k][l]
         M33_aa = m_aa + sum_mr + sum_mk - m_k0
         return M33_aa
 
-def con_M13(r,s,a1,a2, i, m,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu):
+def con_M13(r,s,a1,a2, i, m, X_lmn, num_X_points, c,mu,s_lmn,erfcs_lmn):
     if m == 0:
-        return 0.5*(s3+1)*M13(r,s,a1,a2,i,0,0,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) + 0.5*(s3-1)*M13(r,s,a1,a2,i,1,1,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
+        return 0.5*(s3+1)*M13(r,s,a1,a2,i,0,0,X_lmn, num_X_points, c,mu,s_lmn,erfcs_lmn) + 0.5*(s3-1)*M13(r,s,a1,a2,i,1,1,X_lmn, num_X_points, c,mu,s_lmn,erfcs_lmn)
     elif m == 1:
-        return s2*M13(r,s,a1,a2,i,0,1,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
+        return s2*M13(r,s,a1,a2,i,0,1,X_lmn, num_X_points, c,mu,s_lmn,erfcs_lmn)
     elif m == 2:
-        return 0.5*(s3-1)*M13(r,s,a1,a2,i,0,0,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) + 0.5*(s3+1)*M13(r,s,a1,a2,i,1,1,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
+        return 0.5*(s3-1)*M13(r,s,a1,a2,i,0,0,X_lmn, num_X_points, c,mu,s_lmn,erfcs_lmn) + 0.5*(s3+1)*M13(r,s,a1,a2,i,1,1,X_lmn, num_X_points, c,mu,s_lmn,erfcs_lmn)
     elif m == 3:
-        return s2*M13(r,s,a1,a2,i,0,2,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
+        return s2*M13(r,s,a1,a2,i,0,2,X_lmn, num_X_points, c,mu,s_lmn,erfcs_lmn)
     else:
-        return s2*M13(r,s,a1,a2,i,1,2,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
+        return s2*M13(r,s,a1,a2,i,1,2,X_lmn, num_X_points, c,mu,s_lmn,erfcs_lmn)
 
-def con_M23(r,s,a1,a2, i, m,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu):
+def con_M23(r,s,a1,a2, i, m, L, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn):
     if m == 0:
-        return 0.5*(s3+1)*M23(r,s,a1,a2,i,0,0,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) + 0.5*(s3-1)*M23(r,s,a1,a2,i,1,1,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
+        return 0.5*(s3+1)*M23(r,s,a1,a2,i,0,0,L, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn) + 0.5*(s3-1)*M23(r,s,a1,a2,i,1,1,L, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn)
     elif m == 1:
-        return s2*M23(r,s,a1,a2,i,0,1,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
+        return s2*M23(r,s,a1,a2,i,0,1,L, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn)
     elif m == 2:
-        return 0.5*(s3-1)*M23(r,s,a1,a2,i,0,0,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) + 0.5*(s3+1)*M23(r,s,a1,a2,i,1,1,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
+        return 0.5*(s3-1)*M23(r,s,a1,a2,i,0,0,L, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn) + 0.5*(s3+1)*M23(r,s,a1,a2,i,1,1,L, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn)
     elif m == 3:
-        return s2*M23(r,s,a1,a2,i,0,2,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
+        return s2*M23(r,s,a1,a2,i,0,2,L, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn)
     else:
-        return s2*M23(r,s,a1,a2,i,1,2,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
+        return s2*M23(r,s,a1,a2,i,1,2,L, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn)
 
-def con1_M33(r,s,a1,a2, n, k, l,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu):
+def con1_M33(r,s,a1,a2, n, k, l,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn):
     if n == 0:
-        return 0.5*(s3+1)*M33(r,s,a1,a2,0,0, k, l,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) + 0.5*(s3-1)*M33(r,s,a1,a2,1,1,k, l,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
+        return 0.5*(s3+1)*M33(r,s,a1,a2,0,0, k, l,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn) + 0.5*(s3-1)*M33(r,s,a1,a2,1,1,k, l,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn)
     elif n == 1:
-        return s2*M33(r,s,a1,a2,0,1,k,l,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
+        return s2*M33(r,s,a1,a2,0,1,k,l,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn)
     elif n == 2:
-        return 0.5*(s3-1)*M33(r,s,a1,a2,0,0,k,l,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) + 0.5*(s3+1)*M33(r,s,a1,a2,1,1,k,l,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
+        return 0.5*(s3-1)*M33(r,s,a1,a2,0,0,k,l,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn) + 0.5*(s3+1)*M33(r,s,a1,a2,1,1,k,l,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn)
     elif n == 3:
-        return s2*M33(r,s,a1,a2,0,2,k,l,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
+        return s2*M33(r,s,a1,a2,0,2,k,l,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn)
     else:
-        return s2*M33(r,s,a1,a2,1,2,k,l,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
+        return s2*M33(r,s,a1,a2,1,2,k,l,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn)
 
-def con_M33(r,s,a1,a2, n, m,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu):
+
+def con_M33(r, s, a1, a2, n, m, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points, c, mu, s_lmn, erfcs_lmn):
     if m == 0:
-        return 0.5*(s3+1)*con1_M33(r,s,a1,a2,n,0,0,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) + 0.5*(s3-1)*con1_M33(r,s,a1,a2,n,1,1,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
-
+        return 0.5*(s3+1)*con1_M33(r,s,a1,a2,n,0,0,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn) + 0.5*(s3-1)*con1_M33(r,s,a1,a2,n,1,1,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn)
     elif m == 1:
-        return s2*con1_M33(r,s,a1,a2,n,0,1,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
+        return s2*con1_M33(r,s,a1,a2,n,0,1,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn)
     elif m == 2:
-        return 0.5*(s3-1)*con1_M33(r,s,a1,a2,n,0,0,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) + 0.5*(s3+1)*con1_M33(r,s,a1,a2,n,1,1,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
+        return 0.5*(s3-1)*con1_M33(r,s,a1,a2,n,0,0,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn) + 0.5*(s3+1)*con1_M33(r,s,a1,a2,n,1,1,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn)
     elif m == 3:
-        return s2*con1_M33(r,s,a1,a2,n,0,2,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
+        return s2*con1_M33(r,s,a1,a2,n,0,2,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn)
     else:
-        return s2*con1_M33(r,s,a1,a2,n,1,2,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)
+        return s2*con1_M33(r,s,a1,a2,n,1,2,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn)
 
 
 
@@ -566,7 +561,7 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right, printou
     X_lmn = X_lmn_sheared_inside_radius
     Xdash_lmn = X_lmn_sheared_inside_radius[np.linalg.norm(X_lmn_sheared_inside_radius,axis=1)>0]
     Sdash_lmn = np.linalg.norm(Xdash_lmn,axis=1)
-    erfcs_Sdash_lmn = [generate_erfcs(s,lamb) for s in Sdash_lmn]
+    erfcs_Sdash_lmn = np.array([generate_erfcs(s,lamb) for s in Sdash_lmn])
 
     num_X_points = X_lmn.shape[0]
     num_Xdash_points = Xdash_lmn.shape[0]
@@ -575,7 +570,7 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right, printou
     K_lmn = np.dot(X_lmn_canonical,k_basis_vectors)[np.logical_and(np.linalg.norm(X_lmn_sheared,axis=1)<=1.4142*how_far_to_reproduce_gridpoints*L,np.linalg.norm(X_lmn_sheared,axis=1)>0)]
     Ks_lmn = np.linalg.norm(K_lmn,axis=1)
     num_K_points = K_lmn.shape[0]
-    RR_K = [-8*math.pi/ks**4 * (1 + ks**2/(4*lamb**2) + ks**4/(8*lamb**4)) * math.exp(-ks**2/(4*lamb**2)) for ks in Ks_lmn]
+    RR_K = np.array([-8*math.pi/ks**4 * (1 + ks**2/(4*lamb**2) + ks**4/(8*lamb**4)) * math.exp(-ks**2/(4*lamb**2)) for ks in Ks_lmn])
 
     for a1_index,a2_index in [(u,v) for u in range(len(bead_sizes)) for v in range(u,len(bead_sizes))]:
         r = (bead_positions[a2_index] - bead_positions[a1_index])
@@ -601,15 +596,20 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right, printou
             M_coords =  np.s_[6*num_spheres+a1_index*5 : 6*num_spheres+(a1_index+1)*5, 6*num_spheres+a2_index*5 : 6*num_spheres+(a2_index+1)*5]
 
             erfcs = generate_erfcs(s,lamb)
-            Minfinity[A_coords] =  [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
-            Minfinity[Bt_coords] = [[M12(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) for j in range(3)] for i in range(3)]
+
+            # Strictly only needed if s > 1e-10 but an 'if' statement here is slower for Numba
+            s_lmn = np.linalg.norm(r + X_lmn,axis=1)
+            erfcs_lmn = np.array([generate_erfcs(S,lamb) for S in s_lmn])
+
+            Minfinity[A_coords] =  [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn)  for j in range(3)] for i in range(3)]
+            Minfinity[Bt_coords] = [[M12(r,s,a1,a2,i,j,X_lmn, num_X_points, c,mu,s_lmn,erfcs_lmn) for j in range(3)] for i in range(3)]
             Minfinity[Bt_coords_21] = -Minfinity[Bt_coords]
-            Minfinity[C_coords] =  [[M22(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) for j in range(3)] for i in range(3)]
-            Minfinity[Gt_coords] = [[con_M13(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) for j in range(5)] for i in range(3)]
+            Minfinity[C_coords] =  [[M22(r,s,a1,a2,i,j,erfcs, L, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn) for j in range(3)] for i in range(3)]
+            Minfinity[Gt_coords] = [[con_M13(r,s,a1,a2,i,j,X_lmn, num_X_points,c,mu,s_lmn,erfcs_lmn) for j in range(5)] for i in range(3)]
             Minfinity[Gt_coords_21] = -Minfinity[Gt_coords]
-            Minfinity[Ht_coords] = [[con_M23(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) for j in range(5)] for i in range(3)]
+            Minfinity[Ht_coords] = [[con_M23(r,s,a1,a2,i,j, L, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn) for j in range(5)] for i in range(3)]
             Minfinity[Ht_coords_21] = Minfinity[Ht_coords]
-            Minfinity[M_coords] = [[con_M33(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu) for j in range(5)] for i in range(5)]
+            Minfinity[M_coords] = [[con_M33(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn) for j in range(5)] for i in range(5)]
 
 
         elif a1_index < num_spheres and a2_index >= num_spheres and a2_index < num_spheres + num_dumbbells:
@@ -620,9 +620,15 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right, printou
             M24_coords = np.s_[3*num_spheres+a1_index*3:3*num_spheres+(a1_index+1)*3, 11*num_spheres+a2_index_d*3 : 11*num_spheres +(a2_index_d+1)*3]
             M34_coords = np.s_[6*num_spheres+a1_index*5:6*num_spheres+(a1_index+1)*5, 11*num_spheres+a2_index_d*3 : 11*num_spheres +(a2_index_d+1)*3]
 
-            Minfinity[M14_coords] = [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
-            Minfinity[M24_coords] = [[M12(mr,s,a2,a1,j,i,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
-            Minfinity[M34_coords] = [[con_M13(mr,s,a1,a2,j,i,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(5)]
+            # Strictly only needed if s > 1e-10 but an 'if' statement here is slower for Numba
+            s_lmn = np.linalg.norm(r + X_lmn,axis=1)
+            erfcs_lmn = np.array([generate_erfcs(S,lamb) for S in s_lmn])
+            m_s_lmn = np.linalg.norm(mr + X_lmn,axis=1)
+            m_erfcs_lmn = np.array([generate_erfcs(S,lamb) for S in s_lmn])
+
+            Minfinity[M14_coords] = [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,m_s_lmn,m_erfcs_lmn)  for j in range(3)] for i in range(3)]
+            Minfinity[M24_coords] = [[M12(mr,s,a2,a1,j,i,X_lmn, num_X_points, c,mu,m_s_lmn,m_erfcs_lmn)  for j in range(3)] for i in range(3)]
+            Minfinity[M34_coords] = [[con_M13(mr,s,a1,a2,j,i,X_lmn, num_X_points,c,mu,m_s_lmn,m_erfcs_lmn)  for j in range(3)] for i in range(5)]
 
 
         elif a1_index < num_spheres and a2_index >= num_spheres + num_dumbbells:
@@ -633,9 +639,15 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right, printou
             M25_coords = np.s_[3*num_spheres+a1_index*3:3*num_spheres+(a1_index+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3 : 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
             M35_coords = np.s_[6*num_spheres+a1_index*5:6*num_spheres+(a1_index+1)*5, 11*num_spheres+3*num_dumbbells+a2_index_d*3 : 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
 
-            Minfinity[M15_coords] = [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
-            Minfinity[M25_coords] = [[M12(mr,s,a2,a1,j,i,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
-            Minfinity[M35_coords] = [[con_M13(mr,s,a1,a2,j,i,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(5)]
+            # Strictly only needed if s > 1e-10 but an 'if' statement here is slower for Numba
+            s_lmn = np.linalg.norm(r + X_lmn,axis=1)
+            erfcs_lmn = np.array([generate_erfcs(S,lamb) for S in s_lmn])
+            m_s_lmn = np.linalg.norm(mr + X_lmn,axis=1)
+            m_erfcs_lmn = np.array([generate_erfcs(S,lamb) for S in s_lmn])
+
+            Minfinity[M15_coords] = [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn)  for j in range(3)] for i in range(3)]
+            Minfinity[M25_coords] = [[M12(mr,s,a2,a1,j,i,X_lmn, num_X_points, c,mu,m_s_lmn,m_erfcs_lmn)  for j in range(3)] for i in range(3)]
+            Minfinity[M35_coords] = [[con_M13(mr,s,a1,a2,j,i,X_lmn, num_X_points,c,mu,m_s_lmn,m_erfcs_lmn)  for j in range(3)] for i in range(5)]
 
         elif a1_index >= num_spheres and a1_index < num_spheres + num_dumbbells and a2_index >= num_spheres and a2_index < num_spheres + num_dumbbells:
             # Dumbbell bead 1 to dumbbell bead 1
@@ -644,9 +656,12 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right, printou
             if bead_bead_interactions or a1_index_d == a2_index_d:
                 M44_coords = np.s_[11*num_spheres+a1_index_d*3:11*num_spheres+(a1_index_d+1)*3, 11*num_spheres+a2_index_d*3 : 11*num_spheres+(a2_index_d+1)*3]
                 erfcs = generate_erfcs(s,lamb)
-                Minfinity[M44_coords] = [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
 
+                # Strictly only needed if s > 1e-10 but an 'if' statement here is slower for Numba
                 s_lmn = np.linalg.norm(r + X_lmn,axis=1)
+                erfcs_lmn = np.array([generate_erfcs(S,lamb) for S in s_lmn])
+                
+                Minfinity[M44_coords] = [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn)  for j in range(3)] for i in range(3)]
 
         elif a1_index >= num_spheres and a1_index < num_spheres + num_dumbbells and a2_index >= num_spheres + num_dumbbells:
             # Dumbbell bead 1 to dumbbell bead 2
@@ -655,7 +670,12 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right, printou
             if bead_bead_interactions or a1_index_d == a2_index_d:
                 M45_coords = np.s_[11*num_spheres+a1_index_d*3:11*num_spheres+(a1_index_d+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3 : 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
                 erfcs = generate_erfcs(s,lamb)
-                Minfinity[M45_coords] = [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
+
+                # Strictly only needed if s > 1e-10 but an 'if' statement here is slower for Numba
+                s_lmn = np.linalg.norm(r + X_lmn, axis=1)
+                erfcs_lmn = np.array([generate_erfcs(S, lamb) for S in s_lmn])
+
+                Minfinity[M45_coords] = [[M11(r, s, a1, a2, i, j, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points, c, mu, s_lmn, erfcs_lmn) for j in range(3)] for i in range(3)]
 
         else:
             # Dumbbell bead 2 to dumbbell bead 2
@@ -664,7 +684,13 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right, printou
             if bead_bead_interactions or a1_index_d == a2_index_d:
                 M55_coords = np.s_[11*num_spheres+3*num_dumbbells+a1_index_d*3:11*num_spheres+3*num_dumbbells+(a1_index_d+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3 : 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
                 erfcs = generate_erfcs(s,lamb)
-                Minfinity[M55_coords] = [[M11(r,s,a1,a2,i,j,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu)  for j in range(3)] for i in range(3)]
+
+                s_lmn = np.linalg.norm(r + X_lmn, axis=1)
+                erfcs_lmn = np.array([generate_erfcs(S, lamb) for S in s_lmn])
+
+                Minfinity[M55_coords] = [[M11(r, s, a1, a2, i, j, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points, c, mu, s_lmn, erfcs_lmn) for j in range(3)] for i in range(3)]
+
+    print("norm of Minfinity periodic matrix is",np.linalg.norm(Minfinity))
 
     #symmetrise
     Minfinity = np.triu(Minfinity) + np.triu(Minfinity,k=1).transpose()
