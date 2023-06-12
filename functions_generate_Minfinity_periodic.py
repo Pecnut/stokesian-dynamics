@@ -690,8 +690,6 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right, printou
 
                 Minfinity[M55_coords] = [[M11(r, s, a1, a2, i, j, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points, c, mu, s_lmn, erfcs_lmn) for j in range(3)] for i in range(3)]
 
-    print("norm of Minfinity periodic matrix is",np.linalg.norm(Minfinity))
-
     #symmetrise
     Minfinity = np.triu(Minfinity) + np.triu(Minfinity,k=1).transpose()
 
