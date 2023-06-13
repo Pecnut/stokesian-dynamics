@@ -266,7 +266,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                 Ub_out_plus_infinities_k1 = Ub_out_k1 + U_infinity_k1 + O_infinity_cross_xbar_k1 + E_infinity_dot_xbar_k1
                 HalfDUb_out_plus_infinities_k1 = HalfDUb_out_k1 + 0.5 * (O_infinity_cross_deltax_k1 + E_infinity_dot_deltax_k1)
                 new_dumbbell_positions = euler_timestep(dumbbell_positions, Ub_out_plus_infinities_k1, timestep)
-                new_dumbbell_deltax = euler_timestep(dumbbell_deltax, 2 * HalfDUb_out_plus_infinities_k1, timestep)  # recall DUb = 1/2 * Delta Ub
+                new_dumbbell_deltax = euler_timestep(dumbbell_deltax, 2 * HalfDUb_out_plus_infinities_k1, timestep)
                 error = did_something_go_wrong_with_dumbells(error, dumbbell_deltax, new_dumbbell_deltax, explosion_protection)
                 if periodic:
                     new_dumbbell_positions = wrap_around(new_dumbbell_positions, box_bottom_left, box_top_right, frameno + 1, timestep, O_infinity_k1, Ea_out_k1[0], frequency=frequency, amplitude=amplitude)
@@ -323,7 +323,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                 Ub_out_plus_infinities_k1 = Ub_out_k1 + U_infinity_k1 + O_infinity_cross_xbar_k1 + E_infinity_dot_xbar_k1
                 HalfDUb_out_plus_infinities_k1 = HalfDUb_out_k1 + 0.5 * (O_infinity_cross_deltax_k1 + E_infinity_dot_deltax_k1)
                 dumbbell_positions_k1 = euler_timestep(dumbbell_positions, Ub_out_plus_infinities_k1, timestep / 2.)
-                dumbbell_deltax_k1 = euler_timestep(dumbbell_deltax, 2 * HalfDUb_out_plus_infinities_k1, timestep / 2.)  # recall DUb = 1/2 * Delta Ub
+                dumbbell_deltax_k1 = euler_timestep(dumbbell_deltax, 2 * HalfDUb_out_plus_infinities_k1, timestep / 2.)
                 error = did_something_go_wrong_with_dumbells(error, dumbbell_deltax, dumbbell_deltax_k1, explosion_protection)
 
                 if periodic:
@@ -362,7 +362,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                 Ub_out_plus_infinities_k2 = Ub_out_k2 + U_infinity_k2 + O_infinity_cross_xbar_k2 + E_infinity_dot_xbar_k2
                 HalfDUb_out_plus_infinities_k2 = HalfDUb_out_k2 + 0.5 * (O_infinity_cross_deltax_k2 + E_infinity_dot_deltax_k2)
                 dumbbell_positions_k2 = euler_timestep(dumbbell_positions, Ub_out_plus_infinities_k2, timestep / 2.)
-                dumbbell_deltax_k2 = euler_timestep(dumbbell_deltax, 2 * HalfDUb_out_plus_infinities_k2, timestep / 2.)  # recall DUb = 1/2 * Delta Ub
+                dumbbell_deltax_k2 = euler_timestep(dumbbell_deltax, 2 * HalfDUb_out_plus_infinities_k2, timestep / 2.)
                 error = did_something_go_wrong_with_dumbells(error, dumbbell_deltax, dumbbell_deltax_k2, explosion_protection)
 
                 if periodic:
@@ -402,7 +402,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                 Ub_out_plus_infinities_k3 = Ub_out_k3 + U_infinity_k3 + O_infinity_cross_xbar_k3 + E_infinity_dot_xbar_k3
                 HalfDUb_out_plus_infinities_k3 = HalfDUb_out_k3 + 0.5 * (O_infinity_cross_deltax_k3 + E_infinity_dot_deltax_k3)
                 dumbbell_positions_k3 = euler_timestep(dumbbell_positions, Ub_out_plus_infinities_k3, timestep)
-                dumbbell_deltax_k3 = euler_timestep(dumbbell_deltax, 2 * HalfDUb_out_plus_infinities_k3, timestep)  # recall DUb = 1/2 * Delta Ub
+                dumbbell_deltax_k3 = euler_timestep(dumbbell_deltax, 2 * HalfDUb_out_plus_infinities_k3, timestep)
                 error = did_something_go_wrong_with_dumbells(error, dumbbell_deltax, dumbbell_deltax_k3, explosion_protection)
 
                 if periodic:
@@ -457,9 +457,9 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
 
             if (num_dumbbells > 0):
                 Ub_out_blended = 1. / 6 * (Ub_out_plus_infinities_k1 + 2 * Ub_out_plus_infinities_k2 + 2 * Ub_out_plus_infinities_k3 + Ub_out_plus_infinities_k4)
-                HalfDUb_out_blended = 2. / 6 * (HalfDUb_out_plus_infinities_k1 + 2 * HalfDUb_out_plus_infinities_k2 + 2 * HalfDUb_out_plus_infinities_k3 + HalfDUb_out_plus_infinities_k4)  # recall DUb = 1/2 * Delta Ub
+                DUb_out_blended = 2. / 6 * (HalfDUb_out_plus_infinities_k1 + 2 * HalfDUb_out_plus_infinities_k2 + 2 * HalfDUb_out_plus_infinities_k3 + HalfDUb_out_plus_infinities_k4)
                 new_dumbbell_positions = euler_timestep(dumbbell_positions, Ub_out_blended, timestep)
-                new_dumbbell_deltax = euler_timestep(dumbbell_deltax, HalfDUb_out_blended, timestep)
+                new_dumbbell_deltax = euler_timestep(dumbbell_deltax, DUb_out_blended, timestep)
                 error = did_something_go_wrong_with_dumbells(error, dumbbell_deltax, new_dumbbell_deltax, explosion_protection)
                 if periodic:
                     new_dumbbell_positions = wrap_around(new_dumbbell_positions, box_bottom_left, box_top_right, frameno + 1, timestep, O_infinity_k1, Ea_out_k1[0], frequency=frequency, amplitude=amplitude)
@@ -467,9 +467,9 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
             if num_spheres > 0 and num_dumbbells == 0:
                 last_velocities = [Ua_out_blended, 0, 0, Oa_out_blended]
             if num_spheres == 0 and num_dumbbells > 0:
-                last_velocities = [0, Ub_out_blended, HalfDUb_out_blended, 0]
+                last_velocities = [0, Ub_out_blended, DUb_out_blended, 0]
             if num_spheres > 0 and num_dumbbells > 0:
-                last_velocities = [Ua_out_blended, Ub_out_blended, HalfDUb_out_blended, Oa_out_blended]
+                last_velocities = [Ua_out_blended, Ub_out_blended, DUb_out_blended, Oa_out_blended]
 
             Fa_out = 1. / 6 * (np.asarray(Fa_out_k1) + 2 * np.asarray(Fa_out_k2) + 2 * np.asarray(Fa_out_k3) + np.asarray(Fa_out_k4))
             Fb_out = 1. / 6 * (np.asarray(Fb_out_k1) + 2 * np.asarray(Fb_out_k2) + 2 * np.asarray(Fb_out_k3) + np.asarray(Fb_out_k4))
