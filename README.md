@@ -176,7 +176,7 @@ Run `python run_simulation.py 2 1 0.5 100 fte`.
 correction to
 [Brady, Phillips, Lester & Bossis, 1988](https://doi.org/10.1017/S0022112088002411). Dynamic simulation of hydrodynamically interacting suspensions. *Journal of Fluid Mechanics* **195**, 257–280. Figure 1.
 
-A simple cubic array sediments vertically under a constant force. The velocity is measured for different particle concentrations. Vary the concentration by altering the periodic box size and the cubic lattice size.
+A simple cubic array sediments vertically under a constant force. The velocity is measured for different particle concentrations. Vary the concentration by altering the cubic lattice size.
 
 Note that a periodic domain is activated by setting `box_bottom_left` and `box_top_right` to be different in **input_setups.py**. Make sure `how_far_to_reproduce_gridpoints` ≥ 2 for accurate results.
 
