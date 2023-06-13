@@ -292,7 +292,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                 for i in range(num_spheres):
                     E_infinity_dot_x_k1[i] = np.dot(Ea_out_k1[i], sphere_positions[i] - centre_of_background_flow)
                 Ua_out_plus_infinities_k1 = Ua_out_k1 + U_infinity_k1 + O_infinity_cross_x_k1 + E_infinity_dot_x_k1
-                Oa_out_plus_infinities_k1 = Oa_out_k1 - O_infinity_k1
+                Oa_out_plus_infinities_k1 = Oa_out_k1 + O_infinity_k1
                 sphere_positions_k1 = euler_timestep(sphere_positions, Ua_out_plus_infinities_k1, timestep / 2.)
                 sphere_rotations_k1 = euler_timestep_rotation(sphere_positions, sphere_rotations, sphere_positions_k1, sphere_rotations_k1, Oa_out_plus_infinities_k1, timestep / 2.)
                 if periodic:
