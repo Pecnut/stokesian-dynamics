@@ -147,6 +147,36 @@ def wrap_around(new_sphere_positions, box_bottom_left, box_top_right, frameno=0,
     new_sphere_positions = np.dot(np.mod(np.dot(new_sphere_positions, np.linalg.inv(sheared_basis_vectors)) + 0.5, [1, 1, 1]) - 0.5, sheared_basis_vectors)
     return new_sphere_positions
 
+
+def add_background_flow_spheres(Ua_out_k1, Oa_out_k1, Ea_out_k1, U_infinity_k1, O_infinity_k1,
+                                sphere_positions, centre_of_background_flow):
+    O_infinity_cross_x_k1 = np.cross(O_infinity_k1, sphere_positions - centre_of_background_flow)
+    E_infinity_dot_x_k1 = np.empty([sphere_positions.shape[0], sphere_positions.shape[1]])
+    for i in range(num_spheres):
+        E_infinity_dot_x_k1[i] = np.dot(Ea_out_k1[i], sphere_positions[i] - centre_of_background_flow)
+
+    Ua_out_plus_infinities_k1 = Ua_out_k1 + U_infinity_k1 + O_infinity_cross_x_k1 + E_infinity_dot_x_k1
+    Oa_out_plus_infinities_k1 = Oa_out_k1 + O_infinity_k1
+
+    return Ua_out_plus_infinities_k1, Oa_out_plus_infinities_k1
+
+
+def add_background_flow_dumbbells(Ub_out_k1, HalfDUb_out_k1, Ea_out_k1, U_infinity_k1, O_infinity_k1,
+                                  dumbbell_positions, centre_of_background_flow):
+    O_infinity_cross_xbar_k1 = np.cross(O_infinity_k1, dumbbell_positions - centre_of_background_flow)
+    O_infinity_cross_deltax_k1 = np.cross(O_infinity_k1, dumbbell_deltax)
+    E_infinity_dot_xbar_k1 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
+    E_infinity_dot_deltax_k1 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
+    for i in range(num_dumbbells):
+        E_infinity_dot_xbar_k1[i] = np.dot(Ea_out_k1[0], dumbbell_positions[i] - centre_of_background_flow)
+        E_infinity_dot_deltax_k1[i] = np.dot(Ea_out_k1[0], dumbbell_deltax[i])
+
+    Ub_out_plus_infinities_k1 = Ub_out_k1 + U_infinity_k1 + O_infinity_cross_xbar_k1 + E_infinity_dot_xbar_k1
+    HalfDUb_out_plus_infinities_k1 = HalfDUb_out_k1 + 0.5 * (O_infinity_cross_deltax_k1 + E_infinity_dot_deltax_k1)
+
+    return Ub_out_plus_infinities_k1, HalfDUb_out_plus_infinities_k1
+
+
 # Computation
 
 
@@ -222,36 +252,22 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
             # K1
             Fa_out_k1, Ta_out_k1, Sa_out_k1, Fb_out_k1, DFb_out_k1, Ua_out_k1, Oa_out_k1, Ea_out_k1, Ub_out_k1, HalfDUb_out_k1, last_generated_Minfinity_inverse, gen_times, U_infinity_k1, O_infinity_k1, centre_of_background_flow, force_on_wall_due_to_dumbbells_k1, last_velocity_vector = generate_output_FTSUOE(
                 posdata, frameno, timestep, input_number, last_generated_Minfinity_inverse, regenerate_Minfinity, input_form, cutoff_factor, printout, use_XYZd_values, use_drag_Minfinity, use_Minfinity_only, extract_force_on_wall_due_to_dumbbells, last_velocities, last_velocity_vector, checkpoint_start_from_frame, box_bottom_left, box_top_right, feed_every_n_timesteps=feed_every_n_timesteps)
-
             # Euler timestepping k1
             if (num_spheres > 0):
-                O_infinity_cross_x_k1 = np.cross(O_infinity_k1, sphere_positions - centre_of_background_flow)
-                E_infinity_dot_x_k1 = np.empty([sphere_positions.shape[0], sphere_positions.shape[1]])
-                for i in range(num_spheres):
-                    E_infinity_dot_x_k1[i] = np.dot(Ea_out_k1[i], sphere_positions[i] - centre_of_background_flow)
-            
-                Ua_out_plus_infinities_k1 = Ua_out_k1 + U_infinity_k1 + O_infinity_cross_x_k1 + E_infinity_dot_x_k1
-                Oa_out_plus_infinities_k1 = Oa_out_k1 + O_infinity_k1
-
+                Ua_out_plus_infinities_k1, Oa_out_plus_infinities_k1 = add_background_flow_spheres(
+                    Ua_out_k1, Oa_out_k1, Ea_out_k1, U_infinity_k1, O_infinity_k1,
+                    sphere_positions, centre_of_background_flow)
                 if fully_2d_problem:
                     Ua_out_plus_infinities_k1[:, 1] = 0
-
                 new_sphere_positions = euler_timestep(sphere_positions, Ua_out_plus_infinities_k1, timestep)
-                new_sphere_rotations = euler_timestep_rotation(sphere_positions, sphere_rotations, new_sphere_positions, sphere_rotations_k1, Oa_out_plus_infinities_k1, timestep)
+                new_sphere_rotations = euler_timestep_rotation(sphere_positions, sphere_rotations, new_sphere_positions, new_sphere_rotations, Oa_out_plus_infinities_k1, timestep)
                 if periodic:
                     new_sphere_positions = wrap_around(new_sphere_positions, box_bottom_left, box_top_right, frameno + 1, timestep, O_infinity_k1, Ea_out_k1[0], frequency=frequency, amplitude=amplitude)
 
             if (num_dumbbells > 0):
-                O_infinity_cross_xbar_k1 = np.cross(O_infinity_k1, dumbbell_positions - centre_of_background_flow)
-                O_infinity_cross_deltax_k1 = np.cross(O_infinity_k1, dumbbell_deltax)
-                E_infinity_dot_xbar_k1 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
-                E_infinity_dot_deltax_k1 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
-                for i in range(num_dumbbells):
-                    E_infinity_dot_xbar_k1[i] = np.dot(Ea_out_k1[0], dumbbell_positions[i] - centre_of_background_flow)
-                    E_infinity_dot_deltax_k1[i] = np.dot(Ea_out_k1[0], dumbbell_deltax[i])
-
-                Ub_out_plus_infinities_k1 = Ub_out_k1 + U_infinity_k1 + O_infinity_cross_xbar_k1 + E_infinity_dot_xbar_k1
-                HalfDUb_out_plus_infinities_k1 = HalfDUb_out_k1 + 0.5 * (O_infinity_cross_deltax_k1 + E_infinity_dot_deltax_k1)
+                Ub_out_plus_infinities_k1, HalfDUb_out_plus_infinities_k1 = add_background_flow_dumbbells(
+                    Ub_out_k1, HalfDUb_out_k1, Ea_out_k1, U_infinity_k1, O_infinity_k1,
+                    dumbbell_positions, centre_of_background_flow)
                 new_dumbbell_positions = euler_timestep(dumbbell_positions, Ub_out_plus_infinities_k1, timestep)
                 new_dumbbell_deltax = euler_timestep(dumbbell_deltax, 2 * HalfDUb_out_plus_infinities_k1, timestep)
                 error = did_something_go_wrong_with_dumbells(error, dumbbell_deltax, new_dumbbell_deltax, explosion_protection)
@@ -282,33 +298,24 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
             dumbbell_positions_k1, dumbbell_positions_k2, dumbbell_positions_k3 = np.copy(dumbbell_positions), np.copy(dumbbell_positions), np.copy(dumbbell_positions)
             dumbbell_deltax_k1, dumbbell_deltax_k2, dumbbell_deltax_k3 = np.copy(dumbbell_deltax), np.copy(dumbbell_deltax), np.copy(dumbbell_deltax)
             sphere_rotations_k1, sphere_rotations_k2, sphere_rotations_k3 = (np.copy(sphere_rotations)).astype('float'), (np.copy(sphere_rotations)).astype('float'), (np.copy(sphere_rotations)).astype('float')
+            
             # K1
             Fa_out_k1, Ta_out_k1, Sa_out_k1, Fb_out_k1, DFb_out_k1, Ua_out_k1, Oa_out_k1, Ea_out_k1, Ub_out_k1, HalfDUb_out_k1, last_generated_Minfinity_inverse, gen_times, U_infinity_k1, O_infinity_k1, centre_of_background_flow, force_on_wall_due_to_dumbbells_k1, last_velocity_vector = generate_output_FTSUOE(
                 posdata, frameno, timestep, input_number, last_generated_Minfinity_inverse, regenerate_Minfinity, input_form, cutoff_factor, printout, use_XYZd_values, use_drag_Minfinity, use_Minfinity_only, extract_force_on_wall_due_to_dumbbells, last_velocities, last_velocity_vector, checkpoint_start_from_frame, box_bottom_left, box_top_right, feed_every_n_timesteps=feed_every_n_timesteps)
             # Euler timestepping k1
             if (num_spheres > 0):
-                O_infinity_cross_x_k1 = np.cross(O_infinity_k1, sphere_positions - centre_of_background_flow)
-                E_infinity_dot_x_k1 = np.empty([sphere_positions.shape[0], sphere_positions.shape[1]])
-                for i in range(num_spheres):
-                    E_infinity_dot_x_k1[i] = np.dot(Ea_out_k1[i], sphere_positions[i] - centre_of_background_flow)
-                Ua_out_plus_infinities_k1 = Ua_out_k1 + U_infinity_k1 + O_infinity_cross_x_k1 + E_infinity_dot_x_k1
-                Oa_out_plus_infinities_k1 = Oa_out_k1 + O_infinity_k1
+                Ua_out_plus_infinities_k1, Oa_out_plus_infinities_k1 = add_background_flow_spheres(
+                    Ua_out_k1, Oa_out_k1, Ea_out_k1, U_infinity_k1, O_infinity_k1,
+                    sphere_positions, centre_of_background_flow)
                 sphere_positions_k1 = euler_timestep(sphere_positions, Ua_out_plus_infinities_k1, timestep / 2.)
                 sphere_rotations_k1 = euler_timestep_rotation(sphere_positions, sphere_rotations, sphere_positions_k1, sphere_rotations_k1, Oa_out_plus_infinities_k1, timestep / 2.)
                 if periodic:
                     sphere_positions_k1 = wrap_around(sphere_positions_k1, box_bottom_left, box_top_right, frameno + 0, timestep, O_infinity_k1, Ea_out_k1[0], frequency=frequency, amplitude=amplitude)
 
             if (num_dumbbells > 0):
-                O_infinity_cross_xbar_k1 = np.cross(O_infinity_k1, dumbbell_positions - centre_of_background_flow)
-                O_infinity_cross_deltax_k1 = np.cross(O_infinity_k1, dumbbell_deltax)
-                E_infinity_dot_xbar_k1 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
-                E_infinity_dot_deltax_k1 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
-                for i in range(num_dumbbells):
-                    E_infinity_dot_xbar_k1[i] = np.dot(Ea_out_k1[0], dumbbell_positions[i] - centre_of_background_flow)
-                    E_infinity_dot_deltax_k1[i] = np.dot(Ea_out_k1[0], dumbbell_deltax[i])
-
-                Ub_out_plus_infinities_k1 = Ub_out_k1 + U_infinity_k1 + O_infinity_cross_xbar_k1 + E_infinity_dot_xbar_k1
-                HalfDUb_out_plus_infinities_k1 = HalfDUb_out_k1 + 0.5 * (O_infinity_cross_deltax_k1 + E_infinity_dot_deltax_k1)
+                Ub_out_plus_infinities_k1, HalfDUb_out_plus_infinities_k1 = add_background_flow_dumbbells(
+                    Ub_out_k1, HalfDUb_out_k1, Ea_out_k1, U_infinity_k1, O_infinity_k1,
+                    dumbbell_positions, centre_of_background_flow)
                 dumbbell_positions_k1 = euler_timestep(dumbbell_positions, Ub_out_plus_infinities_k1, timestep / 2.)
                 dumbbell_deltax_k1 = euler_timestep(dumbbell_deltax, 2 * HalfDUb_out_plus_infinities_k1, timestep / 2.)
                 error = did_something_go_wrong_with_dumbells(error, dumbbell_deltax, dumbbell_deltax_k1, explosion_protection)
@@ -324,28 +331,18 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                 posdata_k1, frameno + 0.5, timestep, input_number, last_generated_Minfinity_inverse, regenerate_Minfinity, input_form, cutoff_factor, printout, use_XYZd_values, use_drag_Minfinity, use_Minfinity_only, extract_force_on_wall_due_to_dumbbells, last_velocities, last_velocity_vector, checkpoint_start_from_frame, box_bottom_left, box_top_right, feed_every_n_timesteps=feed_every_n_timesteps)
             # Euler timestepping k2
             if (num_spheres > 0):
-                O_infinity_cross_x_k2 = np.cross(O_infinity_k2, sphere_positions - centre_of_background_flow)
-                E_infinity_dot_x_k2 = np.empty([sphere_positions.shape[0], sphere_positions.shape[1]])
-                for i in range(num_spheres):
-                    E_infinity_dot_x_k2[i] = np.dot(Ea_out_k2[i], sphere_positions[i] - centre_of_background_flow)
-                Ua_out_plus_infinities_k2 = Ua_out_k2 + U_infinity_k2 + O_infinity_cross_x_k2 + E_infinity_dot_x_k2
-                Oa_out_plus_infinities_k2 = Oa_out_k2 + O_infinity_k2
+                Ua_out_plus_infinities_k2, Oa_out_plus_infinities_k2 = add_background_flow_spheres(
+                    Ua_out_k2, Oa_out_k2, Ea_out_k2, U_infinity_k2, O_infinity_k2,
+                    sphere_positions, centre_of_background_flow)
                 sphere_positions_k2 = euler_timestep(sphere_positions, Ua_out_plus_infinities_k2, timestep / 2.)
                 sphere_rotations_k2 = euler_timestep_rotation(sphere_positions, sphere_rotations, sphere_positions_k2, sphere_rotations_k2, Oa_out_plus_infinities_k2, timestep / 2.)
                 if periodic:
                     sphere_positions_k2 = wrap_around(sphere_positions_k2, box_bottom_left, box_top_right, frameno + 0.5, timestep, O_infinity_k2, Ea_out_k2[0], frequency=frequency, amplitude=amplitude)
 
             if (num_dumbbells > 0):
-                O_infinity_cross_xbar_k2 = np.cross(O_infinity_k2, dumbbell_positions - centre_of_background_flow)
-                O_infinity_cross_deltax_k2 = np.cross(O_infinity_k2, dumbbell_deltax)
-                E_infinity_dot_xbar_k2 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
-                E_infinity_dot_deltax_k2 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
-                for i in range(num_dumbbells):
-                    E_infinity_dot_xbar_k2[i] = np.dot(Ea_out_k2[0], dumbbell_positions[i] - centre_of_background_flow)
-                    E_infinity_dot_deltax_k2[i] = np.dot(Ea_out_k2[0], dumbbell_deltax[i])
-
-                Ub_out_plus_infinities_k2 = Ub_out_k2 + U_infinity_k2 + O_infinity_cross_xbar_k2 + E_infinity_dot_xbar_k2
-                HalfDUb_out_plus_infinities_k2 = HalfDUb_out_k2 + 0.5 * (O_infinity_cross_deltax_k2 + E_infinity_dot_deltax_k2)
+                Ub_out_plus_infinities_k2, HalfDUb_out_plus_infinities_k2 = add_background_flow_dumbbells(
+                    Ub_out_k2, HalfDUb_out_k2, Ea_out_k1, U_infinity_k2, O_infinity_k2,
+                    dumbbell_positions, centre_of_background_flow)
                 dumbbell_positions_k2 = euler_timestep(dumbbell_positions, Ub_out_plus_infinities_k2, timestep / 2.)
                 dumbbell_deltax_k2 = euler_timestep(dumbbell_deltax, 2 * HalfDUb_out_plus_infinities_k2, timestep / 2.)
                 error = did_something_go_wrong_with_dumbells(error, dumbbell_deltax, dumbbell_deltax_k2, explosion_protection)
@@ -361,28 +358,18 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                 posdata_k2, frameno + 0.5, timestep, input_number, last_generated_Minfinity_inverse, regenerate_Minfinity, input_form, cutoff_factor, printout, use_XYZd_values, use_drag_Minfinity, use_Minfinity_only, extract_force_on_wall_due_to_dumbbells, last_velocities, last_velocity_vector, checkpoint_start_from_frame, box_bottom_left, box_top_right, feed_every_n_timesteps=feed_every_n_timesteps)
             # Euler timestepping k3
             if (num_spheres > 0):
-                O_infinity_cross_x_k3 = np.cross(O_infinity_k3, sphere_positions - centre_of_background_flow)
-                E_infinity_dot_x_k3 = np.empty([sphere_positions.shape[0], sphere_positions.shape[1]])
-                for i in range(num_spheres):
-                    E_infinity_dot_x_k3[i] = np.dot(Ea_out_k3[i], sphere_positions[i] - centre_of_background_flow)
-                Ua_out_plus_infinities_k3 = Ua_out_k3 + U_infinity_k3 + O_infinity_cross_x_k3 + E_infinity_dot_x_k3
-                Oa_out_plus_infinities_k3 = Oa_out_k3 + O_infinity_k3
+                Ua_out_plus_infinities_k3, Oa_out_plus_infinities_k3 = add_background_flow_spheres(
+                    Ua_out_k3, Oa_out_k3, Ea_out_k3, U_infinity_k3, O_infinity_k3,
+                    sphere_positions, centre_of_background_flow)
                 sphere_positions_k3 = euler_timestep(sphere_positions, Ua_out_plus_infinities_k3, timestep)
                 sphere_rotations_k3 = euler_timestep_rotation(sphere_positions, sphere_rotations, sphere_positions_k3, sphere_rotations_k3, Oa_out_plus_infinities_k3, timestep)
                 if periodic:
                     sphere_positions_k3 = wrap_around(sphere_positions_k3, box_bottom_left, box_top_right, frameno + 0.5, timestep, O_infinity_k3, Ea_out_k3[0], frequency=frequency, amplitude=amplitude)
 
             if (num_dumbbells > 0):
-                O_infinity_cross_xbar_k3 = np.cross(O_infinity_k3, dumbbell_positions - centre_of_background_flow)
-                O_infinity_cross_deltax_k3 = np.cross(O_infinity_k3, dumbbell_deltax)
-                E_infinity_dot_xbar_k3 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
-                E_infinity_dot_deltax_k3 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
-                for i in range(num_dumbbells):
-                    E_infinity_dot_xbar_k3[i] = np.dot(Ea_out_k3[0], dumbbell_positions[i] - centre_of_background_flow)
-                    E_infinity_dot_deltax_k3[i] = np.dot(Ea_out_k3[0], dumbbell_deltax[i])
-
-                Ub_out_plus_infinities_k3 = Ub_out_k3 + U_infinity_k3 + O_infinity_cross_xbar_k3 + E_infinity_dot_xbar_k3
-                HalfDUb_out_plus_infinities_k3 = HalfDUb_out_k3 + 0.5 * (O_infinity_cross_deltax_k3 + E_infinity_dot_deltax_k3)
+                Ub_out_plus_infinities_k3, HalfDUb_out_plus_infinities_k3 = add_background_flow_dumbbells(
+                    Ub_out_k3, HalfDUb_out_k3, Ea_out_k3, U_infinity_k3, O_infinity_k3,
+                    dumbbell_positions, centre_of_background_flow)
                 dumbbell_positions_k3 = euler_timestep(dumbbell_positions, Ub_out_plus_infinities_k3, timestep)
                 dumbbell_deltax_k3 = euler_timestep(dumbbell_deltax, 2 * HalfDUb_out_plus_infinities_k3, timestep)
                 error = did_something_go_wrong_with_dumbells(error, dumbbell_deltax, dumbbell_deltax_k3, explosion_protection)
@@ -397,24 +384,13 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
             Fa_out_k4, Ta_out_k4, Sa_out_k4, Fb_out_k4, DFb_out_k4, Ua_out_k4, Oa_out_k4, Ea_out_k4, Ub_out_k4, HalfDUb_out_k4, last_generated_Minfinity_inverse_ignore, gen_times_2, U_infinity_k4, O_infinity_k4, centre_of_background_flow, force_on_wall_due_to_dumbbells_k4, last_velocity_vector = generate_output_FTSUOE(
                 posdata_k3, frameno + 1, timestep, input_number, last_generated_Minfinity_inverse, regenerate_Minfinity, input_form, cutoff_factor, printout, use_XYZd_values, use_drag_Minfinity, use_Minfinity_only, extract_force_on_wall_due_to_dumbbells, last_velocities, last_velocity_vector, checkpoint_start_from_frame, box_bottom_left, box_top_right, feed_every_n_timesteps=feed_every_n_timesteps)
             if (num_spheres > 0):
-                O_infinity_cross_x_k4 = np.cross(O_infinity_k4, sphere_positions - centre_of_background_flow)
-                E_infinity_dot_x_k4 = np.empty([sphere_positions.shape[0], sphere_positions.shape[1]])
-                for i in range(num_spheres):
-                    E_infinity_dot_x_k4[i] = np.dot(Ea_out_k4[i], sphere_positions[i] - centre_of_background_flow)
-                Ua_out_plus_infinities_k4 = Ua_out_k4 + U_infinity_k4 + O_infinity_cross_x_k4 + E_infinity_dot_x_k4
-                Oa_out_plus_infinities_k4 = Oa_out_k4 + O_infinity_k4
+                Ua_out_plus_infinities_k4, Oa_out_plus_infinities_k4 = add_background_flow_spheres(
+                    Ua_out_k4, Oa_out_k4, Ea_out_k4, U_infinity_k4, O_infinity_k4,
+                    sphere_positions, centre_of_background_flow)
             if (num_dumbbells > 0):
-                O_infinity_cross_xbar_k4 = np.cross(O_infinity_k4, dumbbell_positions - centre_of_background_flow)
-                O_infinity_cross_deltax_k4 = np.cross(O_infinity_k4, dumbbell_deltax)
-                E_infinity_dot_xbar_k4 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
-                E_infinity_dot_deltax_k4 = np.empty([dumbbell_positions.shape[0], dumbbell_positions.shape[1]])
-                for i in range(num_dumbbells):
-                    E_infinity_dot_xbar_k4[i] = np.dot(Ea_out_k4[0], dumbbell_positions[i] - centre_of_background_flow)
-                    E_infinity_dot_deltax_k4[i] = np.dot(Ea_out_k4[0], dumbbell_deltax[i])
-
-                Ub_out_plus_infinities_k4 = Ub_out_k4 + U_infinity_k4 + O_infinity_cross_xbar_k4 + E_infinity_dot_xbar_k4
-                HalfDUb_out_plus_infinities_k4 = HalfDUb_out_k4 + 0.5 * (O_infinity_cross_deltax_k4 + E_infinity_dot_deltax_k4)
-
+                Ub_out_plus_infinities_k4, HalfDUb_out_plus_infinities_k4 = add_background_flow_dumbbells(
+                    Ub_out_k4, HalfDUb_out_k4, Ea_out_k4, U_infinity_k4, O_infinity_k4,
+                    dumbbell_positions, centre_of_background_flow)
             for i in range(len(gen_times)):
                 gen_times[i] = gen_times[i] + gen_times_2[i]
 
@@ -566,7 +542,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                 numba_compilation_time_not_discounted_flag = "<"
                 longtimeaverage = longtimes[0]
             else:
-                longtimeaverage = 0            
+                longtimeaverage = 0
         else:
             if len(longtimes) > 0:
                 longtimeaverage = sum(longtimes) / len(longtimes)
@@ -601,9 +577,9 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
         else:
             no_short_times_yet_flag = ""
 
-        elapsed_time_formatted = (start_color + 
-                                  numba_compilation_time_not_discounted_flag + no_short_times_yet_flag + 
-                                  format_elapsed_time(timeleft) + 
+        elapsed_time_formatted = (start_color +
+                                  numba_compilation_time_not_discounted_flag + no_short_times_yet_flag +
+                                  format_elapsed_time(timeleft) +
                                   end_color)
 
         print("[" + elapsed_time_formatted + "]", end=" ")
@@ -730,7 +706,7 @@ if error == 0:
            "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX15": socket.gethostname(),
            "XXXX16": str(save_positions_every_n_timesteps),
            "XXX17": str(start_saving_after_first_n_timesteps),
-           "XXXXXX18": ["ON","OFF"][numba.config.DISABLE_JIT]
+           "XXXXXX18": ["ON", "OFF"][numba.config.DISABLE_JIT]
            }
     warnings = {"XXXXXX01": 0,
                 "XXXXXX02": 0,
