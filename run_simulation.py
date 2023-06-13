@@ -242,11 +242,14 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
             last_velocities = [Ua_blank, Ub_blank, DUb_blank, Ua_blank]  # Oa_blank at the end there
             last_velocity_vector = [0 for i in range(11 * num_spheres + 6 * num_dumbbells)]
 
-        if not(timestep_rk4):
-            # EULER TIMESTEP
+        if num_spheres == 0:
             new_sphere_positions = np.copy(sphere_positions)
+        if num_dumbbells == 0:
             new_dumbbell_positions = np.copy(dumbbell_positions)
             new_dumbbell_deltax = np.copy(dumbbell_deltax)
+
+        if not(timestep_rk4):
+            # EULER TIMESTEP
             new_sphere_rotations = (np.copy(sphere_rotations)).astype('float')
 
             # K1
@@ -289,14 +292,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
 
         else:
             # RK4
-            new_sphere_positions = np.copy(sphere_positions)
-            new_dumbbell_positions = np.copy(dumbbell_positions)
-            new_dumbbell_deltax = np.copy(dumbbell_deltax)
             new_sphere_rotations = (np.copy(sphere_rotations)).astype('float')
-
-            sphere_positions_k1, sphere_positions_k2, sphere_positions_k3 = np.copy(sphere_positions), np.copy(sphere_positions), np.copy(sphere_positions)
-            dumbbell_positions_k1, dumbbell_positions_k2, dumbbell_positions_k3 = np.copy(dumbbell_positions), np.copy(dumbbell_positions), np.copy(dumbbell_positions)
-            dumbbell_deltax_k1, dumbbell_deltax_k2, dumbbell_deltax_k3 = np.copy(dumbbell_deltax), np.copy(dumbbell_deltax), np.copy(dumbbell_deltax)
             sphere_rotations_k1, sphere_rotations_k2, sphere_rotations_k3 = (np.copy(sphere_rotations)).astype('float'), (np.copy(sphere_rotations)).astype('float'), (np.copy(sphere_rotations)).astype('float')
             
             # K1
@@ -622,18 +618,9 @@ if error == 0:
     # --- End error checking
 
     timestamp = time.strftime("%y%m%d%H%M")
-    if setup_description != "":
-        setup_descdash = "-"
-    else:
-        setup_descdash = ""
-    if input_description != "":
-        input_descdash = "-"
-    else:
-        input_descdash = ""
-    if desc != "":
-        descdash = "-"
-    else:
-        descdash = ""
+    setup_descdash = ["-", ""][setup_description == ""]
+    input_descdash = ["-", ""][input_description == ""]
+    descdash = ["-", ""][desc == ""]
 
     if checkpoint_filename == "":
         filename = timestamp + "-s" + str(setup_number) + "-i" + str(input_number) + "-" + str(num_frames) + "fr" + "-t" + str(timestep).replace('.', 'p') + "-M" + str(invert_m_every) + setup_descdash + str(setup_description) + input_descdash + str(input_description) + descdash + str(desc)
@@ -652,30 +639,12 @@ if error == 0:
     warning_formatting_start = "\033[43m\033[30m"
     warning_formatting_end = "\033[39m\033[49m"
 
-    if extract_force_on_wall_due_to_dumbbells:
-        invert_type = "Slow"  # invert for finding dumbbell contribution to sphere-wall force"
-    else:
-        invert_type = "Fast R\\F"
-    if use_drag_Minfinity:
-        minf_status = "OFF"
-    else:
-        minf_status = "ON"
-    if use_Minfinity_only:
-        r2b_status = "OFF"
-    else:
-        r2b_status = "ON"
-    if bead_bead_interactions:
-        bead_bead_status = "ON"
-    else:
-        bead_bead_status = "OFF"
-    if not np.array_equal(box_bottom_left - box_top_right, np.array([0, 0, 0])):
-        periodic_status = "ON"
-    else:
-        periodic_status = "OFF"
-    if timestep_rk4:
-        timestep_method = "RK4"
-    else:
-        timestep_method = "Euler"
+    invert_type = ["Fast R\\F", "Slow"][extract_force_on_wall_due_to_dumbbells]  # invert for finding dumbbell contribution to sphere-wall force"
+    minf_status = ["ON", "OFF"][use_drag_Minfinity]
+    r2b_status = ["ON", "OFF"][use_Minfinity_only]
+    bead_bead_status = ["OFF", "ON"][bead_bead_interactions]
+    periodic_status = ["ON", "OFF"][np.array_equal(box_bottom_left - box_top_right, np.array([0, 0, 0]))]
+    timestep_method = ["Euler", "RK4"][timestep_rk4]
 
     matrix_size = sizeof_fmt(48 * (11 * num_spheres + 6 * num_dumbbells)**2)
 
