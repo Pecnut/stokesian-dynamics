@@ -60,17 +60,16 @@ In particular, this software has the following features:
 Speed and memory are the greatest limitations of the software. Loosely speaking, for a concentrated system of *s* spheres and *d* dumbbells, the memory, in bytes, required, is 48(11*s* + 6*d*)².
 
 ## 4. System requirements <a name="s4"></a> ##
-This is an implementation in Python, using Cython for speed. It has been tested with Python 3.9.12 and requires the following Python packages:
+This is an implementation in Python, using Numba for speed. It has been tested with Python 3.9.12 and requires the following Python packages:
 
-* copy, Cython, datetime, glob, itertools, math, matplotlib, mpl_toolkits, numpy, os, pylab, resource, scipy, smtplib, socket, subprocess, sys, time.
+* copy, datetime, glob, itertools, math, matplotlib, mpl_toolkits, numba, numpy, os, pylab, resource, scipy, smtplib, socket, subprocess, sys, time.
 
-With the exception of Cython, you probably have most of these installed already. Your best bet is just to try setting up the software and then running the sample program below.
+With the exception of Numba, you probably have most of these installed already. Your best bet is just to try setting up the software and then running the sample program below.
 
 ## 5. How to set up the software <a name="s5"></a> ##
 1. Download the software into its own folder. The easiest way to do this is to navigate to the folder in Terminal that you want to download the Stokesian Dynamics folder into, and to type `git clone` followed by the address you find at the top of this page when you change the SSH dropdown to HTTPS (the address you need should look something like `https://github.com/Pecnut/stokesian-dynamics.git`).
 1. Open up **function_email.py**. The software emails you when the simulation is complete. Change this function to include your email details. It is already set up for Gmail accounts, although you will need to alter some settings in your Gmail profile to allow external programs to send through it. If you want to remove this feature, simply comment out the contents of the function.
-1. The Cython files probably need compiling on your own system first. Navigate to the folder **ewald_functions** and open the folder in Terminal. Run the command `python setup.py build_ext --inplace`.
-1. Do the same for the subfolders **R2Bexact_functions** and **Minfinity_functions**.
+1. **You can speed up the code using Numba.** Numba is a Python package which can dramatically speed up functions. It does this by optimising functions which are 'decorated' with the `@njit` label in the code. A number of core functions in this software are decorated with this label. Numba is turned OFF by default; turn it on by changing `config.DISABLE_JIT` in `inputs.py` to `False`. The optimisation happens the first time a function is called, so when Numba is enabled, the first timestep will be slow, but the rest will be very fast. It is therefore worth turning on for most simulations.
 
 The software should now be ready to run.
 

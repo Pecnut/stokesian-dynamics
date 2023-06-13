@@ -477,7 +477,8 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
 
         posdata_final = (sphere_sizes, new_sphere_positions, new_sphere_rotations, dumbbell_sizes, new_dumbbell_positions, new_dumbbell_deltax)
 
-        # Save
+        # Save by appending current positions (etc.) to the `saved_element_positions` (etc.) array, which gets bigger and bigger and is saved at the end.
+        # In the meantime it is saved as a temp file every `save_to_temp_file_every_n_timesteps` timesteps.
         save_time_start = time.time()
         if save_positions_every_n_timesteps > 0 and frameno % save_positions_every_n_timesteps == 0 and frameno >= start_saving_after_first_n_timesteps:
             if frameno == start_saving_after_first_n_timesteps:  # usually 0
@@ -507,9 +508,16 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                 saved_Sa_out = np.append(np.copy(saved_Sa_out), np.array([Sa_out]), 0)
                 saved_force_on_wall_due_to_dumbbells = np.append(np.copy(saved_force_on_wall_due_to_dumbbells), np.array([force_on_wall_due_to_dumbbells]), 0)
 
-        if save_positions_every_n_timesteps > 0 and frameno % save_to_temp_file_every_n_timesteps == 0 and save_forces_every_n_timesteps > 0 and save_forces_and_positions_to_temp_file_as_well and frameno >= start_saving_after_first_n_timesteps:
-            np.savez_compressed(output_folder + '/' + filename + legion_random_id + '_TEMP',    Fa=saved_Fa_out, Fb=saved_Fb_out, DFb=saved_DFb_out, Sa=saved_Sa_out,
-                                centres=saved_element_positions, deltax=saved_deltax, force_on_wall_due_to_dumbbells=saved_force_on_wall_due_to_dumbbells,
+        # Backup file
+        if (save_positions_every_n_timesteps > 0 and
+                frameno % save_to_temp_file_every_n_timesteps == 0 and
+                save_forces_every_n_timesteps > 0 and
+                save_forces_and_positions_to_temp_file_as_well and
+                frameno >= start_saving_after_first_n_timesteps):
+            np.savez_compressed(output_folder + '/' + filename + legion_random_id + '_TEMP',
+                                Fa=saved_Fa_out, Fb=saved_Fb_out, DFb=saved_DFb_out, Sa=saved_Sa_out,
+                                centres=saved_element_positions, deltax=saved_deltax,
+                                force_on_wall_due_to_dumbbells=saved_force_on_wall_due_to_dumbbells,
                                 sphere_rotations=saved_sphere_rotations)
         save_elapsed_time = time.time() - save_time_start
         print("[" + format_elapsed_time(save_elapsed_time) + "]", end=" ")
@@ -760,8 +768,14 @@ if error == 0:
 
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax, num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
 
+    # Final save
     if save_forces_every_n_timesteps > 0 or save_positions_every_n_timesteps > 0:
-        np.savez_compressed(output_folder + '/' + filename + legion_random_id + '', Fa=saved_Fa_out, Fb=saved_Fb_out, DFb=saved_DFb_out, Sa=saved_Sa_out, centres=saved_element_positions, deltax=saved_deltax, force_on_wall_due_to_dumbbells=saved_force_on_wall_due_to_dumbbells, sphere_rotations=saved_sphere_rotations)
+        np.savez_compressed(output_folder + '/' + filename + legion_random_id + '',
+                            Fa=saved_Fa_out, Fb=saved_Fb_out, DFb=saved_DFb_out, Sa=saved_Sa_out,
+                            centres=saved_element_positions, deltax=saved_deltax,
+                            force_on_wall_due_to_dumbbells=saved_force_on_wall_due_to_dumbbells,
+                            sphere_rotations=saved_sphere_rotations)
+        # Remove backup file
         if os.path.exists(output_folder + '/' + filename + legion_random_id + '_TEMP.npz'):
             os.remove(output_folder + '/' + filename + legion_random_id + '_TEMP.npz')
 
