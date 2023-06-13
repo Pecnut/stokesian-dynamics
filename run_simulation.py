@@ -24,6 +24,7 @@ import os
 import socket
 import datetime
 import resource
+import numba
 
 # Input description of simulation
 args = sys.argv[1:]
@@ -160,7 +161,11 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
         time_start = time.time()
         if frameno % 20 == 0 and frameno > 0:
             print("[Generating " + filename + "]")
-        print("Processing frame " + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno + 1) + "/" + str(num_frames) + "...", end=" ")
+        processing_message = "Processing frame " + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno + 1) + "/" + str(num_frames) + "..."
+        print(processing_message, end=" ")
+        if frameno - checkpoint_start_from_frame == 0 and not numba.config.DISABLE_JIT:
+            print("(First timestep will be slower as Numba compiles functions)")
+            print(" "*len(processing_message), end=" ")
 
         '''
         # If we're feeding particles in from the bottom as it falls, this is the function that does that. Otherwise it just passes through.
@@ -569,15 +574,31 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
         elapsed_time = time.time() - time_start
         print("[[" + "\033[1m" + format_elapsed_time(elapsed_time) + "\033[0m" + "]]", end=" ")
 
+        # Work out how long left
         times[frameno] = elapsed_time
-        longtimes = [times[i] for i in range(checkpoint_start_from_frame, frameno + 1) if i % invert_m_every == 0]
-        if len(longtimes) != 0:
-            longtimeaverage = sum(longtimes) / float(len(longtimes))
+
+        longtimes = [times[i] for i in range(checkpoint_start_from_frame, frameno + 1) if i % invert_m_every == 0 or i == checkpoint_start_from_frame]
+
+        # If Numba is on, first timestep is extra long because of compilation, so should be ignored ASAP
+        numba_compilation_time_not_discounted_flag = ""
+        if not numba.config.DISABLE_JIT:
+            compile_timestep_index = frameno - checkpoint_start_from_frame
+            if len(longtimes) >= 2:
+                longtimeaverage = sum(longtimes[1:]) / len(longtimes[1:])
+            elif len(longtimes) == 1:
+                numba_compilation_time_not_discounted_flag = "<"
+                longtimeaverage = longtimes[0]
+            else:
+                longtimeaverage = 0            
         else:
-            longtimeaverage = 0
-        shorttimes = [times[i] for i in range(checkpoint_start_from_frame, frameno + 1) if i % invert_m_every != 0]
+            if len(longtimes) > 0:
+                longtimeaverage = sum(longtimes) / len(longtimes)
+            else:
+                longtimeaverage = 0
+
+        shorttimes = [times[i] for i in range(checkpoint_start_from_frame, frameno + 1) if i % invert_m_every != 0 and i != checkpoint_start_from_frame]
         if len(shorttimes) != 0:
-            shorttimeaverage = sum(shorttimes) / float(len(shorttimes))
+            shorttimeaverage = sum(shorttimes) / len(shorttimes)
         else:
             shorttimeaverage = longtimeaverage
         numberoflongtimesleft = len([i for i in range(frameno + 1, num_frames) if i % invert_m_every == 0])
@@ -598,10 +619,15 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
             start_color = "\033[92m"
         end_color = "\033[0m"
 
-        if frameno == 0:
-            elapsed_time_formatted = start_color + format_elapsed_time(timeleft) + "-" + end_color
+        if frameno - checkpoint_start_from_frame == 0 and numberofshorttimesleft > 0:
+            no_short_times_yet_flag = "<"
         else:
-            elapsed_time_formatted = start_color + format_elapsed_time(timeleft) + end_color
+            no_short_times_yet_flag = ""
+
+        elapsed_time_formatted = (start_color + 
+                                  numba_compilation_time_not_discounted_flag + no_short_times_yet_flag + 
+                                  format_elapsed_time(timeleft) + 
+                                  end_color)
 
         print("[" + elapsed_time_formatted + "]", end=" ")
 
@@ -613,7 +639,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
             finishtime_formatted = finishtime.strftime("%a %H:%M")
         else:
             finishtime_formatted = finishtime.strftime("%d/%m/%y %H:%M")
-        print("[" + finishtime_formatted + "]")
+        print("[" + numba_compilation_time_not_discounted_flag + no_short_times_yet_flag + finishtime_formatted + "]")
 
     if error:
         print("No frame " + str(frameno + 1))
@@ -703,9 +729,9 @@ if error == 0:
     info_box = u'''
 +--------------------+-------------------+-----------------------+--------------------+
 | Setup:    XXXXXX01 | Minfinity: XXXX05 | Matrix form: XXXXXXXXXXXXXXXXXXXXXXXXXXX09 |
-| Input:    XXXXXX02 | R2Bexact:  XXXX06 | Solve using: XXXXXX10 | Video:    XXXXXX13 |
-| Frames:   XXXXXX03 | Bead-bead: XXXX07 | Inv M every: XXXXXX11 | Memory:  ~XXXXXX14 |
-| Timestep: XXXXXX04 | Timestep:  XXXX08 | Periodic:    XXXXXX12 |                    |
+| Input:    XXXXXX02 | R2Bexact:  XXXX06 | Solve using: XXXXXX10 | Numba:    XXXXXX18 |
+| Frames:   XXXXXX03 | Bead-bead: XXXX07 | Inv M every: XXXXXX11 | Video:    XXXXXX13 |
+| Timestep: XXXXXX04 | Timestep:  XXXX08 | Periodic:    XXXXXX12 | Memory:  ~XXXXXX14 |
 +--------------------+-------------------+--------------------------------------------+
 | Save every: XXXX16 | Save after: XXX17 | Machine: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX15 |
 +--------------------+-------------------+--------------------------------------------+'''
@@ -726,7 +752,8 @@ if error == 0:
            "XXXXXX14": matrix_size,
            "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX15": socket.gethostname(),
            "XXXX16": str(save_positions_every_n_timesteps),
-           "XXX17": str(start_saving_after_first_n_timesteps)
+           "XXX17": str(start_saving_after_first_n_timesteps),
+           "XXXXXX18": ["ON","OFF"][numba.config.DISABLE_JIT]
            }
     warnings = {"XXXXXX01": 0,
                 "XXXXXX02": 0,
@@ -744,7 +771,8 @@ if error == 0:
                 "XXXXXX14": 0,
                 "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX15": 0,
                 "XXXX16": 0,
-                "XXX17": int(start_saving_after_first_n_timesteps != 0)
+                "XXX17": int(start_saving_after_first_n_timesteps != 0),
+                "XXXXXX18": 0
                 }
     bold_start = "\033[1m"
     bold_end = "\033[0m"
