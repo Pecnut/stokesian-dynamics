@@ -7,6 +7,7 @@ import numpy as np
 from position_setups import pos_setup
 import glob
 from functions_shared import add_sphere_rotations_to_positions, throw_error
+from numba import config
 
 
 # --------------------
@@ -221,3 +222,7 @@ with open(filename, 'rb') as inputfile:
 s_dash_range = np.loadtxt(resistance_scalars_folder + '/values_of_s_dash.txt')
 
 XYZf = 0
+
+# ------------
+# TURN NUMBA ON OR OFF
+config.DISABLE_JIT = False

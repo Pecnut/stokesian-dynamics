@@ -164,12 +164,16 @@ This test case looks at horizontal chains of 5, 9 and 15 spheres sedimenting ver
 
 Run `python run_simulation.py 1 1 1 1 fte` (position setup number 1, forces input 1, with a timestep of 1 [arbitrary choice] for 1 timestep, specifying forces, torques and rate of strain).
 
+See `examples/example-a.py` for more.
+
 ### (b) Fig. 5 of Durlofsky et al. (1987) (non-periodic)
 [Durlofsky, Brady & Bossis, 1987](https://doi.org/10.1017/S002211208700171X). Dynamic simulation of hydrodynamically interacting particles. *Journal of Fluid Mechanics* **180**, 21–49. Figure 5.
 
 This test case considers three horizontally-aligned particles sedimenting vertically, and looks at their interesting paths over a large number of timesteps. Use a small timestep (0.5 suffices) and set `invert_m_every` to 1 (instead of the default of 10), in order to recover the same particle paths.
 
 Run `python run_simulation.py 2 1 0.5 100 fte`.
+
+See `examples/example-b.py` for more.
 
 ### (c) Fig. 1 of Brady et al. (1988) (periodic)
 [Sierou & Brady, 2001](https://doi.org/10.1017/S0022112001005912). Accelerated Stokesian Dynamics simulations. *Journal of Fluid Mechanics*, **448**, 115--146. Figure 9.
@@ -181,6 +185,8 @@ A simple cubic array sediments vertically under a constant force. The velocity i
 Note that a periodic domain is activated by setting `box_bottom_left` and `box_top_right` to be different in **input_setups.py**. Make sure `how_far_to_reproduce_gridpoints` ≥ 2 for accurate results.
 
 Run `python run_simulation.py 3 2 1 1 fte`.
+
+See `examples/example-c.py` for more.
 
 ### (d) Two spheres, two dumbbells in oscillatory background flow
 Arrange two large spheres and two dumbbells in a square, then put in an oscillatory background flow. Set the dumbbell spring constant.
