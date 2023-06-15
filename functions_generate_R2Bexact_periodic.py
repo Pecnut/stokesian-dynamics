@@ -22,7 +22,7 @@ kronmatrix = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 def levi(i, j, k):
     if i == j or j == k or k == i:
         return 0
-    elif [i, j, k] == [0, 1, 2] or [i, j, k] == [1, 2, 0] or [i, j, k] == [2, 0, 1]:
+    elif [i, j, k] in [[0, 1, 2], [1, 2, 0], [2, 0, 1]]:
         return 1
     else:
         return -1
@@ -43,7 +43,7 @@ def L3(d, i, j):
     if i == j:
         return 0
     else:
-        return sum([levi(i, j, k)*d[k] for k in range(3) if k != i and k != j])
+        return sum(levi(i, j, k)*d[k] for k in range(3) if k not in [i, j])
 
 
 @njit
@@ -58,7 +58,9 @@ def L5(d, i, j, k):
 
 @njit
 def L6(d, i, j, k):
-    return sum([levi(i, k, l)*d[l]*d[j] for l in range(3) if l != i and l != k]) + sum([levi(j, k, l)*d[l]*d[i] for l in range(3) if l != k and l != j])
+    return sum(
+        levi(i, k, l) * d[l] * d[j] for l in range(3) if l not in [i, k]
+    ) + sum(levi(j, k, l) * d[l] * d[i] for l in range(3) if l not in [k, j])
 
 
 @njit
@@ -234,8 +236,7 @@ def XYZ(scalar_index, gamma, s_dash, lam_index):
     interp_y = XYZ_raw[scalar_index, gamma, :, lam_index]
     if s_dash > s_dash_range[-1]:
         print("S DASH OUT OF RANGE, functions_generate_R2Bexact_periodic.py")
-    if s_dash < s_dash_range[0]:
-        s_dash = s_dash_range[0]
+    s_dash = max(s_dash, s_dash_range[0])
     return np.interp(s_dash, s_dash_range, interp_y)
     # return np.interp(s_dash,s_dash_range,interp_y,left=XYZ_raw[scalar_index,gamma,0,lam_index],right=0) # Numba only has a version of interp for the first three arguments.
 

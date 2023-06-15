@@ -46,7 +46,7 @@ kronkronmatrix = np.array(kronkronmatrix)
 def levi(i, j, k):
     if i == j or j == k or k == i:
         return 0
-    elif [i, j, k] == [0, 1, 2] or [i, j, k] == [1, 2, 0] or [i, j, k] == [2, 0, 1]:
+    elif [i, j, k] in [[0, 1, 2], [1, 2, 0], [2, 0, 1]]:
         return 1
     else:
         return -1
@@ -63,7 +63,9 @@ def J(ri,rj,i,j,ss):
 # O(D J)
 @njit
 def R(r,ss,i,j):
-    return -0.5*sum([ levi(j,k,l)*D_J(r,ss,k,i,l) for k in range (3) for l in range(3) if k!=l and j!=k and j!=l])
+    return -0.5*sum(
+        levi(j,k,l)*D_J(r,ss,k,i,l) for k in range (3) for l in range(3) if k!=l and j!=k and j!=l
+        )
 
 @njit
 def K(r,ss,i,j,k):
@@ -81,7 +83,9 @@ def DD_J(r,ss,m,l,i,j):
 
 @njit
 def D_R(r,ss,l,i,j):
-    return -0.5 * sum([levi(j,m,n) * DD_J(r,ss,l,m,i,n) for m in range(3) for n in range(3) if m!=n and m!=j and n!=j])
+    return -0.5 * sum(
+        levi(j,m,n) * DD_J(r,ss,l,m,i,n) 
+         for m in range(3) for n in range(3) if m!=n and m!=j and n!=j)
 
 @njit
 def D_K(r,ss,l,i,j,k):
@@ -98,7 +102,9 @@ def DLap_J(r,ss,k,i,j):
 
 @njit
 def Lap_R(r,ss,i,j):
-    return -0.5*sum([levi(j,k,l) * DLap_J(r,ss,k,i,l) for k in range(3) for l in range(3) if k!=l and j!=k and j!=k])
+    return -0.5*sum(
+        levi(j,k,l) * DLap_J(r,ss,k,i,l) 
+        for k in range(3) for l in range(3) if k!=l and j!=k and j!=k)
 
 
 @njit
@@ -134,14 +140,19 @@ def M13(r,s,a1,a2, i, j, k,c,mu):
 @njit
 def M22(r,s,a1,a2, i, j,c,mu):
     if abs(r[0]) + abs(r[1]) + abs(r[2]) > 1e-10:
-        return c*0.5*sum([ levi(i,k,l)*D_R(r,s,k,l,j) for k in range(3) for l in range(3) if k!=l and i!=k and i!=l])
+        return c*0.5*sum( 
+            levi(i,k,l)*D_R(r,s,k,l,j) 
+            for k in range(3) for l in range(3) if k!=l and i!=k and i!=l)
     else:
         return kronmatrix[i][j]/(8*pi*mu*a1**3)
 
 @njit
 def M23(r,s,a1,a2, i, j, k,c,mu):
     if abs(r[0]) + abs(r[1]) + abs(r[2]) > 1e-10:
-        return c*-0.5*sum([levi(i,l,m) * (D_K(r,s,l,m,j,k) + (a2**2/6.)*DLap_K(r,s,l,m,j,k)) for l in range(3) for m in range(3) if l!=m and i!=l and i!=m])
+        return c*-0.5*sum(
+            levi(i,l,m) * (D_K(r,s,l,m,j,k) + (a2**2/6.)*DLap_K(r,s,l,m,j,k)) 
+            for l in range(3) for m in range(3) if l!=m and i!=l and i!=m
+            )
     else:
         return 0
 
@@ -190,19 +201,18 @@ def con1_M33(r,s,a1,a2, n, k, l,c,mu):
 
 @njit
 def con_M33(r,s,a1,a2, n, m,c,mu):
-    if s > 1e-10:
-        if m == 0:
-            return 0.5*(s3+1)*con1_M33(r,s,a1,a2,n,0,0,c,mu) + 0.5*(s3-1)*con1_M33(r,s,a1,a2,n,1,1,c,mu)
-        elif m == 1:
-            return s2*con1_M33(r,s,a1,a2,n,0,1,c,mu)
-        elif m == 2:
-            return 0.5*(s3-1)*con1_M33(r,s,a1,a2,n,0,0,c,mu) + 0.5*(s3+1)*con1_M33(r,s,a1,a2,n,1,1,c,mu)
-        elif m == 3:
-            return s2*con1_M33(r,s,a1,a2,n,0,2,c,mu)
-        else:
-            return s2*con1_M33(r,s,a1,a2,n,1,2,c,mu)
-    else:
+    if s <= 1e-10:
         return kronmatrix[n][m]/((20./3)*pi*mu*a1**3)
+    if m == 0:
+        return 0.5*(s3+1)*con1_M33(r,s,a1,a2,n,0,0,c,mu) + 0.5*(s3-1)*con1_M33(r,s,a1,a2,n,1,1,c,mu)
+    elif m == 1:
+        return s2*con1_M33(r,s,a1,a2,n,0,1,c,mu)
+    elif m == 2:
+        return 0.5*(s3-1)*con1_M33(r,s,a1,a2,n,0,0,c,mu) + 0.5*(s3+1)*con1_M33(r,s,a1,a2,n,1,1,c,mu)
+    elif m == 3:
+        return s2*con1_M33(r,s,a1,a2,n,0,2,c,mu)
+    else:
+        return s2*con1_M33(r,s,a1,a2,n,1,2,c,mu)
 
 
 def generate_Minfinity(posdata, printout=0,cutoff_factor=2,frameno=0, mu=1):
@@ -251,7 +261,7 @@ def generate_Minfinity(posdata, printout=0,cutoff_factor=2,frameno=0, mu=1):
                 Minfinity[Gt_coords_21] = [[con_M13(-r,s,a2,a1,i,j,c,mu) for j in range(5)] for i in range(3)]
                 Minfinity[Ht_coords_21] = [[con_M23(-r,s,a2,a1,i,j,c,mu) for j in range(5)] for i in range(3)]
 
-        elif a1_index < num_spheres and a2_index >= num_spheres and a2_index < num_spheres + num_dumbbells:
+        elif a1_index < num_spheres and a2_index < num_spheres + num_dumbbells:
             # Sphere to dumbbell bead 1
             mr = [-r[0],-r[1],-r[2]]
             a2_index_d = a2_index-num_spheres
@@ -263,7 +273,7 @@ def generate_Minfinity(posdata, printout=0,cutoff_factor=2,frameno=0, mu=1):
             Minfinity[M24_coords] = [[M12(mr,s,a2,a1,j,i,c,mu)  for j in range(3)] for i in range(3)]
             Minfinity[M34_coords] = [[con_M13(mr,s,a1,a2,j,i,c,mu)  for j in range(3)] for i in range(5)]
 
-        elif a1_index < num_spheres and a2_index >= num_spheres + num_dumbbells:
+        elif a1_index < num_spheres:
             # Sphere to dumbbell bead 2
             mr = [-r[0],-r[1],-r[2]]
             a2_index_d = a2_index-num_spheres-num_dumbbells
@@ -275,7 +285,11 @@ def generate_Minfinity(posdata, printout=0,cutoff_factor=2,frameno=0, mu=1):
             Minfinity[M25_coords] = [[M12(mr,s,a2,a1,j,i,c,mu)  for j in range(3)] for i in range(3)]
             Minfinity[M35_coords] = [[con_M13(mr,s,a1,a2,j,i,c,mu)  for j in range(3)] for i in range(5)]
 
-        elif a1_index >= num_spheres and a1_index < num_spheres + num_dumbbells and a2_index >= num_spheres and a2_index < num_spheres + num_dumbbells:
+        elif (
+            a1_index < num_spheres + num_dumbbells
+            and a2_index >= num_spheres
+            and a2_index < num_spheres + num_dumbbells
+        ):
             # Dumbbell bead 1 to dumbbell bead 1
             a1_index_d = a1_index-num_spheres
             a2_index_d = a2_index-num_spheres
@@ -283,7 +297,10 @@ def generate_Minfinity(posdata, printout=0,cutoff_factor=2,frameno=0, mu=1):
                 M44_coords = np.s_[11*num_spheres+a1_index_d*3:11*num_spheres+(a1_index_d+1)*3, 11*num_spheres+a2_index_d*3 : 11*num_spheres+(a2_index_d+1)*3]
                 Minfinity[M44_coords] = [[M11(r[i],r[j],s,a1,a2,i,j,c,mu)  for j in range(3)] for i in range(3)]
 
-        elif a1_index >= num_spheres and a1_index < num_spheres + num_dumbbells and a2_index >= num_spheres + num_dumbbells:
+        elif (
+            a1_index < num_spheres + num_dumbbells
+            and a2_index >= num_spheres + num_dumbbells
+        ):
             if bead_bead_interactions:
                 # Dumbbell bead 1 to dumbbell bead 2
                 a1_index_d = a1_index-num_spheres
