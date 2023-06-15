@@ -169,9 +169,9 @@ See `examples/example-a.py` for more.
 ### (b) Fig. 5 of Durlofsky et al. (1987) (non-periodic)
 [Durlofsky, Brady & Bossis, 1987](https://doi.org/10.1017/S002211208700171X). Dynamic simulation of hydrodynamically interacting particles. *Journal of Fluid Mechanics* **180**, 21–49. Figure 5.
 
-This test case considers three horizontally-aligned particles sedimenting vertically, and looks at their interesting paths over a large number of timesteps. Use a small timestep (0.5 suffices) and set `invert_m_every` to 1 (instead of the default of 10), in order to recover the same particle paths.
+This test case considers three horizontally-aligned particles sedimenting vertically, and looks at their interesting paths over a large number of timesteps. Use RK4 timestepping (set `timestepping_scheme = 'rk4'`) and ensure `invert_m_every` is set to 1, in order to recover the same particle paths.
 
-Run `python run_simulation.py 2 1 0.5 100 fte`.
+Run `python run_simulation.py 2 1 128 100 fte`.
 
 See `examples/example-b.py` for more.
 
