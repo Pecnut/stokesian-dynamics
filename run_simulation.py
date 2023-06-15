@@ -14,7 +14,7 @@ from inputs import cutoff_factor, num_frames, text_only, viewbox_bottomleft_topr
     trace_paths, two_d_plot, save_positions_every_n_timesteps, save_forces_every_n_timesteps, save_forces_and_positions_to_temp_file_as_well, save_to_temp_file_every_n_timesteps, \
     XYZf, use_XYZd_values, use_drag_Minfinity, use_Minfinity_only, input_form, invert_m_every, explosion_protection, input_number, extract_force_on_wall_due_to_dumbbells, \
     checkpoint_filename, checkpoint_start_from_frame, feed_every_n_timesteps, feed_from_file, timestepping_scheme, bead_bead_interactions, fully_2d_problem, checkpoint_start_from_frame, \
-    start_saving_after_first_n_timesteps, send_email
+    start_saving_after_first_n_timesteps, send_email, rk4_generate_minfinity_for_each_stage
 import numpy as np
 import time
 import platform
@@ -333,8 +333,9 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                     dumbbell_positions_k1 = wrap_around(dumbbell_positions_k1, box_bottom_left, box_top_right, frameno + 0, timestep, O_infinity_k1, Ea_out_k1[0], frequency=frequency, amplitude=amplitude)
 
             posdata_k1 = (sphere_sizes, sphere_positions_k1, sphere_rotations_k1, dumbbell_sizes, dumbbell_positions_k1, dumbbell_deltax_k1)
-            # Pointless to regenerate M_infinity_inverse for frame 1's K2, K3, K4, when for all frames 2-10, we use frame 1's K1 for everything.
-            regenerate_Minfinity = False
+            # See note in inputs, but essentially, might not want to regenerate M_infinity_inverse for frame 1's K2, K3, K4, when if invert_m_every>1, we use frame 1's K1 for everything.
+            if not rk4_generate_minfinity_for_each_stage:
+                regenerate_Minfinity = False
 
             # K2
             Fa_out_k2, Ta_out_k2, Sa_out_k2, Fb_out_k2, DFb_out_k2, Ua_out_k2, Oa_out_k2, Ea_out_k2, Ub_out_k2, HalfDUb_out_k2, last_generated_Minfinity_inverse_ignore, gen_times_2, U_infinity_k2, O_infinity_k2, centre_of_background_flow, force_on_wall_due_to_dumbbells_k2, last_velocity_vector = generate_output_FTSUOE(

@@ -104,13 +104,17 @@ for filename in sorted(glob.glob("output/*_TEMP.npz"), reverse=True):
 # GLOBAL INPUTS
 
 # How many timesteps to wait in between finding (Minfinity)^-1 (10 normally OK). In between these timesteps we use the previously computed value.
-invert_m_every = 10
+invert_m_every = 1
 
 # When to start using R2bexact. cutoff_factor = r*/(a1+a2). Default 2.
 cutoff_factor = 2
 
 # Timestepping scheme: Choose explicit timestep from: ['euler', 'ab2', 'rk4']  (ab2=Adams Bashforth)
 timestepping_scheme = 'ab2'
+
+# If using RK4, can choose to use the same Minfinity for each of the 4 stages. 
+# In absence of R2Bexact, this makes the timestep equivalent to Euler; but if R2Bexact is present, and invert_m_every>1, this might be an OK approximation.
+rk4_generate_minfinity_for_each_stage = True
 
 # Are we going to be feeding in new particles underneath the box? (Really just for certain types of simulations)
 feed_every_n_timesteps = 0  # 0 to turn off
