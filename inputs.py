@@ -109,8 +109,8 @@ invert_m_every = 10
 # When to start using R2bexact. cutoff_factor = r*/(a1+a2). Default 2.
 cutoff_factor = 2
 
-# Timestep using RK4 or Euler
-timestep_rk4 = False
+# Timestepping scheme: Choose explicit timestep from: ['euler', 'ab2', 'rk4']  (ab2=Adams Bashforth)
+timestepping_scheme = 'ab2'
 
 # Are we going to be feeding in new particles underneath the box? (Really just for certain types of simulations)
 feed_every_n_timesteps = 0  # 0 to turn off
@@ -225,4 +225,4 @@ XYZf = 0
 
 # ------------
 # TURN NUMBA ON OR OFF
-config.DISABLE_JIT = False
+config.DISABLE_JIT = True
