@@ -9,7 +9,7 @@ https://doi.org/10.1017/S002211208700171X
 
 This test case considers three horizontally-aligned particles sedimenting 
 vertically, and looks at their interesting paths over a large number of 
-timesteps. Use a small timestep - with a timestep of 0.25 you need 50000
+timesteps. Use a small timestep - with a timestep of 2.5 you need 5000
 frames - and set
     invert_m_every = 1
 in `inputs.py` (instead of the default of 10), in order to recover the same
@@ -22,10 +22,12 @@ Jánosi et al. 1997, https://doi.org/10.1103/PhysRevE.56.2858) and is also
 sensitive to the interpolation in R2Bexact, so you can expect small deviation
 towards the bottom of the graph.
 
-The timestep here can be Euler or RK4.
+The best choice of timestepping scheme is AB2. Make sure
+    timestepping_scheme = 'ab2'
+in `inputs.py`. Euler or RK4 timesteps also work but require smaller timesteps.
 
 Run
-    python run_simulation.py 2 1 0.25 50000 fte
+    python run_simulation.py 2 1 2.5 5000 fte
 
 '''
 

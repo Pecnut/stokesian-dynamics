@@ -22,7 +22,9 @@ in BOTH `input_setups.py` and `position_setups.py`. Make sure
     how_far_to_reproduce_gridpoints ≥ 2 
 for accurate results.
 
-The timestep here can be Euler or RK4.
+The timestep here is assumed to be an Euler timestep. Make sure
+    timestepping_scheme = 'euler'
+in `inputs.py`.
 
 Run
     python run_simulation.py 3 2 1 1 fte

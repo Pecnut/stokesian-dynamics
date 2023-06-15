@@ -17,6 +17,10 @@ def euler_timestep(x, u, timestep):
     return (x + timestep * u).astype('float')
 
 
+def ab2_timestep(x, u, u_previous, timestep):
+    return x + timestep * (1.5 * u - 0.5 * u_previous)
+
+
 def did_something_go_wrong_with_dumbells(error, dumbbell_deltax, new_dumbbell_deltax, explosion_protection):
     for i in range(new_dumbbell_deltax.shape[0]):
         if np.arccos(np.round(np.dot(dumbbell_deltax[i], new_dumbbell_deltax[i]) / (np.linalg.norm(dumbbell_deltax[i]) * np.linalg.norm(new_dumbbell_deltax[i])), 4)) > np.pi / 2:
@@ -81,7 +85,7 @@ def euler_timestep_rotation(sphere_positions, sphere_rotations, new_sphere_posit
 
             r = r0
             t = t0
-            p = p0 + timestep * O
+            p = euler_timestep(p0, O, timestep)
 
             x = r * np.sin(t) * np.cos(p)
             y = r * np.sin(t) * np.sin(p)
@@ -91,6 +95,12 @@ def euler_timestep_rotation(sphere_positions, sphere_rotations, new_sphere_posit
             rb = R + np.dot(rot_matrix, rbdashdash_xyz)
             new_sphere_rotations[i, j] = rb
     return new_sphere_rotations
+
+
+def ab2_timestep_rotation(sphere_positions, sphere_rotations, new_sphere_positions, new_sphere_rotations, Oa_out, Oa_out_previous, timestep):
+    # AB2 = Euler (x_n + u_n * dt) but with u_n replaced by (1.5 u_n - 0.5 u_{n-1})
+    combined_Oa_for_ab2 = 1.5 * Oa_out - 0.5 * Oa_out_previous
+    return euler_timestep_rotation(sphere_positions, sphere_rotations, new_sphere_positions, new_sphere_rotations, combined_Oa_for_ab2, timestep)
 
 
 def orthogonal_proj(zfront, zback):

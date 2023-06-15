@@ -15,7 +15,7 @@ chain of length 15. Running for 1, reading the velocity  U  and calculating
 λ reproduces this graph.
 
 The timestep here is assumed to be an Euler timestep. Make sure
-    timestep_rk4 = False
+    timestepping_scheme = 'euler'
 in `inputs.py`.
 
 Run

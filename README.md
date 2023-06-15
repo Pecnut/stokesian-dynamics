@@ -47,7 +47,7 @@ In particular, this software has the following features:
 * Free choice of particle interaction forces
 * Choice of whether to include long-range hydrodynamic forces or not (***M***<sup>∞</sup>)
 * Choice of whether to include lubrication forces or not (***R***<sup>2B,exact</sup>)
-* Choice of Euler or RK4 timestepping
+* Choice of Euler, two-step Adams–Bashforth or RK4 timestepping
 * Choice of how often to find (***M***<sup>∞</sup>)⁻¹, a matrix which varies slowly and takes a long time to compute, hence is typically computed every 10 timesteps.
 * For each spherical, non-bead-and-spring particle in the system, the software takes the forces and torques you want to apply to it, as well as the background fluid shear rate (***F***, ***T*** and ***E***), and gives you the particle velocities, angular velocities and stresslets (***U***, ***Ω*** and ***S***). It can also do ***FTS*** to ***UΩE***, for when you want to specify stresslets instead of the background shear rate; and ***U₁F₂TE*** to ***F₁U₂ΩS***, for when there are some particles whose velocities you want to fix while letting some other particles move under specified forces (e.g. when you want to fix some particles as walls). For the beads in the bead-and-spring dumbbells, which are normally much smaller than the other particles in the system, the only option is to apply the force and extract the velocity (***F*** to ***U***).
 * Time-to-completion estimates
@@ -267,4 +267,4 @@ The normal cause of this error is that `view_graphics = True`, but despite this,
 
 <a name="footnote1">[1]</a> This means it solves the [Stokes equation](https://en.wikipedia.org/wiki/Stokes_flow#Stokes_equations) rather than the [Navier–Stokes equation](https://en.wikipedia.org/wiki/Navier%E2%80%93Stokes_equations#General_continuum_equations).
 
-<a name="footnote3">[2]</a> Euler timestep: make sure `timestep_rk4 = False` in **inputs.py**
+<a name="footnote3">[2]</a> Euler timestep: make sure `timestepping_scheme = 'euler'` in **inputs.py**
