@@ -255,12 +255,11 @@ def btr(r,s,a1,a2,i,j,erfcs,c,mu):
 
 @njit
 def cr(r,s,a1,a2, i, j,erfcs,c,mu):
-    if abs(r[0]) + abs(r[1]) + abs(r[2]) > 1e-10:
-        k = (i+1)%3
-        l = (i+2)%3
-        return c*0.5*( D_R(r,s,k,l,j,erfcs) - D_R(r,s,l,k,j,erfcs) )
-    else:
+    if abs(r[0]) + abs(r[1]) + abs(r[2]) <= 1e-10:
         return kronmatrix[i][j]/(8*pi*mu*a1**3)
+    k = (i+1)%3
+    l = (i+2)%3
+    return c*0.5*( D_R(r,s,k,l,j,erfcs) - D_R(r,s,l,k,j,erfcs) )
 
 @njit
 def gtr(r,s,a1,a2, i, j, k,erfcs,c,mu):
@@ -364,13 +363,16 @@ def M11(r,s,a1,a2, i, j, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdas
         #            Copies of itself real          Copies of itself wavespace
 
         # (2)
-        sum_ar = sum([  ar(r + X_lmn[q],s_lmn[q],a1,a2,i,j,erfcs_lmn[q],c,mu)   for q in range(num_X_points) ])
+        sum_ar = sum(
+            ar(r + X_lmn[q], s_lmn[q], a1, a2, i, j, erfcs_lmn[q], c, mu)
+            for q in range(num_X_points)
+        )
         # (4)
         # Imaginary part of e(i*k.r) always cancels out over the sum I think (should probably try to show this but I'm pretty certain)
-        sum_ak = 1./L**3 * (sum([  math.cos(np.dot(K_lmn[q],r)) * aktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,RR_K[q],c)   for q in range(num_K_points) ]))
-        M11_ab = sum_ar + sum_ak
-        return M11_ab
-
+        sum_ak = 1./L**3 * sum(
+            math.cos(np.dot(K_lmn[q],r)) * aktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,RR_K[q],c)   
+            for q in range(num_K_points) )
+        return sum_ar + sum_ak
     else:
         # a_aa,rep = a_aa + SUM'_lmn a^r (x_lmn) + 1/L^3 SUM'_lmn atilde^k(k_lmn) - a^k(0)
         #            -(1)-  --------(2)---------   ---------------(4)------------   -(5)--
@@ -379,24 +381,29 @@ def M11(r,s,a1,a2, i, j, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdas
         # (1)
         a_aa = ar(r,s,a1,a2,i,j,erfcs,c,mu) # Technically this calls ar rather than a but when s = 0 it's the same response
         # (2)
-        sum_ar = sum([   ar(Xdash_lmn[q],Sdash_lmn[q],a1,a1,i,j,erfcs_Sdash_lmn[q],c,mu)   for q in range(num_Xdash_points) ])
+        sum_ar = sum(   
+            ar(Xdash_lmn[q],Sdash_lmn[q],a1,a1,i,j,erfcs_Sdash_lmn[q],c,mu)   
+            for q in range(num_Xdash_points) )
         # (4)
-        sum_ak = 1./L**3 * (sum([  aktilde(K_lmn[q],Ks_lmn[q],a1,a1,i,j,RR_K[q],c)   for q in range(num_K_points) ]))
+        sum_ak = 1./L**3 * sum(
+            aktilde(K_lmn[q],Ks_lmn[q],a1,a1,i,j,RR_K[q],c)   
+            for q in range(num_K_points) )
         # (5)
         a_k0 = c*kronmatrix[i][j]*(8*lamb/math.sqrt(math.pi) + (a1**2+a2**2)/6.*(-160*lamb**3/( 3*math.sqrt(math.pi))))
-        M11_aa = a_aa + sum_ar + sum_ak - a_k0
-        return M11_aa
+        return a_aa + sum_ar + sum_ak - a_k0
 
 @njit
 def M12(r, s, a1, a2, i, j, X_lmn, num_X_points, c, mu, s_lmn, erfcs_lmn):
     if s > 1e-10:
         # (2)
-        sum_btr = sum([  btr(r + X_lmn[q],s_lmn[q],a1,a2,i,j,erfcs_lmn[q],c,mu)   for q in range(num_X_points) ])
+        # Return value below is just sum_btr
+        return sum(  
+            btr(r + X_lmn[q],s_lmn[q],a1,a2,i,j,erfcs_lmn[q],c,mu)   
+            for q in range(num_X_points) )
         # (4)
         # I think sum_btk always ends up being 0 (given that it's imaginary, over the sum it looks like it cancels out)
         # Imaginary part of e(i*k.r) always cancels out over the sum I think (should probably try to show this but I'm pretty certain)
-        M12_ab = sum_btr
-        return M12_ab
+        # return sum_btr
     else:
         return 0
 
@@ -405,11 +412,13 @@ def M12(r, s, a1, a2, i, j, X_lmn, num_X_points, c, mu, s_lmn, erfcs_lmn):
 def M13(r, s, a1, a2, i, j, k, X_lmn, num_X_points, c, mu, s_lmn, erfcs_lmn):
     if s > 1e-10:
         # (2)
-        sum_gtr = sum([  gtr(r + X_lmn[q],s_lmn[q],a1,a2,i,j,k,erfcs_lmn[q],c,mu)   for q in range(num_X_points) ])
+        # Return value below is just sum_gtr
+        return sum(  
+            gtr(r + X_lmn[q],s_lmn[q],a1,a2,i,j,k,erfcs_lmn[q],c,mu)   
+            for q in range(num_X_points) )
         # (4)
         #I think gtk always ends up being 0 (given that it's imaginary, over the sum it looks like it cancels out)
-        M13_ab = sum_gtr
-        return M13_ab
+        #return sum_gtr
     else:
         return 0
 
@@ -417,59 +426,80 @@ def M13(r, s, a1, a2, i, j, k, X_lmn, num_X_points, c, mu, s_lmn, erfcs_lmn):
 def M22(r,s,a1,a2, i, j, erfcs, L, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn):
     if s > 1e-10:
         # (2)
-        sum_cr = sum([  cr(r + X_lmn[q],s_lmn[q],a1,a2,i,j,erfcs_lmn[q],c,mu)   for q in range(num_X_points) ])
+        sum_cr = sum(
+            cr(r + X_lmn[q], s_lmn[q], a1, a2, i, j, erfcs_lmn[q], c, mu)
+            for q in range(num_X_points)
+        )
         # (4)
-        sum_ck = 1./L**3 * (sum([  math.cos(np.dot(K_lmn[q],r)) * cktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,RR_K[q],c)   for q in range(num_K_points) ]))
-        M22_ab = sum_cr + sum_ck
-        return M22_ab
+        sum_ck = 1./L**3 * sum(
+            math.cos(np.dot(K_lmn[q],r)) * cktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,RR_K[q],c)   
+            for q in range(num_K_points))
+        return sum_cr + sum_ck
     else:
         # (1)
         c_aa = cr(r,s,a1,a2,i,j,erfcs,c,mu) # Technically this calls cr rather than c but when s = 0 it's the same response
         # (2)
-        sum_cr = sum([  cr(Xdash_lmn[q],Sdash_lmn[q],a1,a1,i,j,erfcs_Sdash_lmn[q],c,mu)   for q in range(num_Xdash_points) ])
+        sum_cr = sum(  
+            cr(Xdash_lmn[q],Sdash_lmn[q],a1,a1,i,j,erfcs_Sdash_lmn[q],c,mu)   
+            for q in range(num_Xdash_points) )
         # (4)
-        sum_ck = 1./L**3 * (sum([  cktilde(K_lmn[q],Ks_lmn[q],a1,a1,i,j,RR_K[q],c)   for q in range(num_K_points) ]))
+        sum_ck = 1./L**3 * sum(  
+            cktilde(K_lmn[q],Ks_lmn[q],a1,a1,i,j,RR_K[q],c)   
+            for q in range(num_K_points) )
         # (5) = 0
-        M22_aa = c_aa + sum_cr + sum_ck
-        return M22_aa
+        return c_aa + sum_cr + sum_ck
 
 @njit
 def M23(r,s,a1,a2, i, j, k, L, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn):
     if s > 1e-10:
         # (2)
-        sum_htr = sum([  htr(r + X_lmn[q],s_lmn[q],a1,a2,i,j,k,erfcs_lmn[q],c,mu)   for q in range(num_X_points) ])
+        sum_htr = sum(
+            htr(r + X_lmn[q], s_lmn[q], a1, a2, i, j, k, erfcs_lmn[q], c, mu)
+            for q in range(num_X_points)
+        )
         # (4)
-        sum_htk = 1./L**3 * (sum([  math.cos(np.dot(K_lmn[q],r)) * htktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,k,RR_K[q],c)   for q in range(num_K_points) ]))
-        M23_ab = sum_htr + sum_htk
-        return M23_ab
+        sum_htk = 1./L**3 * sum(
+            math.cos(np.dot(K_lmn[q],r)) * htktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,k,RR_K[q],c)   
+            for q in range(num_K_points))
+        return sum_htr + sum_htk
     else:
         # (2)
-        sum_hr = sum([   htr(Xdash_lmn[q],Sdash_lmn[q],a1,a1,i,j,k,erfcs_Sdash_lmn[q],c,mu)   for q in range(num_Xdash_points) ])
+        sum_hr = sum(
+            htr(Xdash_lmn[q],Sdash_lmn[q],a1,a1,i,j,k,erfcs_Sdash_lmn[q],c,mu)   
+            for q in range(num_Xdash_points))
         # (4)
-        sum_hk = 1./L**3 * (sum([  htktilde(K_lmn[q],Ks_lmn[q],a1,a1,i,j,k,RR_K[q],c)   for q in range(num_K_points) ]))
-        M23_aa = sum_hr + sum_hk
-        return M23_aa
+        sum_hk = 1./L**3 * sum(
+            htktilde(K_lmn[q],Ks_lmn[q],a1,a1,i,j,k,RR_K[q],c)   
+            for q in range(num_K_points))
+        return sum_hr + sum_hk
 
 @njit
 def M33(r,s,a1,a2, i, j, k, l,erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,c,mu,s_lmn,erfcs_lmn):
     if s > 1e-10:
         # (2)
-        sum_mr = sum([  mr(r + X_lmn[q],s_lmn[q],a1,a2,i,j,k,l,erfcs_lmn[q],c,mu)   for q in range(num_X_points) ])
+        sum_mr = sum(
+            mr(r + X_lmn[q], s_lmn[q], a1, a2, i, j, k, l, erfcs_lmn[q], c, mu)
+            for q in range(num_X_points)
+        )
         # (4)
-        sum_mk = 1./L**3 * (sum([  math.cos(np.dot(K_lmn[q],r)) * mktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,k,l,RR_K[q],c)   for q in range(num_K_points) ]))
-        M33_ab = sum_mr + sum_mk
-        return M33_ab
+        sum_mk = 1./L**3 * sum( 
+            math.cos(np.dot(K_lmn[q],r)) * mktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,k,l,RR_K[q],c)   
+            for q in range(num_K_points))
+        return sum_mr + sum_mk
     else:
         # (1)
         m_aa = mr(r,s,a1,a2,i,j,k,l,erfcs,c,mu) # Technically this calls mr rather than m but when s = 0 it's the same response
         # (2)
-        sum_mr = sum([  mr(Xdash_lmn[q],Sdash_lmn[q],a1,a1,i,j,k,l,erfcs_Sdash_lmn[q],c,mu)   for q in range(num_Xdash_points) ])
+        sum_mr = sum( 
+            mr(Xdash_lmn[q],Sdash_lmn[q],a1,a1,i,j,k,l,erfcs_Sdash_lmn[q],c,mu)   
+            for q in range(num_Xdash_points))
         # (4)
-        sum_mk = 1./L**3 * (sum([  mktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,k,l,RR_K[q],c)   for q in range(num_K_points) ]))
+        sum_mk = 1./L**3 * sum(
+            mktilde(K_lmn[q],Ks_lmn[q],a1,a2,i,j,k,l,RR_K[q],c)   
+            for q in range(num_K_points) )
         # (5)
         m_k0 = c*(-8*lamb**3/(3*math.sqrt(math.pi)) + (a1**2 + a2**2)/10. * (168*lamb**5)/(5*math.sqrt(math.pi)) ) * -3*kron3tracelessmatrix[i][j][k][l]
-        M33_aa = m_aa + sum_mr + sum_mk - m_k0
-        return M33_aa
+        return m_aa + sum_mr + sum_mk - m_k0
 
 def con_M13(r,s,a1,a2, i, m, X_lmn, num_X_points, c,mu,s_lmn,erfcs_lmn):
     if m == 0:

@@ -43,8 +43,7 @@ def rotation_matrix(d):
                      [-d[2],     0,  d[0]],
                      [d[1], -d[0],    0]], dtype=np.float64)
 
-    M = ddt + np.sqrt(1 - sin_angle**2) * (eye - ddt) + sin_angle * skew
-    return M
+    return ddt + np.sqrt(1 - sin_angle**2) * (eye - ddt) + sin_angle * skew
 
 
 def pathpatch_2d_to_3d(pathpatch, z=0, normal='z'):
@@ -138,9 +137,8 @@ def plot_sphere(ax, frameno, viewbox_bottomleft_topright, position, previous_pos
     line2 = plt.plot((pos1[0], pos3[0]), (pos1[1], pos3[1]), (pos1[2], pos3[2]), sh3, linewidth=2, zorder=500)[0]
 
     linetrace = None
-    if trace_paths > 0:
-        if frameno % trace_paths == 0:
-            linetrace = plt.plot((previous_position[0], position[0]), (previous_position[1], position[1]), (previous_position[2], position[2]), color=sphere_colour, linewidth=1)[0]
+    if trace_paths > 0 and frameno % trace_paths == 0:
+        linetrace = plt.plot((previous_position[0], position[0]), (previous_position[1], position[1]), (previous_position[2], position[2]), color=sphere_colour, linewidth=1)[0]
     return (p, line1, line2, linetrace)
 
 
@@ -171,35 +169,30 @@ def plot_dumbbell(ax, viewbox_bottomleft_topright, position, trace_paths, radius
     pathpatch_2d_to_3d(p2, z=0, normal=n)
     pathpatch_translate(p2, (pos2[0], pos2[1], pos2[2]))  # posn of ball
 
-    if no_line:
-        return p1, p2
-    else:
-        return p1, p2, line
+    return (p1, p2) if no_line else (p1, p2, line)
 
 
 def plot_all_spheres(ax, frameno, viewbox_bottomleft_topright, posdata, previous_step_posdata, trace_paths, spheres, sphere_lines, sphere_trace_lines, f_spheres):
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax) = posdata
     (previous_sphere_sizes, previous_sphere_positions, previous_sphere_rotations, previous_dumbbell_sizes, previous_dumbbell_positions, previous_dumbbell_deltax) = previous_step_posdata
-    spheres = list()
-    sphere_lines = list()
+    spheres = []
+    sphere_lines = []
     for i in range(sphere_positions.shape[0]):
         C = between0and1(np.linalg.norm(np.array(f_spheres[i], np.float)))
         sphere_colour = [C, 0, 1-C]
         (p, l1, l2, ltrace) = plot_sphere(ax, frameno, viewbox_bottomleft_topright, sphere_positions[i, :], previous_sphere_positions[i, :], trace_paths, sphere_sizes[i], sphere_rotations[i], sphere_colour=sphere_colour)
         spheres.append(p)
-        sphere_lines.append(l1)
-        sphere_lines.append(l2)
-        if trace_paths > 0:
-            if frameno % trace_paths == 0:
-                sphere_trace_lines.append(ltrace)
+        sphere_lines.extend((l1, l2))
+        if trace_paths > 0 and frameno % trace_paths == 0:
+            sphere_trace_lines.append(ltrace)
     return spheres, sphere_lines, sphere_trace_lines
 
 
 def plot_all_dumbbells(ax, frameno, viewbox_bottomleft_topright, posdata, previous_step_posdata, trace_paths, dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines, f_dumbbells, deltaf_dumbbells, max_DFb_out=1, no_line=False):
     (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax) = posdata
     (previous_sphere_sizes, previous_sphere_positions, previous_sphere_rotations, previous_dumbbell_sizes, previous_dumbbell_positions, previous_dumbbell_deltax) = previous_step_posdata
-    dumbbell_lines = list()
-    dumbbell_spheres = list()
+    dumbbell_lines = []
+    dumbbell_spheres = []
 
     bead_positions = np.concatenate((dumbbell_positions - 0.5*dumbbell_deltax, dumbbell_positions + 0.5*dumbbell_deltax), axis=0)
     distance_matrix = np.linalg.norm(bead_positions-bead_positions[:, None], axis=2)
@@ -227,33 +220,36 @@ def plot_all_dumbbells(ax, frameno, viewbox_bottomleft_topright, posdata, previo
         else:
             sphere1, sphere2, line = plot_dumbbell(ax, viewbox_bottomleft_topright, dumbbell_positions[i, :], trace_paths, dumbbell_sizes[i], dumbbell_deltax[i, :], dumbbell_colour=dumbbell_colour, no_line=no_line)
             dumbbell_lines.append(line)
-        dumbbell_spheres.append(sphere1)
-        dumbbell_spheres.append(sphere2)
-
-        # NOTE: CURRENTLY, DUMBBELL TRACE LINES ARE NOT IMPLEMENTED
+        dumbbell_spheres.extend((sphere1, sphere2))
+            # NOTE: CURRENTLY, DUMBBELL TRACE LINES ARE NOT IMPLEMENTED
 
     return dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines
 
 
 def plot_all_force_lines(ax, viewbox_bottomleft_topright, posdata, f_spheres, force_lines):
     (sphere_sizes, sphere_positions,  sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax) = posdata
-    force_lines = force_text = list()
+    force_lines = force_text = []
     for i in range(sphere_sizes.size):
-        if (f_spheres[i, :] != np.array([0, 0, 0])).any():
-            # Make invisible if hidden
-            if not (sphere_positions[i, 1] >= 0.05 or sphere_positions[i, 1] <= -1):
-                f_spheres = f_spheres*6  # so we can see it
-                line = Arrow3D([sphere_positions[i, 0], sphere_positions[i, 0]+f_spheres[i, 0]], [sphere_positions[i, 1], sphere_positions[i, 1]+f_spheres[i, 1]], [sphere_positions[i, 2], sphere_positions[i, 2]+f_spheres[i, 2]], mutation_scale=20, lw=1, arrowstyle="-|>", color="r")
-                ax.add_artist(line)
-                force_lines.append(line)
-                ftext = ax.text(sphere_positions[i, 0]+f_spheres[i, 0], sphere_positions[i, 1]+f_spheres[i, 1], sphere_positions[i, 2]+f_spheres[i, 2], ""+str(i), color='r')
-                force_text.append(ftext)
+        # Make invisible if hidden
+        if (f_spheres[i, :] != np.array([0, 0, 0])).any() and (sphere_positions[i, 1] < 0.05 and sphere_positions[i, 1] > -1):
+            f_spheres = f_spheres*6  # so we can see it
+            line = Arrow3D([sphere_positions[i, 0], sphere_positions[i, 0]+f_spheres[i, 0]], [sphere_positions[i, 1], sphere_positions[i, 1]+f_spheres[i, 1]], [sphere_positions[i, 2], sphere_positions[i, 2]+f_spheres[i, 2]], mutation_scale=20, lw=1, arrowstyle="-|>", color="r")
+            ax.add_artist(line)
+            force_lines.append(line)
+            ftext = ax.text(
+                sphere_positions[i, 0] + f_spheres[i, 0],
+                sphere_positions[i, 1] + f_spheres[i, 1],
+                sphere_positions[i, 2] + f_spheres[i, 2],
+                f"{str(i)}",
+                color='r',
+            )
+            force_text.append(ftext)
     return force_lines, force_text
 
 
 def plot_all_torque_lines(ax, viewbox_bottomleft_topright, posdata, t_spheres, torque_lines):
     (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax) = posdata
-    torque_lines = list()
+    torque_lines = []
     for i in range(sphere_sizes.size):
         if (t_spheres[i, :] != np.array([0, 0, 0])).any():
             line = Arrow3D([sphere_positions[i, 0], sphere_positions[i, 0]+t_spheres[i, 0]], [sphere_positions[i, 1], sphere_positions[i, 1]+t_spheres[i, 1]], [sphere_positions[i, 2], sphere_positions[i, 2]+t_spheres[i, 2]], mutation_scale=20, lw=1, arrowstyle="-|>", edgecolor="r", facecolor="w")
@@ -264,24 +260,36 @@ def plot_all_torque_lines(ax, viewbox_bottomleft_topright, posdata, t_spheres, t
 
 def plot_all_velocity_lines(ax, viewbox_bottomleft_topright, posdata, u_spheres, velocity_lines):
     (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax) = posdata
-    velocity_lines = velocity_text = sphere_labels = list()
+    velocity_lines = velocity_text = sphere_labels = []
     for i in range(sphere_sizes.size):
         if (u_spheres[i, :] != np.array([0, 0, 0])).any():
             line = Arrow3D([sphere_positions[i, 0], sphere_positions[i, 0]+u_spheres[i, 0]], [sphere_positions[i, 1], sphere_positions[i, 1]+u_spheres[i, 1]], [sphere_positions[i, 2], sphere_positions[i, 2]+u_spheres[i, 2]], mutation_scale=20, lw=1, arrowstyle="-|>", color="g")
             ax.add_artist(line)
             velocity_lines.append(line)
 
-            vtext = ax.text(sphere_positions[i, 0]+u_spheres[i, 0], sphere_positions[i, 1]+u_spheres[i, 1], sphere_positions[i, 2]+u_spheres[i, 2], ""+str(i), color='g')
+            vtext = ax.text(
+                sphere_positions[i, 0] + u_spheres[i, 0],
+                sphere_positions[i, 1] + u_spheres[i, 1],
+                sphere_positions[i, 2] + u_spheres[i, 2],
+                f"{str(i)}",
+                color='g',
+            )
             velocity_text.append(vtext)
 
-        slabel = ax.text(sphere_positions[i, 0], sphere_positions[i, 1], sphere_positions[i, 2], ""+str(i), color='k')
+        slabel = ax.text(
+            sphere_positions[i, 0],
+            sphere_positions[i, 1],
+            sphere_positions[i, 2],
+            f"{str(i)}",
+            color='k',
+        )
         sphere_labels.append(slabel)
     return velocity_lines, velocity_text, sphere_labels
 
 
 def plot_all_angular_velocity_lines(ax, viewbox_bottomleft_topright, posdata, o_spheres, angular_velocity_lines):
     (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax) = posdata
-    angular_velocity_lines = list()
+    angular_velocity_lines = []
     for i in range(sphere_sizes.size):
         if (o_spheres[i, :] != np.array([0, 0, 0])).any():
             line = Arrow3D([sphere_positions[i, 0], sphere_positions[i, 0]+o_spheres[i, 0]], [sphere_positions[i, 1], sphere_positions[i, 1]+o_spheres[i, 1]], [sphere_positions[i, 2], sphere_positions[i, 2]+o_spheres[i, 2]], mutation_scale=20, lw=1, arrowstyle="-|>", edgecolor="g", facecolor="w")
@@ -309,5 +317,4 @@ def sign(n):
 def normal(ax):
     theta = from0topi(ax.elev*np.pi/180)
     phi = ax.azim * np.pi/180
-    n = (np.cos(theta)*np.cos(phi), np.cos(theta)*np.sin(phi), np.sin(theta))
-    return n
+    return np.cos(theta)*np.cos(phi), np.cos(theta)*np.sin(phi), np.sin(theta)

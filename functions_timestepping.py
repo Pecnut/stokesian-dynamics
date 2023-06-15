@@ -25,12 +25,14 @@ def did_something_go_wrong_with_dumbells(error, dumbbell_deltax, new_dumbbell_de
     for i in range(new_dumbbell_deltax.shape[0]):
         if np.arccos(np.round(np.dot(dumbbell_deltax[i], new_dumbbell_deltax[i]) / (np.linalg.norm(dumbbell_deltax[i]) * np.linalg.norm(new_dumbbell_deltax[i])), 4)) > np.pi / 2:
             print(" ")
-            print("Code point H# reached on dumbbell " + str(i))
-            print("Old delta x: " + str(dumbbell_deltax[i]))
-            print("New delta x: " + str(new_dumbbell_deltax[i]))
+            print(f"Code point H# reached on dumbbell {str(i)}")
+            print(f"Old delta x: {str(dumbbell_deltax[i])}")
+            print(f"New delta x: {str(new_dumbbell_deltax[i])}")
         if explosion_protection and np.linalg.norm(new_dumbbell_deltax[i]) > 5:
             print("ERROR")
-            print("Dumbbell " + str(i) + " length (" + str(np.linalg.norm(new_dumbbell_deltax[i])) + ") has exceeded 5.")
+            print(
+                f"Dumbbell {str(i)} length ({str(np.linalg.norm(new_dumbbell_deltax[i]))}) has exceeded 5."
+            )
             print("Something has probably gone wrong (normally your timestep is too large).")
             print("Code exiting gracefully.")
             error = True
@@ -58,10 +60,7 @@ def euler_timestep_rotation(sphere_positions, sphere_rotations, new_sphere_posit
             rot_matrix = np.identity(3)
         else:
             Otest = (abs(Oa_out[i] / O)).astype('float')
-            if np.allclose(Otest, [1, 0, 0]):
-                perp1 = [0, 0, 1]
-            else:
-                perp1 = [1, 0, 0]
+            perp1 = [0, 0, 1] if np.allclose(Otest, [1, 0, 0]) else [1, 0, 0]
             rot_matrix = np.array([np.cross(Oa_out[i], perp1) / O, np.cross(Oa_out[i], np.cross(Oa_out[i], perp1)) / O ** 2,  Oa_out[i] / O]).transpose()
 
         for j in range(2):
@@ -78,11 +77,7 @@ def euler_timestep_rotation(sphere_positions, sphere_rotations, new_sphere_posit
 
             r0 = (x0 ** 2 + y0 ** 2 + z0 ** 2) ** 0.5
             t0 = np.arccos(z0 / r0)
-            if (x0 == 0 and y0 == 0):
-                p0 = 0
-            else:
-                p0 = np.arctan2(y0, x0)
-
+            p0 = 0 if (x0 == 0 and y0 == 0) else np.arctan2(y0, x0)
             r = r0
             t = t0
             p = euler_timestep(p0, O, timestep)
@@ -121,20 +116,25 @@ def do_we_have_all_size_ratios(error, element_sizes, lam_range, num_spheres):
         offending_lambda_1 = lambda_matrix[offending_elements[0][0], offending_elements[0][1]]
         offending_element_str = np.empty(2, dtype='|S25')
         for i in (0, 1):
-            if offending_elements[0][i] >= num_spheres:
-                offending_element_str[i] = "dumbbell " + str(offending_elements[0][i] - num_spheres)
-            else:
-                offending_element_str[i] = "sphere " + str(offending_elements[0][i])
+            offending_element_str[i] = (
+                f"dumbbell {str(offending_elements[0][i] - num_spheres)}"
+                if offending_elements[0][i] >= num_spheres
+                else f"sphere {str(offending_elements[0][i])}"
+            )
         print("ERROR")
-        print("Element size ratio (" + str(offending_lambda_1) + " or " + str(1 / offending_lambda_1) + ") is not in our calculated list of size ratios")
-        print("Offending elements: " + offending_element_str[0] + " and " + offending_element_str[1] + " (counting from 0)")
-        error = True
+        print(
+            f"Element size ratio ({str(offending_lambda_1)} or {str(1 / offending_lambda_1)}) is not in our calculated list of size ratios"
+        )
+        print(
+            f"Offending elements: {offending_element_str[0]} and {offending_element_str[1]} (counting from 0)"
+        )
+        return True
     return error
 
 
 def are_some_of_the_particles_too_close(error, printout, s_dash_range, sphere_positions, dumbbell_positions, dumbbell_deltax, sphere_sizes, dumbbell_sizes, element_positions):
     # Error check 1 : are some of my particles too close together for R2Bexact?
-    min_s_dash_range = np.min(s_dash_range)  # This is the minimum s' we have calculated values for
+    # min_s_dash_range = np.min(s_dash_range)  # This is the minimum s' we have calculated values for
 
     sphere_and_bead_positions = np.concatenate([sphere_positions, dumbbell_positions + 0.5 * dumbbell_deltax, dumbbell_positions - 0.5 * dumbbell_deltax])
     sphere_and_bead_sizes = np.concatenate([sphere_sizes, dumbbell_sizes, dumbbell_sizes])
@@ -143,8 +143,8 @@ def are_some_of_the_particles_too_close(error, printout, s_dash_range, sphere_po
     average_size = 0.5 * (sphere_and_bead_sizes + sphere_and_bead_sizes[:, None])
     distance_over_average_size = distance_matrix / average_size  # Matrix of s'
 
-    min_element_distance = np.min(distance_over_average_size[np.nonzero(distance_over_average_size)])
-    two_closest_elements = np.where(distance_over_average_size == min_element_distance)
+    # min_element_distance = np.min(distance_over_average_size[np.nonzero(distance_over_average_size)])
+    # two_closest_elements = np.where(distance_over_average_size == min_element_distance)
 
     if printout > 0:
         print("")

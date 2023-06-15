@@ -15,26 +15,39 @@ def zero_force_vectors(posdata):
 
 def empty_vectors(posdata):
     (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
-    return ([['pippa' for j in range(3)] for i in range(num_spheres)],
-            [['pippa' for j in range(3)] for i in range(num_spheres)],
-            [[['pippa' for k in range(3)] for j in range(3)] for i in range(num_spheres)],
-            [['pippa' for j in range(5)] for i in range(num_spheres)],
-            [['pippa' for j in range(3)] for i in range(num_dumbbells)],
-            [['pippa' for j in range(3)] for i in range(num_dumbbells)],
-            [['pippa' for j in range(3)] for i in range(num_spheres)],
-            [['pippa' for j in range(3)] for i in range(num_spheres)],
-            [[['pippa' for k in range(3)] for j in range(3)] for i in range(num_spheres)],
-            [['pippa' for j in range(5)] for i in range(num_spheres)],
-            [['pippa' for j in range(3)] for i in range(num_dumbbells)],
-            [['pippa' for j in range(3)] for i in range(num_dumbbells)])
+    return (
+        [['pippa' for _ in range(3)] for _ in range(num_spheres)],
+        [['pippa' for _ in range(3)] for _ in range(num_spheres)],
+        [
+            [['pippa' for _ in range(3)] for _ in range(3)]
+            for _ in range(num_spheres)
+        ],
+        [['pippa' for _ in range(5)] for _ in range(num_spheres)],
+        [['pippa' for _ in range(3)] for _ in range(num_dumbbells)],
+        [['pippa' for _ in range(3)] for _ in range(num_dumbbells)],
+        [['pippa' for _ in range(3)] for _ in range(num_spheres)],
+        [['pippa' for _ in range(3)] for _ in range(num_spheres)],
+        [
+            [['pippa' for _ in range(3)] for _ in range(3)]
+            for _ in range(num_spheres)
+        ],
+        [['pippa' for _ in range(5)] for _ in range(num_spheres)],
+        [['pippa' for _ in range(3)] for _ in range(num_dumbbells)],
+        [['pippa' for _ in range(3)] for _ in range(num_dumbbells)],
+    )
 
 
 def construct_force_vector_from_fts(posdata, f_spheres, t_spheres, s_spheres, f_dumbbells, deltaf_dumbbells):
     (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
-    s_spheres_condensed = [['pippa' for i in range(5)] for j in range(num_spheres)]
+    s_spheres_condensed = [['pippa' for _ in range(5)] for _ in range(num_spheres)]
     for i in range(num_spheres):
         for j in range(5):
-            s_spheres_condensed[i][j] = sum([sum([contraction(j, k, l)*s_spheres[i][k][l] for k in range(3)]) for l in range(3)])
+            s_spheres_condensed[i][j] = sum(
+                sum(
+                    contraction(j, k, l) * s_spheres[i][k][l] for k in range(3)
+                )
+                for l in range(3)
+            )
 
     if num_spheres == 0 and num_dumbbells == 0:
         force_vector = np.array([])
@@ -63,7 +76,7 @@ def deconstruct_velocity_vector_for_fts(posdata, velocity_vector):
     N3 = 11*num_spheres
     N4 = 11*num_spheres + 3*num_dumbbells
     N5 = 11*num_spheres + 6*num_dumbbells
-    u_spheres = velocity_vector[0:N1].reshape(num_spheres, 3)
+    u_spheres = velocity_vector[:N1].reshape(num_spheres, 3)
     o_spheres = velocity_vector[N1:N2].reshape(num_spheres, 3)
     e_spheres_condensed = velocity_vector[N2:N3].reshape(num_spheres, 5)
     u_dumbbells = velocity_vector[N3:N4].reshape(num_dumbbells, 3)
@@ -98,7 +111,7 @@ def vec_mat_cross(A, B, C, C5, items_in_vector, starts, crosspoint):
                 D[starts[Ai]:starts[Ai+1], starts[Ci]:starts[Ci+1]] = np.dot(B, C[Ci])
             elif Ai != crosspoint and Ci == crosspoint:  # it's on the vertical cross but not the meeting point
                 D[starts[Ai]:starts[Ai+1], starts[Ci]:starts[Ci+1]] = -np.dot(A[Ai], B)
-            elif Ai == crosspoint and Ci == crosspoint:
+            elif Ai == crosspoint: # and Ci == crosspoint:
                 D[starts[Ai]:starts[Ai+1], starts[Ci]:starts[Ci+1]] = -B
     return D
 
@@ -124,25 +137,26 @@ def fts_to_fte_matrix(posdata, grand_mobility_matrix):
     m53 = m35.transpose()
 
     # Not possible to have dumbbells only because this is an FTS to FTE conversion, and E is only there for spheres.
-    if num_spheres > 0 and num_dumbbells > 0:
-        items_in_vector = 5
-    else:
-        items_in_vector = 3
-
+    items_in_vector = 5 if num_spheres > 0 and num_dumbbells > 0 else 3
     starts = [C0, C1, C2, C3, C4, C5]
 
     m_inv = np.linalg.inv(m)
     crosspoint = 2  # corresponds to the ghm row/col
-    if num_spheres > 0 and num_dumbbells > 0:
-        vec1 = [gt, ht, m, m43, m53]
-        vec2 = [g, h, m, m34, m35]
-    if num_spheres > 0 and num_dumbbells == 0:
-        vec1 = [gt, ht, m]
-        vec2 = [g, h, m]
+    if num_spheres > 0:
+        if num_dumbbells > 0:
+            vec1 = [gt, ht, m, m43, m53]
+            vec2 = [g, h, m, m34, m35]
+        if num_dumbbells == 0:
+            vec1 = [gt, ht, m]
+            vec2 = [g, h, m]
 
-    MFTE = M - vecmat_mat_vecmat(vec1, m_inv, vec2, C5, items_in_vector, starts) - vec_mat_cross(vec1, m_inv, vec2, C5, items_in_vector, starts, crosspoint)
-
-    return MFTE
+    return (
+        M
+        - vecmat_mat_vecmat(vec1, m_inv, vec2, C5, items_in_vector, starts)
+        - vec_mat_cross(
+            vec1, m_inv, vec2, C5, items_in_vector, starts, crosspoint
+        )
+    )
 
 
 def fte_to_ufte_matrix(num_fixed_velocity_spheres, posdata, grand_mobility_matrix_fte):
@@ -175,27 +189,28 @@ def fte_to_ufte_matrix(num_fixed_velocity_spheres, posdata, grand_mobility_matri
     m41x = m14x.transpose()
 
     # Not possible to have dumbbells only because this is an FTS to FTE conversion, and E is only there for spheres.
-    if num_spheres > 0 and num_dumbbells > 0:
-        items_in_vector = 5+1
-    else:
-        items_in_vector = 3+1
-
+    items_in_vector = 5+1 if num_spheres > 0 and num_dumbbells > 0 else 3+1
     starts = [C0, C05, C1, C2, C3, C4, C5]
 
     axx_inv = np.linalg.inv(axx)
     gx = np.asarray(gx)
 
     crosspoint = 0  # corresponds to the ghm row/col
-    if num_spheres > 0 and num_dumbbells > 0:
-        vec1 = [axx, arx, bx, gx, m41x, m51x]
-        vec2 = [axx, axr, btx, gtx, m14x, m15x]
-    if num_spheres > 0 and num_dumbbells == 0:
-        vec1 = [axx, arx, bx, gx]
-        vec2 = [axx, axr, btx, gtx]
+    if num_spheres > 0:
+        if num_dumbbells > 0:
+            vec1 = [axx, arx, bx, gx, m41x, m51x]
+            vec2 = [axx, axr, btx, gtx, m14x, m15x]
+        if num_dumbbells == 0:
+            vec1 = [axx, arx, bx, gx]
+            vec2 = [axx, axr, btx, gtx]
 
-    MFTE = M - vecmat_mat_vecmat(vec1, axx_inv, vec2, C5, items_in_vector, starts) - vec_mat_cross(vec1, axx_inv, vec2, C5, items_in_vector, starts, crosspoint)
-
-    return MFTE
+    return (
+        M
+        - vecmat_mat_vecmat(vec1, axx_inv, vec2, C5, items_in_vector, starts)
+        - vec_mat_cross(
+            vec1, axx_inv, vec2, C5, items_in_vector, starts, crosspoint
+        )
+    )
 
 
 def ufte_to_ufteu_matrix(num_fixed_velocity_dumbbells, num_fixed_velocity_spheres, posdata, grand_mobility_matrix_ufte):
@@ -277,9 +292,13 @@ def ufte_to_ufteu_matrix(num_fixed_velocity_dumbbells, num_fixed_velocity_sphere
     vec1 = [m15xx, m15rx, m25x, m35x, m45xx, m45rx, m55xx, m55rx]  # down
     vec2 = [m51xx, m51rx, m52x, m53x, m54xx, m54xr, m55xx, m55xr]  # across
 
-    MUFTEU = M - vecmat_mat_vecmat(vec1, m55xx_inv, vec2, C5, items_in_vector, starts) - vec_mat_cross(vec1, m55xx_inv, vec2, C5, items_in_vector, starts, crosspoint)
-
-    return MUFTEU
+    return (
+        M
+        - vecmat_mat_vecmat(vec1, m55xx_inv, vec2, C5, items_in_vector, starts)
+        - vec_mat_cross(
+            vec1, m55xx_inv, vec2, C5, items_in_vector, starts, crosspoint
+        )
+    )
 
 
 def fts_to_duf_matrix(num_fixed_velocity_dumbbells, posdata, grand_mobility_matrix_fts):
@@ -338,6 +357,10 @@ def fts_to_duf_matrix(num_fixed_velocity_dumbbells, posdata, grand_mobility_matr
     vec1 = [m45xx, m45rx, m55xx, m55rx]  # down
     vec2 = [m54xx, m54xr, m55xx, m55xr]  # across
 
-    MDUF = M - vecmat_mat_vecmat(vec1, m55xx_inv, vec2, C5, items_in_vector, starts) - vec_mat_cross(vec1, m55xx_inv, vec2, C5, items_in_vector, starts, crosspoint)
-
-    return MDUF
+    return (
+        M
+        - vecmat_mat_vecmat(vec1, m55xx_inv, vec2, C5, items_in_vector, starts)
+        - vec_mat_cross(
+            vec1, m55xx_inv, vec2, C5, items_in_vector, starts, crosspoint
+        )
+    )

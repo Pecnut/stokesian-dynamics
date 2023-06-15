@@ -27,7 +27,7 @@ Run
 # Specify the name of the output file created from the above simulation
 output_filename = 'name_of_output_file_without_extension'
 
-data1 = np.load("../output/" + output_filename + ".npz")
+data1 = np.load(f"../output/{output_filename}.npz")
 forces_on_particles = data1['Fa'][0] # At timestep 0
 number_of_particles = forces_on_particles.shape[0]
 sphere_size = 1
@@ -46,8 +46,8 @@ N = (number_of_particles+1)//2
 durlofsky_data = [0.5018, 0.5029, 0.5054, 0.5102,
                   0.5183, 0.5321, 0.5559, 0.6170] # Extracted from the paper
 
-plt.plot(range(0,N),drag_coefficient[N-1:])
-plt.plot(range(0,N),durlofsky_data,'x')
+plt.plot(range(N),drag_coefficient[N-1:])
+plt.plot(range(N),durlofsky_data,'x')
 plt.legend(['From code','Scraped from paper'])
 plt.xlabel('Sphere number')
 plt.ylabel('λ',rotation=0)

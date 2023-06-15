@@ -40,7 +40,7 @@ as in the RK4 solution above.
 # Specify the name of the output file created from the above simulation
 output_filename = 'name_of_output_file_without_extension'
 
-data1 = np.load("../output/" + output_filename + ".npz")
+data1 = np.load(f"../output/{output_filename}.npz")
 particle_positions = data1['centres']
 
 

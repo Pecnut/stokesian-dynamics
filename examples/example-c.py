@@ -34,11 +34,11 @@ Run
 # Specify the name of the output file created from the above simulation
 output_filename = 'name_of_output_file_without_extension'
 
-data1 = np.load("../output/" + output_filename + ".npz")
+data1 = np.load(f"../output/{output_filename}.npz")
 timestep_size = 1
 
 # Euler timestep reversed. Speeds aren't saved by default so this suffices.
-speeds_of_particles = (data1['centres'][1]-data1['centres'][0])/timestep_size 
+speeds_of_particles = (data1['centres'][1]-data1['centres'][0])/timestep_size
 # Pick out the z components of all spheres
 U = speeds_of_particles[:,2]
 # All sphere should sediment at the same rate, so pick the first, switch the sign,

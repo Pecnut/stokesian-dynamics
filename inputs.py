@@ -93,8 +93,10 @@ for filename in sorted(glob.glob("output/*_TEMP.npz"), reverse=True):
             checkpoint_start_from_frame = positions_centres.shape[0]
 
             word_checkpoint = "\033[42m\033[01m CHECKPOINT FOUND \033[0m\033[49m "
-            print(word_checkpoint + "Continuing file '" + filename + "' from frame " + str(checkpoint_start_from_frame + 1) + "/" + str(num_frames))
-        except:
+            print(
+                f"{word_checkpoint}Continuing file '{checkpoint_filename}' from frame {str(checkpoint_start_from_frame + 1)}/{num_frames}"
+            )
+        except Exception:
             print("Checkpoint possibly found but the file was corrupt (normally because power was lost midway through saving). Starting from beginning.")
 
 # End checkpointing -----|
@@ -193,37 +195,34 @@ resistance_scalars_folder = "find_resistance_scalars/"
 
 # IMPORTANT NOTE: if you change s_range or lam_range, you must rerun find_resistance_scalars_looper().
 # Note: the s_range is the same currently for all values of lambda. This may be a bad idea in the long run. Not sure.
-s_dash_range = np.loadtxt(resistance_scalars_folder + '/values_of_s_dash.txt')
+s_dash_range = np.loadtxt(f'{resistance_scalars_folder}/values_of_s_dash.txt')
 range_s_dash_range = range(s_dash_range.shape[0])
 range_len_of_s_dash_range = range(s_dash_range.shape[0])
-lam_range = np.loadtxt(resistance_scalars_folder + '/values_of_lambda.txt')
+lam_range = np.loadtxt(f'{resistance_scalars_folder}/values_of_lambda.txt')
 lam_range_with_reciprocals = lam_range
-for lam in lam_range:
+for lam in lam_range_with_reciprocals:
     if (1./lam) not in lam_range_with_reciprocals:
         lam_range_with_reciprocals = np.append(lam_range_with_reciprocals, (1./lam))
 lam_range_with_reciprocals.sort()
 
 # Decide here whether we are going to use the d values or not
 if use_XYZd_values:
-    if use_drag_Minfinity:
-        if use_usual_scalars:
-            filename = resistance_scalars_folder + '/scalars_general_resistance_blob_d.txt'
-        else:
-            filename = resistance_scalars_folder + '/scalars_general_resistance_blob_dnominf.txt'
+    if use_drag_Minfinity and use_usual_scalars or not use_drag_Minfinity:
+        filename = f'{resistance_scalars_folder}/scalars_general_resistance_blob_d.txt'
     else:
-        filename = resistance_scalars_folder + '/scalars_general_resistance_blob_d.txt'
+        filename = f'{resistance_scalars_folder}/scalars_general_resistance_blob_dnominf.txt'
 else:
-    filename = resistance_scalars_folder + '/scalars_general_resistance_blob.txt'
+    filename = f'{resistance_scalars_folder}/scalars_general_resistance_blob.txt'
 try:
     with open(filename, 'rb') as inputfile:
         XYZ_raw = np.load(inputfile)
 except IOError:
     XYZ_raw = []  # Only likely to be in this position when generating the resistance scalars.
 
-filename = resistance_scalars_folder + '/scalars_general_resistance_blob.txt'
+filename = f'{resistance_scalars_folder}/scalars_general_resistance_blob.txt'
 with open(filename, 'rb') as inputfile:
     XYZ_raw_no_d = np.load(inputfile)
-s_dash_range = np.loadtxt(resistance_scalars_folder + '/values_of_s_dash.txt')
+s_dash_range = np.loadtxt(f'{resistance_scalars_folder}/values_of_s_dash.txt')
 
 XYZf = 0
 

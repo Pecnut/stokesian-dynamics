@@ -44,7 +44,7 @@ def kronkron(i, j, k, l):
 def levi(i, j, k):
     if i == j or j == k or k == i:
         return 0
-    elif [i, j, k] == [0, 1, 2] or [i, j, k] == [1, 2, 0] or [i, j, k] == [2, 0, 1]:
+    elif [i, j, k] in [[0, 1, 2], [1, 2, 0], [2, 0, 1]]:
         return 1
     else:
         return -1
@@ -96,18 +96,12 @@ def add_sphere_rotations_to_positions(sphere_positions, sphere_sizes, sphere_rot
 
 def is_dumbbell(posdata, a_index):
     (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
-    if a_index >= num_spheres:
-        return True
-    else:
-        return False
+    return a_index >= num_spheres
 
 
 def is_sphere(posdata, a_index):
     (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
-    if a_index < num_spheres:
-        return True
-    else:
-        return False
+    return a_index < num_spheres
 
 
 def tick(clock, num):
@@ -115,7 +109,7 @@ def tick(clock, num):
 
 
 def tock(clock, num):
-    print("[" + format_elapsed_time(time.time() - clock[num]) + "]", end=" ")
+    print(f"[{format_elapsed_time(time.time() - clock[num])}]", end=" ")
 
 
 def format_elapsed_time(elapsed_time):
@@ -123,18 +117,17 @@ def format_elapsed_time(elapsed_time):
         tr2b_m, tr2b_s = divmod(elapsed_time, 60)
         tr2b_h, tr2b_m = divmod(tr2b_m, 60)
         tr2b_d, tr2b_h = divmod(tr2b_h, 24)
-        elapsed_time_hms = "%dd%2d:%02d:%02d" % (tr2b_d, tr2b_h, tr2b_m, tr2b_s)
+        return "%dd%2d:%02d:%02d" % (tr2b_d, tr2b_h, tr2b_m, tr2b_s)
     elif elapsed_time >= 3600:
         tr2b_m, tr2b_s = divmod(elapsed_time, 60)
         tr2b_h, tr2b_m = divmod(tr2b_m, 60)
-        elapsed_time_hms = "%2d:%02d:%02d" % (tr2b_h, tr2b_m, tr2b_s)
+        return "%2d:%02d:%02d" % (tr2b_h, tr2b_m, tr2b_s)
     elif elapsed_time >= 60:
         tr2b_m, tr2b_s = divmod(elapsed_time, 60)
         tr2b_h, tr2b_m = divmod(tr2b_m, 60)
-        elapsed_time_hms = "   %2d:%02d" % (tr2b_m, tr2b_s)
+        return "   %2d:%02d" % (tr2b_m, tr2b_s)
     else:
-        elapsed_time_hms = '{:7.1f}'.format(elapsed_time) + "s"
-    return elapsed_time_hms
+        return '{:7.1f}'.format(elapsed_time) + "s"
 
 
 def same_setup_as(filename, frameno=0, sphere_size=1, dumbbell_size=0.1, local=True):
@@ -151,8 +144,8 @@ def same_setup_as(filename, frameno=0, sphere_size=1, dumbbell_size=0.1, local=T
     sphere_positions = positions_centres[frameno, 0:num_spheres, :]
     dumbbell_positions = positions_centres[frameno, num_spheres:num_particles, :]
     dumbbell_deltax = positions_deltax[frameno, :, :]
-    sphere_sizes = np.array([sphere_size for i in range(num_spheres)])
-    dumbbell_sizes = np.array([dumbbell_size for i in range(num_dumbbells)])
+    sphere_sizes = np.array([sphere_size for _ in range(num_spheres)])
+    dumbbell_sizes = np.array([dumbbell_size for _ in range(num_dumbbells)])
     sphere_rotations = add_sphere_rotations_to_positions(sphere_positions, sphere_sizes, np.array([[1, 0, 0], [0, 0, 1]]))
     return (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax)
 
@@ -160,65 +153,66 @@ def same_setup_as(filename, frameno=0, sphere_size=1, dumbbell_size=0.1, local=T
 def feed_particles_from_bottom(posdata, feed_every_n_timesteps, feed_from_file, frameno, reference_particle=0):
     if feed_every_n_timesteps == 0 or frameno % feed_every_n_timesteps != 0 or frameno == 0:
         return posdata
-    else:
-        # For simplicity's sake, I am going to assume :
-        # 1. That the reference_particle is a sphere, and that the other particles are all dumbbell beads.
-        # 2. That all dumbbell beads are the same size (0.1).
-        # This may not always be the case (e.g. walls) but for now it is easier to implement.
-        (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax) = posdata
-        num_beads_before = dumbbell_sizes.shape[0]*2
-        bead_positions = np.concatenate((dumbbell_positions + 0.5*dumbbell_deltax, dumbbell_positions - 0.5*dumbbell_deltax), axis=0)
-        height_from_reference_particle_to_top_bead = np.max(bead_positions[:, 2]-sphere_positions[reference_particle, 2])
-        height_from_reference_particle_to_bottom_bead = -np.min(bead_positions[:, 2]-sphere_positions[reference_particle, 2])
-        height_needed_below = 0.5*(height_from_reference_particle_to_top_bead - height_from_reference_particle_to_bottom_bead)
-        print("sphere position", sphere_positions)
-        print("height_needed_below", height_needed_below)
-        # chop off top
-        keep_bead_positions = bead_positions[bead_positions[:, 2] <= sphere_positions[reference_particle, 2] + height_from_reference_particle_to_bottom_bead + height_needed_below]
-        num_deleted_beads_from_top = num_beads_before - keep_bead_positions.shape[0]
-        # Prepare beads to add below. Read in a full block of beads.
-        (add_sphere_sizes, add_sphere_positions, add_sphere_rotations, add_dumbbell_sizes, add_dumbbell_positions, add_dumbbell_deltax) = same_setup_as(feed_from_file, frameno=0, sphere_size=sphere_sizes[0], dumbbell_size=dumbbell_sizes[0])  # load file
-        add_bead_positions = np.concatenate((add_dumbbell_positions + 0.5*add_dumbbell_deltax, add_dumbbell_positions - 0.5*add_dumbbell_deltax), axis=0)
-        add_bead_positions = add_bead_positions[add_bead_positions[:, 2].argsort()]  # Sort the beads in height order
-        add_bead_positions_to_add = add_bead_positions[0:num_deleted_beads_from_top]  # Then take the top num_deleted_beads_from_top beads.
-        top_new_bead_position = np.max(add_bead_positions_to_add[:, 2])
-        add_bead_positions_to_add = add_bead_positions_to_add - [0, 0, top_new_bead_position - np.min(bead_positions[:, 2])]  # Shift down to the bottom of the box
-        print("add_bead_positions_to_add (size of)", add_bead_positions_to_add.shape)
-        print("top of the add_bead_positions_to_add", np.max(add_bead_positions_to_add[:, 2]))
-        print("bottom of the add_bead_positions_to_add", np.min(add_bead_positions_to_add[:, 2]))
-        print("bottom of the beads that are already there", np.min(keep_bead_positions[:, 2]))
-        # check for overlaps
-        add_bead_positions_to_add_really = np.empty([0, 3])
-        for s in add_bead_positions_to_add:
-            overlap = 0
-            for t in keep_bead_positions:
-                if np.linalg.norm(s-t) <= 2*dumbbell_sizes[0]:
-                    overlap = 1
-            if overlap == 0:
-                add_bead_positions_to_add_really = np.append(add_bead_positions_to_add_really, np.array([s]), axis=0)
-        # stitch together
-        ("add_bead_positions_to_add_really", add_bead_positions_to_add_really)
-        new_bead_positions = np.concatenate((keep_bead_positions, add_bead_positions_to_add_really), axis=0)
+    # For simplicity's sake, I am going to assume :
+    # 1. That the reference_particle is a sphere, and that the other particles are all dumbbell beads.
+    # 2. That all dumbbell beads are the same size (0.1).
+    # This may not always be the case (e.g. walls) but for now it is easier to implement.
+    (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax) = posdata
+    num_beads_before = dumbbell_sizes.shape[0]*2
+    bead_positions = np.concatenate((dumbbell_positions + 0.5*dumbbell_deltax, dumbbell_positions - 0.5*dumbbell_deltax), axis=0)
+    height_from_reference_particle_to_top_bead = np.max(bead_positions[:, 2]-sphere_positions[reference_particle, 2])
+    height_from_reference_particle_to_bottom_bead = -np.min(bead_positions[:, 2]-sphere_positions[reference_particle, 2])
+    height_needed_below = 0.5*(height_from_reference_particle_to_top_bead - height_from_reference_particle_to_bottom_bead)
+    print("sphere position", sphere_positions)
+    print("height_needed_below", height_needed_below)
+    # chop off top
+    keep_bead_positions = bead_positions[bead_positions[:, 2] <= sphere_positions[reference_particle, 2] + height_from_reference_particle_to_bottom_bead + height_needed_below]
+    num_deleted_beads_from_top = num_beads_before - keep_bead_positions.shape[0]
+    # Prepare beads to add below. Read in a full block of beads.
+    (add_sphere_sizes, add_sphere_positions, add_sphere_rotations, add_dumbbell_sizes, add_dumbbell_positions, add_dumbbell_deltax) = same_setup_as(feed_from_file, frameno=0, sphere_size=sphere_sizes[0], dumbbell_size=dumbbell_sizes[0])  # load file
+    add_bead_positions = np.concatenate((add_dumbbell_positions + 0.5*add_dumbbell_deltax, add_dumbbell_positions - 0.5*add_dumbbell_deltax), axis=0)
+    add_bead_positions = add_bead_positions[add_bead_positions[:, 2].argsort()]  # Sort the beads in height order
+    add_bead_positions_to_add = add_bead_positions[:num_deleted_beads_from_top]
+    top_new_bead_position = np.max(add_bead_positions_to_add[:, 2])
+    add_bead_positions_to_add = add_bead_positions_to_add - [0, 0, top_new_bead_position - np.min(bead_positions[:, 2])]  # Shift down to the bottom of the box
+    print("add_bead_positions_to_add (size of)", add_bead_positions_to_add.shape)
+    print("top of the add_bead_positions_to_add", np.max(add_bead_positions_to_add[:, 2]))
+    print("bottom of the add_bead_positions_to_add", np.min(add_bead_positions_to_add[:, 2]))
+    print("bottom of the beads that are already there", np.min(keep_bead_positions[:, 2]))
+    # check for overlaps
+    add_bead_positions_to_add_really = np.empty([0, 3])
+    for s in add_bead_positions_to_add:
+        overlap = 0
+        for t in keep_bead_positions:
+            if np.linalg.norm(s-t) <= 2*dumbbell_sizes[0]:
+                overlap = 1
+        if overlap == 0:
+            add_bead_positions_to_add_really = np.append(add_bead_positions_to_add_really, np.array([s]), axis=0)
+    # stitch together
+    ("add_bead_positions_to_add_really", add_bead_positions_to_add_really)
+    new_bead_positions = np.concatenate((keep_bead_positions, add_bead_positions_to_add_really), axis=0)
         # There is a problem if the overall number of dumbbells changes when saving. To fix this:
         # If the number of beads has increased, delete the last ones
-        if new_bead_positions.shape[0] > num_beads_before:
-            new_bead_positions = new_bead_positions[0:num_beads_before]
+    if new_bead_positions.shape[0] > num_beads_before:
+        new_bead_positions = new_bead_positions[:num_beads_before]
         # If the number of beads is not enough, add some of the old ones back in
-        if new_bead_positions.shape[0] < num_beads_before:
-            # Not checking for overlap with the deleted ones. In theory this shouldn't happen...
-            num_beads_needed = num_beads_before - new_bead_positions.shape[0]
-            deleted_beads = bead_positions[bead_positions[:, 2] > sphere_positions[reference_particle, 2] + height_from_reference_particle_to_bottom_bead + height_needed_below]
-            readd_beads = deleted_beads[0:num_beads_needed]
-            new_bead_positions = np.concatenate([new_bead_positions, readd_beads], axis=0)
+    if new_bead_positions.shape[0] < num_beads_before:
+        # Not checking for overlap with the deleted ones. In theory this shouldn't happen...
+        num_beads_needed = num_beads_before - new_bead_positions.shape[0]
+        deleted_beads = bead_positions[bead_positions[:, 2] > sphere_positions[reference_particle, 2] + height_from_reference_particle_to_bottom_bead + height_needed_below]
+        readd_beads = deleted_beads[:num_beads_needed]
+        new_bead_positions = np.concatenate([new_bead_positions, readd_beads], axis=0)
 
-        # form back into dumbbells
-        beads1 = new_bead_positions[:new_bead_positions.shape[0]/2]
-        beads2 = new_bead_positions[new_bead_positions.shape[0]/2:(new_bead_positions.shape[0]/2)*2]
-        new_dumbbell_positions = 0.5*(beads1+beads2)
-        new_dumbbell_deltax = beads2-beads1
-        new_dumbbell_sizes = np.array([dumbbell_sizes[0] for i in range(new_dumbbell_positions.shape[0])])
+    # form back into dumbbells
+    beads1 = new_bead_positions[:new_bead_positions.shape[0]/2]
+    beads2 = new_bead_positions[new_bead_positions.shape[0]/2:(new_bead_positions.shape[0]/2)*2]
+    new_dumbbell_positions = 0.5*(beads1+beads2)
+    new_dumbbell_deltax = beads2-beads1
+    new_dumbbell_sizes = np.array(
+        [dumbbell_sizes[0] for _ in range(new_dumbbell_positions.shape[0])]
+    )
 
-        return (sphere_sizes, sphere_positions, sphere_rotations, new_dumbbell_sizes, new_dumbbell_positions, new_dumbbell_deltax)
+    return (sphere_sizes, sphere_positions, sphere_rotations, new_dumbbell_sizes, new_dumbbell_positions, new_dumbbell_deltax)
 
 
 def close_particles(bead_positions, bead_sizes, cutoff_factor, box_bottom_left=np.array([0, 0, 0]), box_top_right=np.array([0, 0, 0]), O_infinity=np.array([0, 0, 0]), E_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]), frameno=0, timestep=0.1, amplitude=1, frequency=1):
@@ -226,11 +220,7 @@ def close_particles(bead_positions, bead_sizes, cutoff_factor, box_bottom_left=n
     cutoff = 2*cutoff_factor
     middle_of_box = 0.5*(box_bottom_left+box_top_right)-box_bottom_left
     box_dimensions = box_top_right - box_bottom_left
-    if not np.array_equal(box_dimensions, np.array([0, 0, 0])):
-        periodic = True
-    else:
-        periodic = False
-
+    periodic = not np.array_equal(box_dimensions, np.array([0, 0, 0]))
     if periodic:
         # unshear box,
         basis_canonical = np.diag(box_dimensions)  # which equals np.array([[Lx,0,0],[0,Ly,0],[0,0,Lz]])
