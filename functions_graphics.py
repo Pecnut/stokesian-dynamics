@@ -24,7 +24,7 @@ class Arrow3D(FancyArrowPatch):
 
 def rotation_matrix(d):
     """
-    Calculates a rotation matrix given a vector d. The direction of d
+    Calculate a rotation matrix given a vector d. The direction of d
     corresponds to the rotation axis. The length of d corresponds to
     the sin of the angle of rotation.
 
@@ -48,7 +48,7 @@ def rotation_matrix(d):
 
 def pathpatch_2d_to_3d(pathpatch, z=0, normal='z'):
     """
-    Transforms a 2D Patch to a 3D patch using the given normal vector.
+    Transform a 2D Patch to a 3D patch using the given normal vector.
 
     The patch is projected into they XY plane, rotated about the origin
     and finally translated by z.
@@ -77,13 +77,12 @@ def pathpatch_2d_to_3d(pathpatch, z=0, normal='z'):
 
 
 def pathpatch_translate(pathpatch, delta):
-    """
-    Translates the 3D pathpatch by the amount delta.
-    """
+    """Translate the 3D pathpatch by the amount delta."""
     pathpatch._segment3d += delta
 
 
 def between0and1(num):
+    """Forces `num` to be between 0 and 1, else returns 0 or 1."""
     if num < 0:
         return 0
     elif num > 1:
