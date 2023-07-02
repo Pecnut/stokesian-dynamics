@@ -9,39 +9,47 @@ import sys
 
 
 def throw_error(message):
+    """Quit immediately with a given error message."""
     word_error = "\033[41m\033[01m ERROR \033[0m "
     sys.exit(word_error + message)
     return 1
 
 
 def throw_warning(message):
+    """Print a warning message."""
     word_error = "\033[43m\033[30m WARNING \033[0m "
     print(word_error + message)
 
 
 def norm(x):
+    """Returns Euclidean norm of a vector x."""
     return (x[0]**2 + x[1]**2 + x[2]**2)**0.5
 
 
 def x(posdata, a1_index, a2_index):
+    """Returns displacement between particles a1 and a2. Sign convention is a2 - a1."""
     (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
     return element_positions[a2_index]-element_positions[a1_index]
 
 
 def lam(posdata, a1_index, a2_index):
+    """Returns size of particle a2 divided by size of particle 1."""
     (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
     return element_sizes[a2_index]/element_sizes[a1_index]
 
 
 def kron(i, j):
+    """Kronecker delta:  delta_ij"""
     return float(i == j)
 
 
 def kronkron(i, j, k, l):
+    """Product of two Kronecker deltas:  delta_ij * delta_kl"""
     return float(i == j & k == l)
 
 
 def levi(i, j, k):
+    """Levi-Civita symbol:  epsilon_ijk"""
     if i == j or j == k or k == i:
         return 0
     elif [i, j, k] in [[0, 1, 2], [1, 2, 0], [2, 0, 1]]:
@@ -51,20 +59,26 @@ def levi(i, j, k):
 
 
 def contraction(i, j, k):
+    """Element of contraction matrix \mathcal{E}_ijk.
+    
+    Use for converting 3x3 symmetric traceless matrix to 5-element vector."""
     return np.array([[[0.5*(sqrt(3)+1), 0, 0], [0, 0.5*(sqrt(3)-1), 0], [0, 0, 0]], [[0, sqrt(2), 0], [0, 0, 0], [0, 0, 0]], [[0.5*(sqrt(3)-1), 0, 0], [0, 0.5*(sqrt(3)+1), 0], [0, 0, 0]], [[0, 0, sqrt(2)], [0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, sqrt(2)], [0, 0, 0]]])[i, j, k]
 
 
 def symmetrise(a):
+    """Symmetrise a matrix, `a`"""
     return a + a.T - np.diag(a.diagonal())
 
 
 def save_matrix(matrix, heading, filename):
+    """Save a matrix to a text file with a given heading as the first line in the file."""
     with open(filename, 'a') as outputfile:
         np.savetxt(outputfile, np.array([heading]), fmt="%s")
         np.savetxt(outputfile, matrix, newline="\n", fmt="% .8e")
 
 
 def posdata_data(posdata):
+    """Return useful particle position, size and count information from a single `posdata` list."""
     (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax) = posdata
 
     num_spheres = sphere_sizes.shape[0]
@@ -85,6 +99,19 @@ def posdata_data(posdata):
 
 
 def add_sphere_rotations_to_positions(sphere_positions, sphere_sizes, sphere_rotations):
+    """Take a pair of vectors which start at the origin and use them as particle rotation vectors.
+    
+    Args:
+        sphere_positions: Array of sphere positions
+        sphere_sizes: Array of sphere sizes
+        sphere_rotations: A pair of unit vectors which represent 1 unit 'horizontal'
+            and 'vertical'.
+    
+    Returns:
+        b: Array of pairs of 'rotation vectors' for each particle which start at the 
+            particle centre and extend in the 'horizontal' and 'vertical' direction
+            specified. These can now be used in `sphere_rotations` definitions.
+    """
     b = np.zeros([sphere_positions.shape[0], 2, sphere_positions.shape[1]])
     num_spheres = sphere_sizes.shape[0]
     addrot1 = (sphere_sizes * np.tile(sphere_rotations[0, :], (num_spheres, 1)).transpose()).transpose()
@@ -131,6 +158,8 @@ def format_elapsed_time(elapsed_time):
 
 
 def same_setup_as(filename, frameno=0, sphere_size=1, dumbbell_size=0.1, local=True):
+    """Load posdata list from a saved file at a given frame number."""
+    
     # Allows you to choose between different locations for your storage file.
     if local:
         data1 = np.load("output/" + filename + ".npz")
@@ -151,6 +180,11 @@ def same_setup_as(filename, frameno=0, sphere_size=1, dumbbell_size=0.1, local=T
 
 
 def feed_particles_from_bottom(posdata, feed_every_n_timesteps, feed_from_file, frameno, reference_particle=0):
+    """For sedimentation sims: Delete particles that are too far above the reference 
+        particle and add new ones beneath it. Reads new particle positions in from a
+        previously saved simulation file at a given frame number.        
+    """
+
     if feed_every_n_timesteps == 0 or frameno % feed_every_n_timesteps != 0 or frameno == 0:
         return posdata
     # For simplicity's sake, I am going to assume :
@@ -216,6 +250,8 @@ def feed_particles_from_bottom(posdata, feed_every_n_timesteps, feed_from_file, 
 
 
 def close_particles(bead_positions, bead_sizes, cutoff_factor, box_bottom_left=np.array([0, 0, 0]), box_top_right=np.array([0, 0, 0]), O_infinity=np.array([0, 0, 0]), E_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]), frameno=0, timestep=0.1, amplitude=1, frequency=1):
+    """Find particles that are closer than a given cutoff."""
+        
     from scipy.spatial.distance import pdist, squareform
     cutoff = 2*cutoff_factor
     middle_of_box = 0.5*(box_bottom_left+box_top_right)-box_bottom_left
