@@ -198,8 +198,8 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
     """
     
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax, num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
-    # Get inputs first time in "video" mode, i.e. no complex calculations for Fa_in, etc. This is really just to get the values of box_bottom_left and box_top_right.
-    (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in, input_description, U_infinity, O_infinity, centre_of_background_flow, amplitude, frequency,  box_bottom_left, box_top_right, mu) = input_ftsuoe(input_number, posdata, frameno, timestep, last_velocities, input_form=input_form, video=True)
+    # Get inputs first time in "skip_computation" mode, i.e. no complex calculations for Fa_in, etc. This is really just to get the values of box_bottom_left and box_top_right.
+    (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in, input_description, U_infinity, O_infinity, centre_of_background_flow, amplitude, frequency,  box_bottom_left, box_top_right, mu) = input_ftsuoe(input_number, posdata, frameno, timestep, last_velocities, input_form=input_form, skip_computation=True)
 
     force_on_wall_due_to_dumbbells = 0
 
@@ -243,7 +243,7 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
             # Call this the same name to reduce memory requirements (no need to reproduce)
             grand_resistance_matrix = fts_to_fte_matrix(posdata, grand_resistance_matrix)
 
-            # Get inputs a second time not in video mode, putting in the grand resistance matrix which is needed for some calculations with friction.
+            # Get inputs a second time not in "skip_computation" mode, putting in the grand resistance matrix which is needed for some calculations with friction.
             (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in, input_description, U_infinity, O_infinity, centre_of_background_flow, amplitude, frequency,  box_bottom_left, box_top_right, mu) = input_ftsuoe(input_number, posdata, frameno, timestep, last_velocities, input_form=input_form, grand_resistance_matrix_fte=grand_resistance_matrix)
             try:
                 force_vector = construct_force_vector_from_fts(posdata, Fa_in, Ta_in, Ea_in, Fb_in, DFb_in)

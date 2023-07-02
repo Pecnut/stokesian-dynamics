@@ -627,7 +627,7 @@ if num_spheres > 0 and input_form in ["duf", "RPY_dumbbells_only", "stokes_drag_
 if num_spheres > 0 and input_form in ["fts"]:
     throw_warning("If you have spheres, it is more likely that you want to use FTE, UFTE or UFTEU form, rather than FTS.")
 
-Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in, input_description, U_infinity, O_infinity, centre_of_background_flow, amplitude, frequency, box_bottom_left, box_top_right, mu = input_ftsuoe(input_number, posdata, 0, 0.1, [[], [], [], []], video=True, input_form=input_form)
+Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in, input_description, U_infinity, O_infinity, centre_of_background_flow, amplitude, frequency, box_bottom_left, box_top_right, mu = input_ftsuoe(input_number, posdata, 0, 0.1, [[], [], [], []], skip_computation=True, input_form=input_form)
 if Fa_in != []:
     if (Fa_in[0][0] == 99999):
         error = throw_error("Input number not recognised (you probably haven't uploaded input_setups.py recently enough)")

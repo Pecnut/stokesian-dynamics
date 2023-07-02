@@ -8,21 +8,49 @@ from functions_shared import posdata_data
 from position_setups import simple_cubic_8
 
 
-def input_ftsuoe(n, posdata, frameno, timestep, last_velocities, input_form='undefined', video=False, grand_resistance_matrix_fte=0):
+def input_ftsuoe(n, posdata, frameno, timestep, last_velocities, input_form='undefined', skip_computation=False, grand_resistance_matrix_fte=0):
+    """Define all input forces/velocities.
+    
+    Args:
+        n (int): Index which chooses one of the below input forces/velocities.
+        posdata: Position data of all particles.
+        frameno (int): Frame number of the simulation.
+        timestep: Timestep size.
+        last_velocities: Velocities of particles in previous timestep of simulation.
+        input_form (str): Specifies which of F/T/S/U/Omega/E you are providing as 
+            inputs.
+        skip_computation (bool): You might want to do some computation in this function 
+            if the forces depend on e.g. position in a nontrivial way. But you might be 
+            just calling this function to retrieve something simple like 
+            `box_bottom_left`. This flag states whether that computation is necessary 
+            (False) or whether the function is just being called to extract a constant
+            (True). You can then use this flag to skip the computation in your function.
+        grand resistance_matrix_fte: Some computation in this function might require
+            the grand resistance matrix, e.g. when computing friction. If required, 
+            this is passed in here.
+
+    Returns:
+        Fa_in:  Forces on spheres
+        Ta_in:  Torque on spheres
+        Sa_in:  Stresslets on spheres
+        Fb_in:  Forces on dumbbells (total force on dumbbell, F1+F2)
+        DFb_in: Internal force on dumbbells (Delta F = F2-F1)
+        Ua_in:  Velocity of spheres
+        Oa_in:  Angular velocity of spheres
+        Ea_in:  Rate of strain, E^infinity
+        Ub_in:  Velocity of dumbbells
+        HalfDUb_in: HALF the velocity difference of the dumbbells ((U2-U1)/2)
+        desc: Human-readable description to be added to filename.
+        U_infinity, O_infinity, centre_of_background_flow: Background flow.
+        amplitude, frequency: Periodic shear parameters.
+        box_bottom_left, box_top_right: Size of periodic box if desired. Simulation is
+            assumed non-periodic if these are equal.
+        mu: Newtonian background fluid viscosity.
+    """
+
     # Initialise all vectors in the left and right-hand sides. Then define num_spheres and num_dumbbells
     (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in) = empty_vectors(posdata)
     (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
-
-    # Fa_in:  Forces on spheres
-    # Ta_in:  Torque on spheres
-    # Sa_in:  Stresslets on spheres
-    # Fb_in:  Forces on dumbbells (total force on dumbbell, F1+F2)
-    # DFb_in: Internal force on dumbbells (Delta F = F2-F1)
-    # Ua_in:  Velocity of spheres
-    # Oa_in:  Angular velocity of spheres
-    # Ea_in:  Rate of strain, E^infinity
-    # Ub_in:  Velocity of dumbbells
-    # HalfDUb_in: HALF the velocity difference of the dumbbells ((U2-U1)/2)
 
     # Give values. You must give at least half the total number of U/O/E/F/T/S values.
     # If you are giving a mix of F and U values for spheres,   you must put label the spheres   s.t. the fixed velocity spheres   are numbered first.
@@ -111,6 +139,20 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities, input_form='und
 
 
 def repulsion_forces(strength, tau, num_spheres, num_dumbbells, sphere_positions, dumbbell_positions, dumbbell_deltax, sphere_sizes, dumbbell_sizes, num_sphere_in_each_lid, Fa_in, Fb_in, DFb_in, last_velocities=[0, 0, 0]):
+    """Add repulsion forces between close particles.
+    
+    Args:
+        strength, tau: Parameters in the force function.
+        num_spheres, ..., num_sphere_in_each_lid: Positions and counts of particles.
+        Fa_in, Fb_in, DFb_in: Current forces acting on spheres and dumbbells.
+        last_velocities: Velocities of particles at the previous timestep.
+
+    Returns:
+        Fa_in, Fb_in, DFb_in: Forces acting on the spheres and dumbbells after 
+            repulsion added.
+    """
+    
+    
     bead_force = [[0, 0, 0] for i in range(num_spheres + 2*num_dumbbells)]
     bead_positions = np.concatenate([sphere_positions, dumbbell_positions - 0.5*dumbbell_deltax, dumbbell_positions + 0.5*dumbbell_deltax])
     bead_sizes = np.concatenate([sphere_sizes, dumbbell_sizes, dumbbell_sizes])
@@ -157,12 +199,28 @@ def repulsion_forces(strength, tau, num_spheres, num_dumbbells, sphere_positions
 
 
 def oscillatory_shear(amplitude, period, start_from_frame, frameno, timestep, centre_of_background_flow=np.array([0, 0, 0]), num_spheres=1, unused_axis=1, transpose_shear=False, opposite_direction=False):
-    # unused_axis=1 means shear /_/ looking side-on.
-    # unused_axis=2 means shear /_/ looking top-down.
-    #                        /|                     _
-    # transpose_shear means |/  ("zx") rather than /_/ ("xz"), for example.
+    """Define background flow for an oscillatory shear at a given time, "aw cos(wt)".
+
+    Args:
+        amplitude: Amplitude of oscillation. Directly returned.
+        period: Period of oscillation. 
+        start_from_frame: Frame number the simulation started at (might be nonzero if
+            simulation has been started from a checkpoint).
+        frameno: Frame number.
+        timestep: Timestep size.
+        centre_of_background_flow: Coordinates of background flow centre point.
+        num_spheres: Number of spheres in the simulation (used for size of Ea_in).
+        unused_axis: 1 means shear /_/ looking side-on.
+                     2 means shear /_/ looking top-down.
+        transpose_shear (bool): True means e.g. /| ("zx") rather than  _  ("xz").
+                                               |/                     /_/
+        
+    Returns: 
+        Ea_in, U_infinity, O_infinity, centre_of_background_flow, amplitude, angular_frequency.
+    """
+
     angular_frequency = 2*np.pi/(period)  # Angular frequency is omega = 2pi/T,  frequency is f = 1/T
-    t = ((frameno+start_from_frame)*timestep)       # why the devil was there a 0.5 there?!
+    t = ((frameno+start_from_frame)*timestep)
     gammadot = (amplitude*angular_frequency)*np.cos(t*angular_frequency)
     U_infinity = np.array([0, 0, 0])
     if transpose_shear:

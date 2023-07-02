@@ -145,7 +145,7 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]), view_label
         DFbX = DFb_out[frameno]
 
     # FOR PERIODIC, let's get it to repeat itself left and right
-    Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in, desc, U_infinity, O_infinity, centre_of_background_flow, amplitude, frequency, box_bottom_left, box_top_right, mu = input_ftsuoe(input_number, posdata, real_frameno, timestep, [[], [], [], []], video=True)
+    Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in, desc, U_infinity, O_infinity, centre_of_background_flow, amplitude, frequency, box_bottom_left, box_top_right, mu = input_ftsuoe(input_number, posdata, real_frameno, timestep, [[], [], [], []], skip_computation=True)
     if np.linalg.norm(box_top_right - box_bottom_left) > 0:  # Periodic
         E_infinity = Ea_in[0]
 
