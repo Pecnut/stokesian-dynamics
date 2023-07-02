@@ -4,7 +4,7 @@ This is a Python 3 implementation of [Stokesian Dynamics](http://authors.library
 
 ## Table of contents ##
 
-  * [0. Whom do I talk to?](#s0)
+  * [0. Contact details and how to contribute](#s0)
   * [1. What is Stokesian Dynamics?](#s1)
   * [2. What can this software do?](#s2)
   * [3. What are its limitations?](#s3)
@@ -19,9 +19,11 @@ This is a Python 3 implementation of [Stokesian Dynamics](http://authors.library
   * [12. Known issues](#s12)
 
 
-## 0. Whom do I talk to? <a name="s0"></a> ##
+## 0. Contact details and how to contribute <a name="s0"></a> ##
 
-* Adam Townsend ([adamtownsend.com](http://adamtownsend.com/), [@Pecnut](https://twitter.com/pecnut))
+* This code is written by Adam Townsend ([adamtownsend.com](http://adamtownsend.com/), [@Pecnut](https://twitter.com/pecnut)).
+* Feel free to [post in the discussion forum](https://github.com/Pecnut/stokesian-dynamics/discussions) with questions or ideas if you are happy to comment publicly.
+* You can also [create a new issue](https://github.com/Pecnut/stokesian-dynamics/issues) in the GitHub repository if you want to report a bug.
 
 ## 1. What is Stokesian Dynamics? <a name="s1"></a> ##
 
@@ -68,7 +70,6 @@ With the exception of Numba, you probably have most of these installed already. 
 
 ## 5. How to set up the software <a name="s5"></a> ##
 1. Download the software into its own folder. The easiest way to do this is to navigate to the folder in Terminal that you want to download the Stokesian Dynamics folder into, and to type `git clone` followed by the address you find at the top of this page when you change the SSH dropdown to HTTPS (the address you need should look something like `https://github.com/Pecnut/stokesian-dynamics.git`).
-1. Open up **function_email.py**. The software emails you when the simulation is complete. Change this function to include your email details. It is already set up for Gmail accounts, although you will need to alter some settings in your Gmail profile to allow external programs to send through it. If you want to remove this feature, simply comment out the contents of the function.
 1. **You can speed up the code using Numba.** [Numba](https://numba.readthedocs.io/en/stable/user/5minguide.html) is a Python package which can dramatically speed up functions. It does this by optimising functions which are 'decorated' with the `@njit` label in the code. A number of core functions in this software are decorated with this label. Numba is turned OFF by default; turn it on by changing `config.DISABLE_JIT` in `inputs.py` to `False`. The optimisation happens the first time a function is called, so when Numba is enabled, the first timestep will be slow, but the rest will be very fast. It is therefore worth turning on for most simulations.
 
 The software should now be ready to run.
@@ -177,7 +178,7 @@ See `examples/example-b.py` for more.
 
 ### (c) Fig. 1 of Brady et al. (1988) (periodic)
 [Sierou & Brady, 2001](https://doi.org/10.1017/S0022112001005912). Accelerated Stokesian Dynamics simulations. *Journal of Fluid Mechanics*, **448**, 115--146. Figure 9.
-correction to
+Correction to
 [Brady, Phillips, Lester & Bossis, 1988](https://doi.org/10.1017/S0022112088002411). Dynamic simulation of hydrodynamically interacting suspensions. *Journal of Fluid Mechanics* **195**, 257–280. Figure 1.
 
 A simple cubic array sediments vertically under a constant force. The velocity is measured for different particle concentrations. Vary the concentration by altering the cubic lattice size.

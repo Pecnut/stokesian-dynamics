@@ -5,7 +5,8 @@ If you find a bug, please report it on the [issue tracker](https://github.com/pe
 
 ## Suggesting enhancements
 If you want to suggest a new feature or an improvement of a current feature, you can submit this
-on the [issue tracker](https://github.com/pecnut/stokesian-dynamics/issues/new).
+on the [issue tracker](https://github.com/pecnut/stokesian-dynamics/issues/new) or use the
+[discussion forum](https://github.com/Pecnut/stokesian-dynamics/discussions).
 
 ## Submitting a pull request
 If you want to directly submit code to the project, you can do this by forking the repo, then submitting a pull request.

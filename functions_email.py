@@ -3,6 +3,18 @@
 # Adam Townsend, adam@adamtownsend.com, 25/05/2017
 
 def send_email(subject, body):
+    """Send an email. 
+
+    Is only executed if `send_email = True` in inputs.py.
+    Set up to work for Gmail accounts but requires some configuring of your
+    account.
+
+    Args:
+        subject: Subject of the email
+        body: Body text of the email
+
+    Prints success or failure statement.
+    """
     import smtplib
 
     gmail_user = "YOURGMAIL@gmail.com"

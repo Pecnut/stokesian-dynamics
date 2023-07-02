@@ -130,7 +130,7 @@ how_far_to_reproduce_gridpoints = 2
 # Set level of output to screen. # 0 = minimal output, 1 = separation distance and velocities, 2 = matrices, 3 = individual calculations
 printout = 0
 
-# Send email on completion?
+# Send email on completion? Set this up in functions_email.py.
 send_email = False
 
 # View graphics? (Note: doesn't save a video. To do that, use plot_particle_positions_video.py after the fact.)
