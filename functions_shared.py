@@ -6,6 +6,7 @@ import numpy as np
 from numpy import sqrt
 import time
 import sys
+from numba import njit
 
 
 def throw_error(message):
@@ -21,6 +22,7 @@ def throw_warning(message):
     print(word_error + message)
 
 
+@njit
 def norm(x):
     """Returns Euclidean norm of a vector x."""
     return (x[0]**2 + x[1]**2 + x[2]**2)**0.5
@@ -48,6 +50,7 @@ def kronkron(i, j, k, l):
     return float(i == j & k == l)
 
 
+@njit
 def levi(i, j, k):
     """Levi-Civita symbol:  epsilon_ijk"""
     if i == j or j == k or k == i:

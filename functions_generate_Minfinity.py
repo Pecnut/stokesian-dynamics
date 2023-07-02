@@ -6,7 +6,7 @@
 
 import numpy as np
 from numpy import sqrt, pi
-from functions_shared import posdata_data
+from functions_shared import posdata_data, levi, norm
 from inputs import bead_bead_interactions
 from scipy.sparse import coo_matrix
 from numba import njit
@@ -42,18 +42,6 @@ kronkronmatrix = [[[[1, 0, 0, 0, 0],   [0, 1, 0, 0, 0],   [0, 0, 1, 0, 0],   [0,
 kronmatrix = np.array(kronmatrix)
 kronkronmatrix = np.array(kronkronmatrix)
 
-@njit
-def levi(i, j, k):
-    if i == j or j == k or k == i:
-        return 0
-    elif [i, j, k] in [[0, 1, 2], [1, 2, 0], [2, 0, 1]]:
-        return 1
-    else:
-        return -1
-    
-@njit
-def norm(x):
-    return (x[0]**2 + x[1]**2 + x[2]**2)**0.5
 
 # O(J)
 @njit

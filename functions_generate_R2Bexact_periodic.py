@@ -6,7 +6,7 @@
 
 import numpy as np
 from numpy import sqrt
-from functions_shared import posdata_data
+from functions_shared import posdata_data, levi
 from scipy import sparse
 from scipy.sparse import lil_matrix, coo_matrix
 from inputs import s_dash_range, range_len_of_s_dash_range, lam_range_with_reciprocals, XYZ_raw, fully_2d_problem, bead_bead_interactions
@@ -16,16 +16,6 @@ from numba import njit
 s3 = sqrt(3)
 s2 = sqrt(2)
 kronmatrix = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-
-
-@njit
-def levi(i, j, k):
-    if i == j or j == k or k == i:
-        return 0
-    elif [i, j, k] in [[0, 1, 2], [1, 2, 0], [2, 0, 1]]:
-        return 1
-    else:
-        return -1
 
 
 @njit
