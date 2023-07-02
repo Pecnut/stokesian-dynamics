@@ -10,7 +10,6 @@ from mpl_toolkits.mplot3d import proj3d
 from functions_graphics import *
 import sys
 from functions_shared import add_sphere_rotations_to_positions
-from functions_timestepping import orthogonal_proj
 
 rcParams['figure.figsize'] = 5, 5
 filename = 'filename'
@@ -72,15 +71,15 @@ ax.auto_scale_xyz(v[0], v[1], v[2])
 ax.set_xlim3d(v[0, 0], v[0, 1])
 ax.set_ylim3d(v[1, 0], v[1, 1])
 ax.set_zlim3d(v[2, 0], v[2, 1])
+ax.set_box_aspect((1, 1, 1), zoom=1.4)
 if two_d_plot == 1:
-    proj3d.persp_transformation = orthogonal_proj
+    ax.set_proj_type('ortho')
     ax.set_yticks([])
 else:
     ax.set_ylabel("$y$")
 ax.set_xlabel("$x$")
 ax.set_zlabel("$z$")
 fig.tight_layout()
-ax.dist = 6.85
 
 # Pictures
 if viewbox_bottomleft_topright.size == 0:

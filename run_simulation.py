@@ -7,7 +7,7 @@
 # by passing them in as arguments from the command line
 from functions_email import send_email
 from functions_shared import posdata_data, format_elapsed_time, feed_particles_from_bottom, throw_error, throw_warning
-from functions_timestepping import euler_timestep, ab2_timestep, did_something_go_wrong_with_dumbells, euler_timestep_rotation, ab2_timestep_rotation, orthogonal_proj, do_we_have_all_size_ratios, generate_output_FTSUOE, are_some_of_the_particles_too_close
+from functions_timestepping import euler_timestep, ab2_timestep, did_something_go_wrong_with_dumbells, euler_timestep_rotation, ab2_timestep_rotation, do_we_have_all_size_ratios, generate_output_FTSUOE, are_some_of_the_particles_too_close
 from input_setups import input_ftsuoe
 from inputs import cutoff_factor, num_frames, text_only, viewbox_bottomleft_topright, printout, setup_number, running_on_legion, \
     posdata, setup_description, s_dash_range, lam_range, lam_range_with_reciprocals, XYZ_raw, view_labels, fps, viewing_angle, timestep, \
@@ -81,15 +81,15 @@ if text_only == 0:
     ax.set_xlim3d(v[0, 0], v[0, 1])
     ax.set_ylim3d(v[1, 0], v[1, 1])
     ax.set_zlim3d(v[2, 0], v[2, 1])
+    ax.set_box_aspect((1, 1, 1), zoom=1.4)
     if two_d_plot == 1:
-        proj3d.persp_transformation = orthogonal_proj
+        ax.set_proj_type('ortho')
         ax.set_yticks([])
     else:
         ax.set_ylabel("$y$")
     ax.set_xlabel("$x$")
     ax.set_zlabel("$z$")
     fig.tight_layout()
-    ax.dist = 6.85
 
 
 def initialise_frame():
@@ -248,7 +248,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
             new_dumbbell_positions = np.copy(dumbbell_positions)
             new_dumbbell_deltax = np.copy(dumbbell_deltax)
 
-        if timestepping_scheme in ['euler','ab2']:
+        if timestepping_scheme in ['euler', 'ab2']:
             # EULER OR TWO-STEP ADAMS-BASHFORTH TIMESTEP
             new_sphere_rotations = (np.copy(sphere_rotations)).astype('float')
 
@@ -280,7 +280,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
                     new_dumbbell_deltax = euler_timestep(dumbbell_deltax, 2 * HalfDUb_out_plus_infinities_k1, timestep)
                 else:
                     new_dumbbell_positions = ab2_timestep(dumbbell_positions, Ub_out_plus_infinities_k1, last_velocities[1], timestep)
-                    new_dumbbell_deltax = ab2_timestep(dumbbell_deltax, 2 * HalfDUb_out_plus_infinities_k1, 2 * last_velocities[2], timestep)                    
+                    new_dumbbell_deltax = ab2_timestep(dumbbell_deltax, 2 * HalfDUb_out_plus_infinities_k1, 2 * last_velocities[2], timestep)
                 error = did_something_go_wrong_with_dumbells(error, dumbbell_deltax, new_dumbbell_deltax, explosion_protection)
                 if periodic:
                     new_dumbbell_positions = wrap_around(new_dumbbell_positions, box_bottom_left, box_top_right, frameno + 1, timestep, O_infinity_k1, Ea_out_k1[0], frequency=frequency, amplitude=amplitude)
@@ -308,7 +308,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
             if num_dumbbells == 0:
                 dumbbell_positions_k1, dumbbell_positions_k2, dumbbell_positions_k3 = np.copy(dumbbell_positions), np.copy(dumbbell_positions), np.copy(dumbbell_positions)
                 dumbbell_deltax_k1, dumbbell_deltax_k2, dumbbell_deltax_k3 = np.copy(dumbbell_deltax), np.copy(dumbbell_deltax), np.copy(dumbbell_deltax)
-            
+
             # K1
             Fa_out_k1, Ta_out_k1, Sa_out_k1, Fb_out_k1, DFb_out_k1, Ua_out_k1, Oa_out_k1, Ea_out_k1, Ub_out_k1, HalfDUb_out_k1, last_generated_Minfinity_inverse, gen_times, U_infinity_k1, O_infinity_k1, centre_of_background_flow, force_on_wall_due_to_dumbbells_k1, last_velocity_vector = generate_output_FTSUOE(
                 posdata, frameno, timestep, input_number, last_generated_Minfinity_inverse, regenerate_Minfinity, input_form, cutoff_factor, printout, use_XYZd_values, use_drag_Minfinity, use_Minfinity_only, extract_force_on_wall_due_to_dumbbells, last_velocities, last_velocity_vector, checkpoint_start_from_frame, box_bottom_left, box_top_right, feed_every_n_timesteps=feed_every_n_timesteps)
@@ -662,9 +662,12 @@ if error == 0:
     r2b_status = ["ON", "OFF"][use_Minfinity_only]
     bead_bead_status = ["OFF", "ON"][bead_bead_interactions]
     periodic_status = ["ON", "OFF"][np.array_equal(box_bottom_left - box_top_right, np.array([0, 0, 0]))]
-    if timestepping_scheme == "euler": timestep_method = "Euler"
-    if timestepping_scheme == "ab2": timestep_method = "AB2"
-    if timestepping_scheme == "rk4": timestep_method = "RK4"
+    if timestepping_scheme == "euler":
+        timestep_method = "Euler"
+    if timestepping_scheme == "ab2":
+        timestep_method = "AB2"
+    if timestepping_scheme == "rk4":
+        timestep_method = "RK4"
 
     matrix_size = sizeof_fmt(48 * (11 * num_spheres + 6 * num_dumbbells)**2)
 

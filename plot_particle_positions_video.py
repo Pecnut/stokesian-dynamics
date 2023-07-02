@@ -10,7 +10,6 @@ import time
 from input_setups import input_ftsuoe
 from position_setups import pos_setup
 from functions_shared import add_sphere_rotations_to_positions, format_elapsed_time
-from functions_timestepping import orthogonal_proj
 from functions_graphics import *
 from mpl_toolkits.mplot3d import proj3d
 from matplotlib import animation, rcParams
@@ -88,15 +87,15 @@ ax.auto_scale_xyz(v[0], v[1], v[2])
 ax.set_xlim3d(v[0, 0], v[0, 1])
 ax.set_ylim3d(v[1, 0], v[1, 1])
 ax.set_zlim3d(v[2, 0], v[2, 1])
+ax.set_box_aspect((1, 1, 1), zoom=1.4)
 if two_d_plot == 1:
-    proj3d.persp_transformation = orthogonal_proj
+    ax.set_proj_type('ortho')
     ax.set_yticks([])
 else:
     ax.set_ylabel("$y$")
 ax.set_xlabel("$x$")
 ax.set_zlabel("$z$")
 fig.tight_layout()
-ax.dist = 6.85
 times = [0 for i in range(num_frames)]
 
 # Pictures
