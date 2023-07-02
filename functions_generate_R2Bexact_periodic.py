@@ -33,7 +33,7 @@ def L3(d, i, j):
     if i == j:
         return 0
     else:
-        return sum(levi(i, j, k)*d[k] for k in range(3) if k not in [i, j])
+        return sum([levi(i, j, k)*d[k] for k in range(3) if k not in [i, j]])
 
 
 @njit
@@ -48,9 +48,10 @@ def L5(d, i, j, k):
 
 @njit
 def L6(d, i, j, k):
-    return sum(
+    return sum([
         levi(i, k, l) * d[l] * d[j] for l in range(3) if l not in [i, k]
-    ) + sum(levi(j, k, l) * d[l] * d[i] for l in range(3) if l not in [k, j])
+    ]) + sum([
+        levi(j, k, l) * d[l] * d[i] for l in range(3) if l not in [k, j]])
 
 
 @njit

@@ -52,7 +52,7 @@ def J(ri,rj,i,j,ss):
 @njit
 def R(r,ss,i,j):
     return -0.5*sum(
-        levi(j,k,l)*D_J(r,ss,k,i,l) for k in range (3) for l in range(3) if k!=l and j!=k and j!=l
+        [levi(j,k,l)*D_J(r,ss,k,i,l) for k in range (3) for l in range(3) if k!=l and j!=k and j!=l]
         )
 
 @njit
@@ -71,9 +71,9 @@ def DD_J(r,ss,m,l,i,j):
 
 @njit
 def D_R(r,ss,l,i,j):
-    return -0.5 * sum(
+    return -0.5 * sum([
         levi(j,m,n) * DD_J(r,ss,l,m,i,n) 
-         for m in range(3) for n in range(3) if m!=n and m!=j and n!=j)
+         for m in range(3) for n in range(3) if m!=n and m!=j and n!=j])
 
 @njit
 def D_K(r,ss,l,i,j,k):
@@ -90,9 +90,9 @@ def DLap_J(r,ss,k,i,j):
 
 @njit
 def Lap_R(r,ss,i,j):
-    return -0.5*sum(
+    return -0.5*sum([
         levi(j,k,l) * DLap_J(r,ss,k,i,l) 
-        for k in range(3) for l in range(3) if k!=l and j!=k and j!=k)
+        for k in range(3) for l in range(3) if k!=l and j!=k and j!=k])
 
 
 @njit
@@ -128,19 +128,18 @@ def M13(r,s,a1,a2, i, j, k,c,mu):
 @njit
 def M22(r,s,a1,a2, i, j,c,mu):
     if abs(r[0]) + abs(r[1]) + abs(r[2]) > 1e-10:
-        return c*0.5*sum( 
+        return c*0.5*sum([ 
             levi(i,k,l)*D_R(r,s,k,l,j) 
-            for k in range(3) for l in range(3) if k!=l and i!=k and i!=l)
+            for k in range(3) for l in range(3) if k!=l and i!=k and i!=l])
     else:
         return kronmatrix[i][j]/(8*pi*mu*a1**3)
 
 @njit
 def M23(r,s,a1,a2, i, j, k,c,mu):
     if abs(r[0]) + abs(r[1]) + abs(r[2]) > 1e-10:
-        return c*-0.5*sum(
+        return c*-0.5*sum([
             levi(i,l,m) * (D_K(r,s,l,m,j,k) + (a2**2/6.)*DLap_K(r,s,l,m,j,k)) 
-            for l in range(3) for m in range(3) if l!=m and i!=l and i!=m
-            )
+            for l in range(3) for m in range(3) if l!=m and i!=l and i!=m])
     else:
         return 0
 
