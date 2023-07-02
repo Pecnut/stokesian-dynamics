@@ -10,6 +10,8 @@ from mpl_toolkits.mplot3d import proj3d
 from functions_graphics import *
 import sys
 from functions_shared import add_sphere_rotations_to_positions
+from functions_timestepping import orthogonal_proj
+
 rcParams['figure.figsize'] = 5, 5
 filename = 'filename'
 frameno = 0
@@ -45,16 +47,6 @@ Ua_out = [[0, 0, 0] for i in range(num_spheres)]
 
 posdata = [sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax]
 previous_step_posdata = posdata
-
-
-def orthogonal_proj(zfront, zback):
-    a = (zfront+zback)/(zfront-zback)
-    b = -2*(zfront*zback)/(zfront-zback)
-    return np.array([[1, 0, 0, 0],
-                     [0, 1, 0, 0],
-                     [0, 0, a, b],
-                     [0, 0, -0.0001, zback]])
-
 
 # Pictures initialise
 rcParams.update({'font.size': 12})

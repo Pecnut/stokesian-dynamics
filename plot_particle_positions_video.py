@@ -10,6 +10,7 @@ import time
 from input_setups import input_ftsuoe
 from position_setups import pos_setup
 from functions_shared import add_sphere_rotations_to_positions, format_elapsed_time
+from functions_timestepping import orthogonal_proj
 from functions_graphics import *
 from mpl_toolkits.mplot3d import proj3d
 from matplotlib import animation, rcParams
@@ -62,16 +63,6 @@ num_spheres = num_particles - num_dumbbells
 sphere_sizes = np.array([1 for i in range(num_spheres)])
 dumbbell_sizes = np.array([0.1 for i in range(num_dumbbells)])
 max_DFb_out = 1
-
-
-def orthogonal_proj(zfront, zback):
-    a = (zfront+zback)/(zfront-zback)
-    b = -2*(zfront*zback)/(zfront-zback)
-    return np.array([[1, 0, 0, 0],
-                     [0, 1, 0, 0],
-                     [0, 0, a, b],
-                     [0, 0, -0.0001, zback]])
-
 
 # Pictures initialise
 rcParams.update({'font.size': 12})
