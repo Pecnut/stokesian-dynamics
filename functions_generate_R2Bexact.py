@@ -6,9 +6,8 @@
 
 import numpy as np
 from numpy import sqrt
-from functions_shared import posdata_data, levi
+from functions_shared import posdata_data, levi, close_particles
 from scipy import sparse
-from scipy.sparse import lil_matrix, coo_matrix
 from inputs import s_dash_range, lam_range_with_reciprocals, XYZ_raw, fully_2d_problem, bead_bead_interactions
 from numba import njit
 
@@ -32,7 +31,7 @@ def L3(d, i, j):
     if i == j:
         return 0
     else:
-        return sum(levi(i, j, k) * d[k] for k in range(3) if k not in [i, j])
+        return sum([levi(i, j, k) * d[k] for k in range(3) if k not in [i, j]])
 
 
 @njit
@@ -47,9 +46,10 @@ def L5(d, i, j, k):
 
 @njit
 def L6(d, i, j, k):
-    return sum(
+    return sum([
         levi(i, k, l) * d[l] * d[j] for l in range(3) if l not in [i, k]
-    ) + sum(levi(j, k, l) * d[l] * d[i] for l in range(3) if l not in [k, j])
+    ]) + sum([
+        levi(j, k, l) * d[l] * d[i] for l in range(3) if l not in [k, j]])
 
 
 @njit
@@ -225,15 +225,15 @@ def XYZ(scalar_index, gamma, s_dash, lam_index):
     if s_dash > s_dash_range[-1]:
         print("S DASH OUT OF RANGE, functions_generate_R2Bexact.py")
     return np.interp(s_dash, s_dash_range, interp_y)
-    # return np.interp(s_dash, s_dash_range, interp_y, right=0) # Numba only has a version of interp for the first three arguments.
+    # return np.interp(s_dash, s_dash_range, interp_y, right=0) # Numba only has a version of interp for the first three arguments. (Originally from non-periodic.)
+    # return np.interp(s_dash,s_dash_range,interp_y,left=XYZ_raw[scalar_index,gamma,0,lam_index],right=0) # Numba only has a version of interp for the first three arguments. (Originally from periodic.)
 
 
 def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoint_start_from_frame=0, feed_every_n_timesteps=0, mu=1):
-    from functions_shared import close_particles
     global fully_2d_problem, size_ratio_matrix, average_size_matrix, upper_triangle
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
     R2Bexact_sidelength = 11 * num_spheres + 6 * num_dumbbells
-    R2Bexact = lil_matrix((R2Bexact_sidelength, R2Bexact_sidelength), dtype=float)
+    R2Bexact = sparse.lil_matrix((R2Bexact_sidelength, R2Bexact_sidelength), dtype=float)
     bead_positions = np.concatenate([sphere_positions, dumbbell_positions - 0.5 * dumbbell_deltax, dumbbell_positions + 0.5 * dumbbell_deltax])
     bead_sizes = np.concatenate([sphere_sizes, dumbbell_sizes, dumbbell_sizes])
 
@@ -456,6 +456,6 @@ def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoin
     Lrow = np.array([i for i in range(11 * num_spheres + 6 * num_dumbbells)] + [i + 11 * num_spheres for i in range(3 * num_dumbbells)] + [i + 11 * num_spheres + 3 * num_dumbbells for i in range(3 * num_dumbbells)])
     Lcol = np.array([i for i in range(11 * num_spheres + 6 * num_dumbbells)] + [i + 11 * num_spheres + 3 * num_dumbbells for i in range(3 * num_dumbbells)] + [i + 11 * num_spheres for i in range(3 * num_dumbbells)])
     Ldata = np.array([1 for i in range(11 * num_spheres + 9 * num_dumbbells)] + [-1 for i in range(3 * num_dumbbells)])
-    L = coo_matrix((Ldata, (Lrow, Lcol)), shape=(11 * num_spheres + 6 * num_dumbbells, 11 * num_spheres + 6 * num_dumbbells))
+    L = sparse.coo_matrix((Ldata, (Lrow, Lcol)), shape=(11 * num_spheres + 6 * num_dumbbells, 11 * num_spheres + 6 * num_dumbbells))
     R = L.transpose()
     return (mu * (L * R2Bexact * R), "R2Bexact")
