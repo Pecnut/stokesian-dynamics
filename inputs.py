@@ -3,11 +3,11 @@
 # Adam Townsend, adam@adamtownsend.com, 07/06/2017
 
 import sys  # Overrides from command line at the bottom of this script
-import numpy as np
-from position_setups import pos_setup
 import glob
-from functions_shared import add_sphere_rotations_to_positions, throw_error
+import numpy as np
 from numba import config
+from position_setups import pos_setup
+from functions_shared import add_sphere_rotations_to_positions, throw_error
 
 
 # --------------------
