@@ -3,8 +3,6 @@
 # Adam Townsend, adam@adamtownsend.com, 07/06/2017
 
 import numpy as np
-import scipy
-from scipy.sparse.linalg import lgmres, spsolve, LinearOperator
 from numpy import linalg
 from functions_generate_grand_mobility_matrix import generate_grand_resistance_matrix, generate_grand_resistance_matrix_periodic
 from functions_shared import posdata_data, format_elapsed_time, throw_error
@@ -14,14 +12,29 @@ import time
 
 
 def euler_timestep(x, u, timestep):
+    """Returns the next Euler timestep, `x + timestep * u`."""
     return (x + timestep * u).astype('float')
 
 
 def ab2_timestep(x, u, u_previous, timestep):
+    """Returns the next Adams-Bashforth 2 timestep."""
     return x + timestep * (1.5 * u - 0.5 * u_previous)
 
 
 def did_something_go_wrong_with_dumbells(error, dumbbell_deltax, new_dumbbell_deltax, explosion_protection):
+    """Check new dumbbell lengths for signs of numerical explosion.
+    
+    Specifically, see whether dumbbells have rotated or stretched too far in a timestep.
+
+    Args:
+        error (bool): Current error flag from any previous error checks.
+        dumbbell_deltax: Existing dumbbell displacements.
+        new_dumbbell_deltax: New dumbbell displacements after timestep.
+        explosion_protection (bool): Flag whether to enact the length check.
+    
+    Returns:
+        error: True if these checks flag up problems, else passes through inputted value."""
+    
     for i in range(new_dumbbell_deltax.shape[0]):
         if np.arccos(np.round(np.dot(dumbbell_deltax[i], new_dumbbell_deltax[i]) / (np.linalg.norm(dumbbell_deltax[i]) * np.linalg.norm(new_dumbbell_deltax[i])), 4)) > np.pi / 2:
             print(" ")
@@ -40,6 +53,10 @@ def did_something_go_wrong_with_dumbells(error, dumbbell_deltax, new_dumbbell_de
 
 
 def euler_timestep_rotation(sphere_positions, sphere_rotations, new_sphere_positions, new_sphere_rotations, Oa_out, timestep):
+    """Returns new rotation vectors after an Euler timestep using Oa_out as the velocity.
+    
+    See comments inside the function for details."""
+
     for i in range(sphere_positions.shape[0]):
         R0 = sphere_positions[i]
         O = (Oa_out[i][0] ** 2 + Oa_out[i][1] ** 2 + Oa_out[i][2] ** 2) ** 0.5
@@ -93,7 +110,10 @@ def euler_timestep_rotation(sphere_positions, sphere_rotations, new_sphere_posit
 
 
 def ab2_timestep_rotation(sphere_positions, sphere_rotations, new_sphere_positions, new_sphere_rotations, Oa_out, Oa_out_previous, timestep):
-    # AB2 = Euler (x_n + u_n * dt) but with u_n replaced by (1.5 u_n - 0.5 u_{n-1})
+    """Returns new rotation vectors after an Adams-Bashforth 2 timestep using Oa_out as the velocity.
+
+    AB2 = Euler (x_n + u_n * dt) but with u_n replaced by (1.5 u_n - 0.5 u_{n-1})
+    """
     combined_Oa_for_ab2 = 1.5 * Oa_out - 0.5 * Oa_out_previous
     return euler_timestep_rotation(sphere_positions, sphere_rotations, new_sphere_positions, new_sphere_rotations, combined_Oa_for_ab2, timestep)
 
@@ -108,6 +128,7 @@ def orthogonal_proj(zfront, zback):
 
 
 def do_we_have_all_size_ratios(error, element_sizes, lam_range, num_spheres):
+
     lambda_matrix = element_sizes / element_sizes[:, None]
     lam_range_including_reciprocals = np.concatenate([lam_range, 1 / lam_range])
     do_we_have_it_matrix = np.in1d(lambda_matrix, lam_range_including_reciprocals).reshape([len(element_sizes), len(element_sizes)])
@@ -133,6 +154,10 @@ def do_we_have_all_size_ratios(error, element_sizes, lam_range, num_spheres):
 
 
 def are_some_of_the_particles_too_close(error, printout, s_dash_range, sphere_positions, dumbbell_positions, dumbbell_deltax, sphere_sizes, dumbbell_sizes, element_positions):
+    """Customise me: A function you can adapt to check if particles are too close.
+    
+    By default, just returns the value of the `error` flag given to it."""
+
     # Error check 1 : are some of my particles too close together for R2Bexact?
     # min_s_dash_range = np.min(s_dash_range)  # This is the minimum s' we have calculated values for
 
@@ -161,6 +186,17 @@ def are_some_of_the_particles_too_close(error, printout, s_dash_range, sphere_po
 
 
 def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_generated_Minfinity_inverse, regenerate_Minfinity, input_form, cutoff_factor, printout, use_XYZd_values, use_drag_Minfinity, use_Minfinity_only, extract_force_on_wall_due_to_dumbbells, last_velocities, last_velocity_vector, checkpoint_start_from_frame,  box_bottom_left, box_top_right, feed_every_n_timesteps=0):
+    """Solve the grand mobility problem: for given force/velocity inputs, return all computed velocities/forces.
+
+    Args (selected):
+        posdata: Contains position, size and count data for all particles.
+        input_number: Index of the force/velocity inputs, listed in `input_setups.py`.
+
+    Returns:
+        All force and velocity data, including both that given as inputs and that 
+        computed by solving the grand mobility problem.
+    """
+    
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax, num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
     # Get inputs first time in "video" mode, i.e. no complex calculations for Fa_in, etc. This is really just to get the values of box_bottom_left and box_top_right.
     (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in, input_description, U_infinity, O_infinity, centre_of_background_flow, amplitude, frequency,  box_bottom_left, box_top_right, mu) = input_ftsuoe(input_number, posdata, frameno, timestep, last_velocities, input_form=input_form, video=True)
