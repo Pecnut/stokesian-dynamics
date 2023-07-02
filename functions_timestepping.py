@@ -225,7 +225,7 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
                 force_vector = construct_force_vector_from_fts(posdata, Ua_in[0:num_fixed_velocity_spheres] + Fa_in[num_fixed_velocity_spheres:num_spheres], Ta_in, Ea_in, Fb_in, DFb_in)
             except:
                 throw_error("UFTE mode has been selected but not enough values of U, F, T and E have been provided. At a guess, not all your spheres have either a U or an F.")
-            force_vector = np.array(force_vector, np.float)
+            force_vector = np.array(force_vector, float)
             grand_resistance_matrix_fte = fts_to_fte_matrix(posdata, grand_resistance_matrix)
             grand_resistance_matrix_ufte = fte_to_ufte_matrix(num_fixed_velocity_spheres, posdata, grand_resistance_matrix_fte)
             if extract_force_on_wall_due_to_dumbbells:
@@ -261,7 +261,7 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
             except:
                 throw_error("UFTEU mode has been selected but not enough values of U, F, T and E and U(dumbbell) have been provided. At a guess, not all your spheres/dumbbells have either a U or an F.")
 
-            force_vector = np.array(force_vector, np.float)
+            force_vector = np.array(force_vector, float)
             grand_resistance_matrix_fte = fts_to_fte_matrix(posdata, grand_resistance_matrix)
             grand_resistance_matrix_ufte = fte_to_ufte_matrix(num_fixed_velocity_spheres, posdata, grand_resistance_matrix_fte)
             grand_resistance_matrix_ufteu = ufte_to_ufteu_matrix(num_fixed_velocity_dumbbells, num_fixed_velocity_spheres, posdata, grand_resistance_matrix_ufte)
@@ -296,7 +296,7 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
                 force_vector = construct_force_vector_from_fts(posdata, Fa_in, Ta_in, Ea_in, Ub_in[0:num_fixed_velocity_dumbbells] + Fb_in[num_fixed_velocity_dumbbells:num_dumbbells], HalfDUb_in[0:num_fixed_velocity_dumbbells] + DFb_in[num_fixed_velocity_dumbbells:num_dumbbells])
             except:
                 throw_error("DUF mode has been selected but not enough values of U (dumbbell) and F (dumbbell) have been provided. At a guess, not all your dumbbells have either a U or an F.")
-            force_vector = np.array(force_vector, np.float)
+            force_vector = np.array(force_vector, float)
             grand_resistance_matrix_duf = fts_to_duf_matrix(num_fixed_velocity_dumbbells, posdata, grand_resistance_matrix)
             velocity_vector = np.linalg.solve(grand_resistance_matrix_duf, force_vector)
             (Fa_out, Oa_out, Sa_out, FUb_out, DFUb_out) = deconstruct_velocity_vector_for_fts(posdata, velocity_vector)
@@ -315,13 +315,13 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
             (Fa_out, Ta_out, Ea_out) = (Fa_in[:], Ta_in[:], Ea_in[:])
             Ua_out, Oa_out = np.array([]), np.array([])
 
-        Fa_out = np.asarray(Fa_out, np.float)
-        Ta_out = np.asarray(Ta_out, np.float)
-        Ea_out = np.asarray(Ea_out, np.float)
-        Ua_out = np.asarray(Ua_out, np.float)
-        Oa_out = np.asarray(Oa_out, np.float)
-        Ub_out = np.asarray(Ub_out, np.float)
-        HalfDUb_out = np.asarray(HalfDUb_out, np.float)
+        Fa_out = np.asarray(Fa_out, float)
+        Ta_out = np.asarray(Ta_out, float)
+        Ea_out = np.asarray(Ea_out, float)
+        Ua_out = np.asarray(Ua_out, float)
+        Oa_out = np.asarray(Oa_out, float)
+        Ub_out = np.asarray(Ub_out, float)
+        HalfDUb_out = np.asarray(HalfDUb_out, float)
 
     elapsed_solve_time = time.time() - solve_time_start
     gen_times.append(elapsed_solve_time)

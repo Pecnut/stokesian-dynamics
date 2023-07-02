@@ -59,7 +59,7 @@ def find_resistance_scalars(s_dash, lam):
                                 run_fortran(s_dash, lam, "E21"),
                                 run_fortran(s_dash, lam, "E23"),
                                 run_fortran(s_dash, lam, "E24")])
-    UOS_output = UOS_output_text.astype(np.float)
+    UOS_output = UOS_output_text.astype(float)
 
     # Reorder output -------------------------------------------------------------
     rp = 0.5 * (1 + np.sqrt(3))

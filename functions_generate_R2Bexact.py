@@ -243,7 +243,7 @@ def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoin
     global fully_2d_problem, size_ratio_matrix, average_size_matrix, upper_triangle
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
     R2Bexact_sidelength = 11 * num_spheres + 6 * num_dumbbells
-    R2Bexact = lil_matrix((R2Bexact_sidelength, R2Bexact_sidelength), dtype=np.float)
+    R2Bexact = lil_matrix((R2Bexact_sidelength, R2Bexact_sidelength), dtype=float)
     bead_positions = np.concatenate([sphere_positions, dumbbell_positions - 0.5 * dumbbell_deltax, dumbbell_positions + 0.5 * dumbbell_deltax])
     bead_sizes = np.concatenate([sphere_sizes, dumbbell_sizes, dumbbell_sizes])
 

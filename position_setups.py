@@ -426,7 +426,7 @@ def point_inside_polygon(x, y, poly):
 
 def simple_cubic_8(side_length):
     s = side_length
-    sphere_positions = np.array([[np.float(i), np.float(j), np.float(k)] for i in [-s/4, s/4] for j in [-s/4, s/4] for k in [-s/4, s/4]])
+    sphere_positions = np.array([[float(i), float(j), float(k)] for i in [-s/4, s/4] for j in [-s/4, s/4] for k in [-s/4, s/4]])
     box_bottom_left = np.array([-s/2, -s/2, -s/2])
     box_top_right = np.array([s/2, s/2, s/2])
     return sphere_positions, box_bottom_left, box_top_right

@@ -178,7 +178,7 @@ def plot_all_spheres(ax, frameno, viewbox_bottomleft_topright, posdata, previous
     spheres = []
     sphere_lines = []
     for i in range(sphere_positions.shape[0]):
-        C = between0and1(np.linalg.norm(np.array(f_spheres[i], np.float)))
+        C = between0and1(np.linalg.norm(np.array(f_spheres[i], float)))
         sphere_colour = [C, 0, 1-C]
         (p, l1, l2, ltrace) = plot_sphere(ax, frameno, viewbox_bottomleft_topright, sphere_positions[i, :], previous_sphere_positions[i, :], trace_paths, sphere_sizes[i], sphere_rotations[i], sphere_colour=sphere_colour)
         spheres.append(p)
