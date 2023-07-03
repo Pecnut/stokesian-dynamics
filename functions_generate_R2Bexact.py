@@ -229,7 +229,7 @@ def XYZ(scalar_index, gamma, s_dash, lam_index):
 
 
 def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoint_start_from_frame=0, feed_every_n_timesteps=0, mu=1):
-    global fully_2d_problem, size_ratio_matrix, average_size_matrix, upper_triangle
+    global fully_2d_problem, average_size_matrix, upper_triangle
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
     R2Bexact_sidelength = 11 * num_spheres + 6 * num_dumbbells
     R2Bexact = sparse.lil_matrix((R2Bexact_sidelength, R2Bexact_sidelength), dtype=float)
@@ -290,7 +290,6 @@ def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoin
                     if lam_p not in lam_range_with_reciprocals:
                         print("ERROR (Code point D): lambda not in the table of calculated values")
                     lam_index_p = np.where(lam_range_with_reciprocals == lam_p)[0][0]
-                    lam_index_recip_p = np.where(lam_range_with_reciprocals == 1. / lam_p)[0][0]
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
                     d_p = r_p / s_dash_p
@@ -370,12 +369,11 @@ def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoin
                 A_sum = 0
                 pp = 0
                 for p_index in nearby_beads:
-                    lam_p = bead_sizes[p_index] / bead_sizes[a1_index]  # size_ratio_matrix[a1_index,p_index]
+                    lam_p = bead_sizes[p_index] / bead_sizes[a1_index]
                     largest_size_p = max(bead_sizes[a1_index], bead_sizes[p_index])
                     if lam_p not in lam_range_with_reciprocals:
                         print("ERROR (Code point D): lambda not in the table of calculated values")
                     lam_index_p = np.where(lam_range_with_reciprocals == lam_p)[0][0]
-                    lam_index_recip_p = np.where(lam_range_with_reciprocals == 1. / lam_p)[0][0]
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
                     d_p = r_p / s_dash_p
@@ -418,12 +416,11 @@ def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoin
                 A_sum = 0
                 pp = 0
                 for p_index in nearby_beads:
-                    lam_p = bead_sizes[p_index] / bead_sizes[a1_index]  # size_ratio_matrix[a1_index,p_index]
+                    lam_p = bead_sizes[p_index] / bead_sizes[a1_index]
                     largest_size_p = max(bead_sizes[a1_index], bead_sizes[p_index])
                     if lam_p not in lam_range_with_reciprocals:
                         print("ERROR (Code point D): lambda not in the table of calculated values")
                     lam_index_p = np.where(lam_range_with_reciprocals == lam_p)[0][0]
-                    lam_index_recip_p = np.where(lam_range_with_reciprocals == 1. / lam_p)[0][0]
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
                     d_p = r_p / s_dash_p

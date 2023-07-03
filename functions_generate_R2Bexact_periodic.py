@@ -13,7 +13,7 @@ from functions_generate_R2Bexact import Af, Bf, Cf, con_Gf, con_Hf, con_Mf
 
 
 def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printout=0, cutoff_factor=2, frameno=0, checkpoint_start_from_frame=0, feed_every_n_timesteps=0, O_infinity=np.array([0, 0, 0]), E_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]), timestep=0.1, centre_of_background_flow=np.array([0, 0, 0]), mu=1, frequency=1, amplitude=1):
-    global fully_2d_problem, size_ratio_matrix, average_size_matrix, upper_triangle
+    global fully_2d_problem, average_size_matrix, upper_triangle
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
     R2Bexact_sidelength = 11 * num_spheres + 6 * num_dumbbells
     R2Bexact = sparse.lil_matrix((R2Bexact_sidelength, R2Bexact_sidelength), dtype=float)
@@ -23,6 +23,7 @@ def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printou
     closer_than_cutoff_pairs_scaled, displacements_pairs_scaled, distances_pairs_scaled, size_ratios = close_particles(bead_positions, bead_sizes, cutoff_factor, box_bottom_left, box_top_right, O_infinity, E_infinity, frameno, timestep, frequency=frequency, amplitude=amplitude)
 
     uv_power = [[1, 2, 2, 1, 1], [2, 3, 3, 2, 2], [2, 3, 3, 2, 2], [1, 2, 2, 1, 1], [1, 2, 2, 1, 1]]
+
     ii = 0
     for a1_index, a2_index in closer_than_cutoff_pairs_scaled:
         r = displacements_pairs_scaled[ii]  # vector r
