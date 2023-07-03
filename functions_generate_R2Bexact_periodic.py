@@ -45,7 +45,6 @@ def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printou
             Ht_coords_21 = np.s_[3*num_spheres+a2_index*3: 3*num_spheres+(a2_index+1)*3, 6*num_spheres+a1_index*5: 6*num_spheres+(a1_index+1)*5]
             M_coords = np.s_[6*num_spheres+a1_index*5: 6*num_spheres+(a1_index+1)*5, 6*num_spheres+a2_index*5: 6*num_spheres+(a2_index+1)*5]
             if a1_index == a2_index:
-
                 nearby_beads = []
                 nearby_beads_displacements = []
                 nearby_beads_distances = []
@@ -69,21 +68,21 @@ def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printou
                 M_sum = 0
                 pp = 0
                 for p_index in nearby_beads:
-                    lam_p = bead_sizes[a1_index]/bead_sizes[p_index]
+                    lam_p = bead_sizes[a1_index] / bead_sizes[p_index]
                     largest_size_p = max(bead_sizes[a1_index], bead_sizes[p_index])
                     if lam_p not in lam_range_with_reciprocals:
                         print("ERROR (Code point D): lambda not in the table of calculated values")
                     lam_index_p = np.where(lam_range_with_reciprocals == lam_p)[0][0]
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
-                    d_p = r_p/s_dash_p
+                    d_p = r_p / s_dash_p
                     A_sum += np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j, fully_2d_problem)*largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
                     Bt_sum += np.asarray([[Bf(0, d_p, lam_index_p, s_dash_p, j, i, fully_2d_problem)*largest_size_p**uv_power[0][1] for j in range(3)] for i in range(3)])
                     C_sum += np.asarray([[Cf(0, d_p, lam_index_p, s_dash_p, i, j, fully_2d_problem)*largest_size_p**uv_power[1][1] for j in range(3)] for i in range(3)])
                     Gt_sum += np.asarray([[con_Gf(0, d_p, lam_index_p, s_dash_p, j, i, fully_2d_problem)*largest_size_p**uv_power[0][2] for j in range(5)] for i in range(3)])
                     Ht_sum += np.asarray([[con_Hf(0, d_p, lam_index_p, s_dash_p, j, i, fully_2d_problem)*largest_size_p**uv_power[1][2] for j in range(5)] for i in range(3)])
                     M_sum += np.asarray([[con_Mf(0, d_p, lam_index_p, s_dash_p, i, j, fully_2d_problem)*largest_size_p**uv_power[2][2] for j in range(5)] for i in range(5)])
-                    pp = pp + 1
+                    pp += 1
                 R2Bexact[A_coords] = A_sum
                 R2Bexact[Bt_coords] = Bt_sum
                 R2Bexact[C_coords] = C_sum
@@ -109,7 +108,7 @@ def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printou
 
         elif a1_index < num_spheres and a2_index >= num_spheres and a2_index < num_spheres + num_dumbbells:
             # Sphere to dumbbell bead 1
-            a2_index_d = a2_index-num_spheres
+            a2_index_d = a2_index - num_spheres
             R14_coords = np.s_[a1_index*3:(a1_index+1)*3,                             11*num_spheres+a2_index_d*3: 11*num_spheres + (a2_index_d+1)*3]
             R24_coords = np.s_[3*num_spheres+a1_index*3:3*num_spheres+(a1_index+1)*3, 11*num_spheres+a2_index_d*3: 11*num_spheres + (a2_index_d+1)*3]
             R34_coords = np.s_[6*num_spheres+a1_index*5:6*num_spheres+(a1_index+1)*5, 11*num_spheres+a2_index_d*3: 11*num_spheres + (a2_index_d+1)*3]
@@ -131,8 +130,8 @@ def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printou
 
         elif a1_index >= num_spheres and a1_index < num_spheres + num_dumbbells and a2_index >= num_spheres and a2_index < num_spheres + num_dumbbells:
             # Dumbbell bead 1 to dumbbell bead 1
-            a1_index_d = a1_index-num_spheres
-            a2_index_d = a2_index-num_spheres
+            a1_index_d = a1_index - num_spheres
+            a2_index_d = a2_index - num_spheres
             R44_coords = np.s_[11*num_spheres+a1_index_d*3:11*num_spheres+(a1_index_d+1)*3, 11*num_spheres+a2_index_d*3: 11*num_spheres+(a2_index_d+1)*3]
             if a1_index == a2_index:
                 nearby_beads = []
@@ -141,12 +140,12 @@ def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printou
                 for kk in range(len(closer_than_cutoff_pairs_scaled)):
                     (i, j) = closer_than_cutoff_pairs_scaled[kk]
                     if (i == a1_index and i != j):
-                        nearby_bead = j  # a2_index
+                        nearby_bead = j
                         nearby_beads_displacements.append(displacements_pairs_scaled[kk])
                         nearby_beads.append(nearby_bead)
                         nearby_beads_distances.append(distances_pairs_scaled[kk])
                     if (j == a1_index and i != j):
-                        nearby_bead = i  # a1_index
+                        nearby_bead = i
                         nearby_beads_displacements.append(-displacements_pairs_scaled[kk])  # Note minus sign
                         nearby_beads.append(nearby_bead)
                         nearby_beads_distances.append(distances_pairs_scaled[kk])
@@ -160,8 +159,8 @@ def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printou
                     lam_index_p = np.where(lam_range_with_reciprocals == lam_p)[0][0]
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
-                    d_p = r_p/s_dash_p
-                    A_sum = A_sum + np.asarray([[Af(0, d_p, lam_index_p,      s_dash_p, i, j, fully_2d_problem)*largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
+                    d_p = r_p / s_dash_p
+                    A_sum = A_sum + np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j, fully_2d_problem) * largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
                     pp = pp + 1
                 R2Bexact[R44_coords] = A_sum
             else:
@@ -171,15 +170,15 @@ def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printou
         elif a1_index >= num_spheres and a1_index < num_spheres + num_dumbbells and a2_index >= num_spheres + num_dumbbells:
             # Dumbbell bead 1 to dumbbell bead 2
             if bead_bead_interactions:
-                a1_index_d = a1_index-num_spheres
-                a2_index_d = a2_index-num_spheres-num_dumbbells
+                a1_index_d = a1_index - num_spheres
+                a2_index_d = a2_index - num_spheres - num_dumbbells
                 R45_coords = np.s_[11*num_spheres+a1_index_d*3:11*num_spheres+(a1_index_d+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
                 R2Bexact[R45_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
 
         else:
             # Dumbbell bead 2 to dumbbell bead 2
-            a1_index_d = a1_index-num_spheres-num_dumbbells
-            a2_index_d = a2_index-num_spheres-num_dumbbells
+            a1_index_d = a1_index - num_spheres - num_dumbbells
+            a2_index_d = a2_index - num_spheres - num_dumbbells
             R55_coords = np.s_[11*num_spheres+3*num_dumbbells+a1_index_d*3:11*num_spheres+3*num_dumbbells+(a1_index_d+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
             if a1_index == a2_index:
                 nearby_beads = []
@@ -188,12 +187,12 @@ def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printou
                 for kk in range(len(closer_than_cutoff_pairs_scaled)):
                     (i, j) = closer_than_cutoff_pairs_scaled[kk]
                     if (i == a1_index and i != j):
-                        nearby_bead = j  # a2_index
+                        nearby_bead = j
                         nearby_beads_displacements.append(displacements_pairs_scaled[kk])
                         nearby_beads.append(nearby_bead)
                         nearby_beads_distances.append(distances_pairs_scaled[kk])
                     if (j == a1_index and i != j):
-                        nearby_bead = i  # a1_index
+                        nearby_bead = i
                         nearby_beads_displacements.append(-displacements_pairs_scaled[kk])  # Note minus sign
                         nearby_beads.append(nearby_bead)
                         nearby_beads_distances.append(distances_pairs_scaled[kk])

@@ -5,14 +5,13 @@
 # Reference: A. K. Townsend, 2017. The mechanics of suspensions. PhD thesis, UCL.
 
 import numpy as np
-from numpy import sqrt
 from functions_shared import posdata_data, levi, close_particles
 from scipy import sparse
 from inputs import s_dash_range, lam_range_with_reciprocals, XYZ_raw, fully_2d_problem, bead_bead_interactions
 from numba import njit
 
-s3 = sqrt(3)
-s2 = sqrt(2)
+s3 = np.sqrt(3)
+s2 = np.sqrt(2)
 kronmatrix = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
 
@@ -237,9 +236,6 @@ def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoin
     bead_positions = np.concatenate([sphere_positions, dumbbell_positions - 0.5 * dumbbell_deltax, dumbbell_positions + 0.5 * dumbbell_deltax])
     bead_sizes = np.concatenate([sphere_sizes, dumbbell_sizes, dumbbell_sizes])
 
-    if printout > 0 and feed_every_n_timesteps > 0:
-        print("number of dumbbells in functions_generate_R2Bexact: ", dumbbell_sizes.shape, num_dumbbells)
-
     closer_than_cutoff_pairs_scaled, displacements_pairs_scaled, distances_pairs_scaled, size_ratios = close_particles(bead_positions, bead_sizes, cutoff_factor)
 
     uv_power = [[1, 2, 2, 1, 1], [2, 3, 3, 2, 2], [2, 3, 3, 2, 2], [1, 2, 2, 1, 1], [1, 2, 2, 1, 1]]
@@ -298,13 +294,13 @@ def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoin
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
                     d_p = r_p / s_dash_p
-                    A_sum = A_sum + np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j, fully_2d_problem) * largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
-                    Bt_sum = Bt_sum + np.asarray([[Bf(0, d_p, lam_index_p, s_dash_p, j, i, fully_2d_problem) * largest_size_p**uv_power[0][1] for j in range(3)] for i in range(3)])
-                    C_sum = C_sum + np.asarray([[Cf(0, d_p, lam_index_p, s_dash_p, i, j, fully_2d_problem) * largest_size_p**uv_power[1][1] for j in range(3)] for i in range(3)])
-                    Gt_sum = Gt_sum + np.asarray([[con_Gf(0, d_p, lam_index_p, s_dash_p, j, i, fully_2d_problem) * largest_size_p**uv_power[0][2] for j in range(5)] for i in range(3)])
-                    Ht_sum = Ht_sum + np.asarray([[con_Hf(0, d_p, lam_index_p, s_dash_p, j, i, fully_2d_problem) * largest_size_p**uv_power[1][2] for j in range(5)] for i in range(3)])
-                    M_sum = M_sum + np.asarray([[con_Mf(0, d_p, lam_index_p, s_dash_p, i, j, fully_2d_problem) * largest_size_p**uv_power[2][2] for j in range(5)] for i in range(5)])
-                    pp = pp + 1
+                    A_sum += np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j, fully_2d_problem)*largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
+                    Bt_sum += np.asarray([[Bf(0, d_p, lam_index_p, s_dash_p, j, i, fully_2d_problem)*largest_size_p**uv_power[0][1] for j in range(3)] for i in range(3)])
+                    C_sum += np.asarray([[Cf(0, d_p, lam_index_p, s_dash_p, i, j, fully_2d_problem)*largest_size_p**uv_power[1][1] for j in range(3)] for i in range(3)])
+                    Gt_sum += np.asarray([[con_Gf(0, d_p, lam_index_p, s_dash_p, j, i, fully_2d_problem)*largest_size_p**uv_power[0][2] for j in range(5)] for i in range(3)])
+                    Ht_sum += np.asarray([[con_Hf(0, d_p, lam_index_p, s_dash_p, j, i, fully_2d_problem)*largest_size_p**uv_power[1][2] for j in range(5)] for i in range(3)])
+                    M_sum += np.asarray([[con_Mf(0, d_p, lam_index_p, s_dash_p, i, j, fully_2d_problem)*largest_size_p**uv_power[2][2] for j in range(5)] for i in range(5)])
+                    pp += 1
                 R2Bexact[A_coords] = A_sum
                 R2Bexact[Bt_coords] = Bt_sum
                 R2Bexact[C_coords] = C_sum
@@ -313,48 +309,48 @@ def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoin
                 R2Bexact[M_coords] = M_sum
 
             else:
-                R2Bexact[A_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem) * largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
-                R2Bexact[Bt_coords] = [[Bf(1, -d, lam_index_recip, s_dash, j, i, fully_2d_problem) * largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
-                R2Bexact[C_coords] = [[Cf(1, d, lam_index, s_dash, i, j, fully_2d_problem) * largest_size**uv_power[1][1] for j in range(3)] for i in range(3)]
-                R2Bexact[Gt_coords] = [[con_Gf(1, -d, lam_index_recip, s_dash, j, i, fully_2d_problem) * largest_size**uv_power[0][2] for j in range(5)] for i in range(3)]
-                R2Bexact[Ht_coords] = [[con_Hf(1, -d, lam_index_recip, s_dash, j, i, fully_2d_problem) * largest_size**uv_power[1][2] for j in range(5)] for i in range(3)]
-                R2Bexact[M_coords] = [[con_Mf(1, d, lam_index, s_dash, i, j, fully_2d_problem) * largest_size**uv_power[2][2] for j in range(5)] for i in range(5)]
+                R2Bexact[A_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
+                R2Bexact[Bt_coords] = [[Bf(1, -d, lam_index_recip, s_dash, j, i, fully_2d_problem)*largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
+                R2Bexact[C_coords] = [[Cf(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[1][1] for j in range(3)] for i in range(3)]
+                R2Bexact[Gt_coords] = [[con_Gf(1, -d, lam_index_recip, s_dash, j, i, fully_2d_problem)*largest_size**uv_power[0][2] for j in range(5)] for i in range(3)]
+                R2Bexact[Ht_coords] = [[con_Hf(1, -d, lam_index_recip, s_dash, j, i, fully_2d_problem)*largest_size**uv_power[1][2] for j in range(5)] for i in range(3)]
+                R2Bexact[M_coords] = [[con_Mf(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[2][2] for j in range(5)] for i in range(5)]
                 if lam == 1:
                     R2Bexact[Bt_coords_21] = -R2Bexact[Bt_coords]
                     R2Bexact[Gt_coords_21] = -R2Bexact[Gt_coords]
                     R2Bexact[Ht_coords_21] = R2Bexact[Ht_coords]
                 else:
-                    R2Bexact[Bt_coords_21] = [[Bf(1, d, lam_index, s_dash, j, i, fully_2d_problem) * largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
-                    R2Bexact[Gt_coords_21] = [[con_Gf(1, d, lam_index, s_dash, j, i, fully_2d_problem) * largest_size**uv_power[0][2] for j in range(5)] for i in range(3)]
-                    R2Bexact[Ht_coords_21] = [[con_Hf(1, d, lam_index, s_dash, j, i, fully_2d_problem) * largest_size**uv_power[1][2] for j in range(5)] for i in range(3)]
+                    R2Bexact[Bt_coords_21] = [[Bf(1, d, lam_index, s_dash, j, i, fully_2d_problem)*largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
+                    R2Bexact[Gt_coords_21] = [[con_Gf(1, d, lam_index, s_dash, j, i, fully_2d_problem)*largest_size**uv_power[0][2] for j in range(5)] for i in range(3)]
+                    R2Bexact[Ht_coords_21] = [[con_Hf(1, d, lam_index, s_dash, j, i, fully_2d_problem)*largest_size**uv_power[1][2] for j in range(5)] for i in range(3)]
 
         elif a1_index < num_spheres and a2_index >= num_spheres and a2_index < num_spheres + num_dumbbells:
             # Sphere to dumbbell bead 1
             a2_index_d = a2_index - num_spheres
-            R14_coords = np.s_[a1_index * 3:(a1_index + 1) * 3,                             11 * num_spheres + a2_index_d * 3: 11 * num_spheres + (a2_index_d + 1) * 3]
-            R24_coords = np.s_[3 * num_spheres + a1_index * 3:3 * num_spheres + (a1_index + 1) * 3, 11 * num_spheres + a2_index_d * 3: 11 * num_spheres + (a2_index_d + 1) * 3]
-            R34_coords = np.s_[6 * num_spheres + a1_index * 5:6 * num_spheres + (a1_index + 1) * 5, 11 * num_spheres + a2_index_d * 3: 11 * num_spheres + (a2_index_d + 1) * 3]
+            R14_coords = np.s_[a1_index*3:(a1_index+1)*3,                             11*num_spheres+a2_index_d*3: 11*num_spheres + (a2_index_d+1)*3]
+            R24_coords = np.s_[3*num_spheres+a1_index*3:3*num_spheres+(a1_index+1)*3, 11*num_spheres+a2_index_d*3: 11*num_spheres + (a2_index_d+1)*3]
+            R34_coords = np.s_[6*num_spheres+a1_index*5:6*num_spheres+(a1_index+1)*5, 11*num_spheres+a2_index_d*3: 11*num_spheres + (a2_index_d+1)*3]
 
-            R2Bexact[R14_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem) * largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
-            R2Bexact[R24_coords] = [[Bf(1, d, lam_index, s_dash, i, j, fully_2d_problem) * largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
-            R2Bexact[R34_coords] = [[con_Gf(1, d, lam_index, s_dash, i, j, fully_2d_problem) * largest_size**uv_power[0][2] for j in range(3)] for i in range(5)]
+            R2Bexact[R14_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
+            R2Bexact[R24_coords] = [[Bf(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
+            R2Bexact[R34_coords] = [[con_Gf(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][2] for j in range(3)] for i in range(5)]
 
         elif a1_index < num_spheres and a2_index >= num_spheres + num_dumbbells:
             # Sphere to dumbbell bead 2
-            a2_index_d = a2_index - num_spheres - num_dumbbells
-            R15_coords = np.s_[a1_index * 3:(a1_index + 1) * 3, 11 * num_spheres + 3 * num_dumbbells + a2_index_d * 3: 11 * num_spheres + 3 * num_dumbbells + (a2_index_d + 1) * 3]
-            R25_coords = np.s_[3 * num_spheres + a1_index * 3:3 * num_spheres + (a1_index + 1) * 3, 11 * num_spheres + 3 * num_dumbbells + a2_index_d * 3: 11 * num_spheres + 3 * num_dumbbells + (a2_index_d + 1) * 3]
-            R35_coords = np.s_[6 * num_spheres + a1_index * 5:6 * num_spheres + (a1_index + 1) * 5, 11 * num_spheres + 3 * num_dumbbells + a2_index_d * 3: 11 * num_spheres + 3 * num_dumbbells + (a2_index_d + 1) * 3]
+            a2_index_d = a2_index-num_spheres-num_dumbbells
+            R15_coords = np.s_[a1_index*3:(a1_index+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
+            R25_coords = np.s_[3*num_spheres+a1_index*3:3*num_spheres+(a1_index+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
+            R35_coords = np.s_[6*num_spheres+a1_index*5:6*num_spheres+(a1_index+1)*5, 11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
 
-            R2Bexact[R15_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem) * largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
-            R2Bexact[R25_coords] = [[Bf(1, d, lam_index, s_dash, i, j, fully_2d_problem) * largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
-            R2Bexact[R35_coords] = [[con_Gf(1, d, lam_index, s_dash, i, j, fully_2d_problem) * largest_size**uv_power[0][2] for j in range(3)] for i in range(5)]
+            R2Bexact[R15_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
+            R2Bexact[R25_coords] = [[Bf(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
+            R2Bexact[R35_coords] = [[con_Gf(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][2] for j in range(3)] for i in range(5)]
 
         elif a1_index >= num_spheres and a1_index < num_spheres + num_dumbbells and a2_index >= num_spheres and a2_index < num_spheres + num_dumbbells:
             # Dumbbell bead 1 to dumbbell bead 1
             a1_index_d = a1_index - num_spheres
             a2_index_d = a2_index - num_spheres
-            R44_coords = np.s_[11 * num_spheres + a1_index_d * 3:11 * num_spheres + (a1_index_d + 1) * 3, 11 * num_spheres + a2_index_d * 3: 11 * num_spheres + (a2_index_d + 1) * 3]
+            R44_coords = np.s_[11*num_spheres+a1_index_d*3:11*num_spheres+(a1_index_d+1)*3, 11*num_spheres+a2_index_d*3: 11*num_spheres+(a2_index_d+1)*3]
             if a1_index == a2_index:
                 nearby_beads = []
                 nearby_beads_displacements = []
@@ -388,21 +384,21 @@ def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoin
                 R2Bexact[R44_coords] = A_sum
             else:
                 if bead_bead_interactions:
-                    R2Bexact[R44_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem) * largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
+                    R2Bexact[R44_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
 
         elif a1_index >= num_spheres and a1_index < num_spheres + num_dumbbells and a2_index >= num_spheres + num_dumbbells:
             # Dumbbell bead 1 to dumbbell bead 2
             if bead_bead_interactions:
                 a1_index_d = a1_index - num_spheres
                 a2_index_d = a2_index - num_spheres - num_dumbbells
-                R45_coords = np.s_[11 * num_spheres + a1_index_d * 3:11 * num_spheres + (a1_index_d + 1) * 3, 11 * num_spheres + 3 * num_dumbbells + a2_index_d * 3: 11 * num_spheres + 3 * num_dumbbells + (a2_index_d + 1) * 3]
-                R2Bexact[R45_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem) * largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
+                R45_coords = np.s_[11*num_spheres+a1_index_d*3:11*num_spheres+(a1_index_d+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
+                R2Bexact[R45_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
 
         else:
             # Dumbbell bead 2 to dumbbell bead 2
             a1_index_d = a1_index - num_spheres - num_dumbbells
             a2_index_d = a2_index - num_spheres - num_dumbbells
-            R55_coords = np.s_[11 * num_spheres + 3 * num_dumbbells + a1_index_d * 3:11 * num_spheres + 3 * num_dumbbells + (a1_index_d + 1) * 3, 11 * num_spheres + 3 * num_dumbbells + a2_index_d * 3: 11 * num_spheres + 3 * num_dumbbells + (a2_index_d + 1) * 3]
+            R55_coords = np.s_[11*num_spheres+3*num_dumbbells+a1_index_d*3:11*num_spheres+3*num_dumbbells+(a1_index_d+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
             if a1_index == a2_index:
                 nearby_beads = []
                 nearby_beads_displacements = []
