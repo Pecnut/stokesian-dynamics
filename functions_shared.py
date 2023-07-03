@@ -252,7 +252,12 @@ def feed_particles_from_bottom(posdata, feed_every_n_timesteps, feed_from_file, 
     return (sphere_sizes, sphere_positions, sphere_rotations, new_dumbbell_sizes, new_dumbbell_positions, new_dumbbell_deltax)
 
 
-def close_particles(bead_positions, bead_sizes, cutoff_factor, box_bottom_left=np.array([0, 0, 0]), box_top_right=np.array([0, 0, 0]), O_infinity=np.array([0, 0, 0]), E_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]), frameno=0, timestep=0.1, amplitude=1, frequency=1):
+def close_particles(bead_positions, bead_sizes, cutoff_factor, 
+                    box_bottom_left=np.array([0, 0, 0]), 
+                    box_top_right=np.array([0, 0, 0]), 
+                    O_infinity=np.array([0, 0, 0]), 
+                    E_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]), 
+                    frameno=0, timestep=0.1, amplitude=1, frequency=1):
     """Find particles that are closer than a given cutoff."""
         
     from scipy.spatial.distance import pdist, squareform

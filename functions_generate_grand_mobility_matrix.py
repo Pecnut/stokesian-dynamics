@@ -4,7 +4,6 @@
 
 from functions_generate_Minfinity import generate_Minfinity
 from functions_generate_R2Bexact import generate_R2Bexact
-from functions_generate_R2Bexact_periodic import generate_R2Bexact_periodic
 from functions_generate_Minfinity_periodic import generate_Minfinity_periodic
 from functions_shared import save_matrix, tick, tock, posdata_data
 import time
@@ -105,8 +104,8 @@ def generate_grand_resistance_matrix_periodic(posdata, last_generated_Minfinity_
 
     if not use_Minfinity_only:
         R2Bexact_start_time = time.time()
-        (R2Bexact, heading) = generate_R2Bexact_periodic(posdata, box_bottom_left, box_top_right, printout, cutoff_factor=cutoff_factor, frameno=frameno, checkpoint_start_from_frame=checkpoint_start_from_frame,
-                                                         feed_every_n_timesteps=feed_every_n_timesteps, O_infinity=O_infinity, E_infinity=E_infinity, timestep=timestep, centre_of_background_flow=centre_of_background_flow, mu=mu, frequency=frequency, amplitude=amplitude)
+        (R2Bexact, heading) = generate_R2Bexact(posdata, box_bottom_left=box_bottom_left, box_top_right=box_top_right, printout=printout, cutoff_factor=cutoff_factor, frameno=frameno, checkpoint_start_from_frame=checkpoint_start_from_frame,
+                                                feed_every_n_timesteps=feed_every_n_timesteps, O_infinity=O_infinity, E_infinity=E_infinity, timestep=timestep, centre_of_background_flow=centre_of_background_flow, mu=mu, frequency=frequency, amplitude=amplitude)
         R2Bexact_elapsed_time = time.time() - R2Bexact_start_time
         grand_resistance_matrix = Minfinity_inverse + R2Bexact.toarray()
     else:

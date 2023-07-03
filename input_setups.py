@@ -43,8 +43,8 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities, input_form='und
         desc: Human-readable description to be added to filename.
         U_infinity, O_infinity, centre_of_background_flow: Background flow.
         amplitude, frequency: Periodic shear parameters.
-        box_bottom_left, box_top_right: Size of periodic box if desired. Simulation is
-            assumed non-periodic if these are equal.
+        box_bottom_left, box_top_right: Coordinates of periodic box if desired.
+            Simulation is assumed non-periodic if these are equal.
         mu: Newtonian background fluid viscosity.
     """
 
