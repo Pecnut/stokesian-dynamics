@@ -15,23 +15,23 @@ from functions_generate_R2Bexact import Af, Bf, Cf, con_Gf, con_Hf, con_Mf
 def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printout=0, cutoff_factor=2, frameno=0, checkpoint_start_from_frame=0, feed_every_n_timesteps=0, O_infinity=np.array([0, 0, 0]), E_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]), timestep=0.1, centre_of_background_flow=np.array([0, 0, 0]), mu=1, frequency=1, amplitude=1):
     global fully_2d_problem, size_ratio_matrix, average_size_matrix, upper_triangle
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
-    R2Bexact_sidelength = 11*num_spheres + 6*num_dumbbells
+    R2Bexact_sidelength = 11 * num_spheres + 6 * num_dumbbells
     R2Bexact = sparse.lil_matrix((R2Bexact_sidelength, R2Bexact_sidelength), dtype=float)
-    bead_positions = np.concatenate([sphere_positions, dumbbell_positions - 0.5*dumbbell_deltax, dumbbell_positions + 0.5*dumbbell_deltax])
+    bead_positions = np.concatenate([sphere_positions, dumbbell_positions - 0.5 * dumbbell_deltax, dumbbell_positions + 0.5 * dumbbell_deltax])
     bead_sizes = np.concatenate([sphere_sizes, dumbbell_sizes, dumbbell_sizes])
 
     closer_than_cutoff_pairs_scaled, displacements_pairs_scaled, distances_pairs_scaled, size_ratios = close_particles(bead_positions, bead_sizes, cutoff_factor, box_bottom_left, box_top_right, O_infinity, E_infinity, frameno, timestep, frequency=frequency, amplitude=amplitude)
 
     uv_power = [[1, 2, 2, 1, 1], [2, 3, 3, 2, 2], [2, 3, 3, 2, 2], [1, 2, 2, 1, 1], [1, 2, 2, 1, 1]]
     ii = 0
-    for (a1_index, a2_index) in closer_than_cutoff_pairs_scaled:
+    for a1_index, a2_index in closer_than_cutoff_pairs_scaled:
         r = displacements_pairs_scaled[ii]  # vector r
         s_dash = distances_pairs_scaled[ii]  # np.linalg.norm(x)
         if a1_index != a2_index:
-            d = r/s_dash
+            d = r / s_dash
         lam = size_ratios[ii]
         lam_index = np.where(lam_range_with_reciprocals == lam)[0][0]
-        lam_index_recip = np.where(lam_range_with_reciprocals == 1./lam)[0][0]
+        lam_index_recip = np.where(lam_range_with_reciprocals == 1. / lam)[0][0]
         largest_size = max(bead_sizes[a1_index], bead_sizes[a2_index])
         if a1_index < num_spheres and a2_index < num_spheres:
             # Sphere to sphere
@@ -208,18 +208,17 @@ def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printou
                     lam_index_p = np.where(lam_range_with_reciprocals == lam_p)[0][0]
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
-                    d_p = r_p/s_dash_p
-
-                    A_sum = A_sum + np.asarray([[Af(0, d_p, lam_index_p,      s_dash_p, i, j, fully_2d_problem)*largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
+                    d_p = r_p / s_dash_p
+                    A_sum = A_sum + np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j, fully_2d_problem) * largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
                     pp = pp + 1
                 R2Bexact[R55_coords] = A_sum
             else:
                 if bead_bead_interactions:
-                    R2Bexact[R55_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
+                    R2Bexact[R55_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem) * largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
         ii = ii + 1
 
     # Scale by 6pi
-    R2Bexact = R2Bexact * 6 * math.pi
+    R2Bexact = R2Bexact * 6 * np.pi
 
     # symmetrise
     R2Bexact = sparse.triu(R2Bexact) + sparse.triu(R2Bexact, k=1).transpose()

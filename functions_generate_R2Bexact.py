@@ -256,15 +256,15 @@ def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoin
         largest_size = max(bead_sizes[a1_index], bead_sizes[a2_index])
         if a1_index < num_spheres and a2_index < num_spheres:
             # Sphere to sphere
-            A_coords = np.s_[a1_index * 3:(a1_index + 1) * 3, a2_index * 3:(a2_index + 1) * 3]
-            Bt_coords = np.s_[a1_index * 3:(a1_index + 1) * 3, 3 * num_spheres + a2_index * 3: 3 * num_spheres + (a2_index + 1) * 3]
-            Bt_coords_21 = np.s_[a2_index * 3:(a2_index + 1) * 3, 3 * num_spheres + a1_index * 3: 3 * num_spheres + (a1_index + 1) * 3]
-            Gt_coords = np.s_[a1_index * 3:(a1_index + 1) * 3, 6 * num_spheres + a2_index * 5: 6 * num_spheres + (a2_index + 1) * 5]
-            Gt_coords_21 = np.s_[a2_index * 3:(a2_index + 1) * 3, 6 * num_spheres + a1_index * 5: 6 * num_spheres + (a1_index + 1) * 5]
-            C_coords = np.s_[3 * num_spheres + a1_index * 3: 3 * num_spheres + (a1_index + 1) * 3, 3 * num_spheres + a2_index * 3: 3 * num_spheres + (a2_index + 1) * 3]
-            Ht_coords = np.s_[3 * num_spheres + a1_index * 3: 3 * num_spheres + (a1_index + 1) * 3, 6 * num_spheres + a2_index * 5: 6 * num_spheres + (a2_index + 1) * 5]
-            Ht_coords_21 = np.s_[3 * num_spheres + a2_index * 3: 3 * num_spheres + (a2_index + 1) * 3, 6 * num_spheres + a1_index * 5: 6 * num_spheres + (a1_index + 1) * 5]
-            M_coords = np.s_[6 * num_spheres + a1_index * 5: 6 * num_spheres + (a1_index + 1) * 5, 6 * num_spheres + a2_index * 5: 6 * num_spheres + (a2_index + 1) * 5]
+            A_coords = np.s_[a1_index*3:(a1_index+1)*3, a2_index*3:(a2_index+1)*3]
+            Bt_coords = np.s_[a1_index*3:(a1_index+1)*3, 3*num_spheres+a2_index*3: 3*num_spheres+(a2_index+1)*3]
+            Bt_coords_21 = np.s_[a2_index*3:(a2_index+1)*3, 3*num_spheres+a1_index*3: 3*num_spheres+(a1_index+1)*3]
+            Gt_coords = np.s_[a1_index*3:(a1_index+1)*3, 6*num_spheres+a2_index*5: 6*num_spheres+(a2_index+1)*5]
+            Gt_coords_21 = np.s_[a2_index*3:(a2_index+1)*3, 6*num_spheres+a1_index*5: 6*num_spheres+(a1_index+1)*5]
+            C_coords = np.s_[3*num_spheres+a1_index*3: 3*num_spheres+(a1_index+1)*3, 3*num_spheres+a2_index*3: 3*num_spheres+(a2_index+1)*3]
+            Ht_coords = np.s_[3*num_spheres+a1_index*3: 3*num_spheres+(a1_index+1)*3, 6*num_spheres+a2_index*5: 6*num_spheres+(a2_index+1)*5]
+            Ht_coords_21 = np.s_[3*num_spheres+a2_index*3: 3*num_spheres+(a2_index+1)*3, 6*num_spheres+a1_index*5: 6*num_spheres+(a1_index+1)*5]
+            M_coords = np.s_[6*num_spheres+a1_index*5: 6*num_spheres+(a1_index+1)*5, 6*num_spheres+a2_index*5: 6*num_spheres+(a2_index+1)*5]
             if a1_index == a2_index:
                 nearby_beads = []
                 nearby_beads_displacements = []
@@ -437,7 +437,6 @@ def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoin
             else:
                 if bead_bead_interactions:
                     R2Bexact[R55_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem) * largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
-
         ii = ii + 1
 
     # Scale by 6pi
@@ -453,9 +452,10 @@ def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoin
     #   "L"                         "R"
 
     # I know that we could generate L and R elsewhere rather than doing it every timestep but it takes 0.01s for a few thousand dumbbells so for now I don't mind
-    Lrow = np.array([i for i in range(11 * num_spheres + 6 * num_dumbbells)] + [i + 11 * num_spheres for i in range(3 * num_dumbbells)] + [i + 11 * num_spheres + 3 * num_dumbbells for i in range(3 * num_dumbbells)])
-    Lcol = np.array([i for i in range(11 * num_spheres + 6 * num_dumbbells)] + [i + 11 * num_spheres + 3 * num_dumbbells for i in range(3 * num_dumbbells)] + [i + 11 * num_spheres for i in range(3 * num_dumbbells)])
-    Ldata = np.array([1 for i in range(11 * num_spheres + 9 * num_dumbbells)] + [-1 for i in range(3 * num_dumbbells)])
-    L = sparse.coo_matrix((Ldata, (Lrow, Lcol)), shape=(11 * num_spheres + 6 * num_dumbbells, 11 * num_spheres + 6 * num_dumbbells))
+    Lrow = np.array([i for i in range(11*num_spheres + 6*num_dumbbells)] + [i + 11*num_spheres for i in range(3*num_dumbbells)] + [i + 11*num_spheres + 3*num_dumbbells for i in range(3*num_dumbbells)])
+    Lcol = np.array([i for i in range(11*num_spheres + 6*num_dumbbells)] + [i + 11*num_spheres + 3*num_dumbbells for i in range(3*num_dumbbells)] + [i + 11*num_spheres for i in range(3*num_dumbbells)])
+    Ldata = np.array([1 for i in range(11*num_spheres + 9*num_dumbbells)] + [-1 for i in range(3*num_dumbbells)])
+    L = sparse.coo_matrix((Ldata, (Lrow, Lcol)), shape=(11*num_spheres+6*num_dumbbells, 11*num_spheres+6*num_dumbbells))
     R = L.transpose()
-    return (mu * (L * R2Bexact * R), "R2Bexact")
+
+    return (mu*(L*R2Bexact*R), "R2Bexact")
