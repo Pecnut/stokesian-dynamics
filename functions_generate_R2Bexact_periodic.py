@@ -52,12 +52,12 @@ def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printou
                 for kk in range(len(closer_than_cutoff_pairs_scaled)):
                     (i, j) = closer_than_cutoff_pairs_scaled[kk]
                     if (i == a1_index and i != j):
-                        nearby_bead = a2_index
+                        nearby_bead = j
                         nearby_beads_displacements.append(displacements_pairs_scaled[kk])
                         nearby_beads.append(nearby_bead)
                         nearby_beads_distances.append(distances_pairs_scaled[kk])
                     if (j == a1_index and i != j):
-                        nearby_bead = a1_index
+                        nearby_bead = i
                         nearby_beads_displacements.append(-displacements_pairs_scaled[kk])  # Note minus sign
                         nearby_beads.append(nearby_bead)
                         nearby_beads_distances.append(distances_pairs_scaled[kk])
