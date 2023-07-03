@@ -242,11 +242,11 @@ def generate_R2Bexact(posdata, printout=0, cutoff_factor=2, frameno=0, checkpoin
 
     ii = 0
     for a1_index, a2_index in closer_than_cutoff_pairs_scaled:
-        r = displacements_pairs_scaled[ii]  # vector r
-        s_dash = distances_pairs_scaled[ii]  # np.linalg.norm(x)
+        r = displacements_pairs_scaled[ii]  # vector r. Convention is a2-a1
+        s_dash = distances_pairs_scaled[ii]  # np.linalg.norm(r)
         if a1_index != a2_index:
             d = r / s_dash
-        lam = size_ratios[ii]
+        lam = size_ratios[ii] # Convention is a2/a1
         lam_index = np.where(lam_range_with_reciprocals == lam)[0][0]
         lam_index_recip = np.where(lam_range_with_reciprocals == 1. / lam)[0][0]
         largest_size = max(bead_sizes[a1_index], bead_sizes[a2_index])

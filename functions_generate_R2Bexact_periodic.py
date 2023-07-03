@@ -69,7 +69,7 @@ def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printou
                 M_sum = 0
                 pp = 0
                 for p_index in nearby_beads:
-                    lam_p = bead_sizes[a1_index] / bead_sizes[p_index]
+                    lam_p = bead_sizes[p_index] / bead_sizes[a1_index]
                     largest_size_p = max(bead_sizes[a1_index], bead_sizes[p_index])
                     if lam_p not in lam_range_with_reciprocals:
                         print("ERROR (Code point D): lambda not in the table of calculated values")
@@ -153,7 +153,7 @@ def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printou
                 A_sum = 0
                 pp = 0
                 for p_index in nearby_beads:
-                    lam_p = bead_sizes[a1_index]/bead_sizes[p_index]
+                    lam_p = bead_sizes[p_index] / bead_sizes[a1_index]
                     largest_size_p = max(bead_sizes[a1_index], bead_sizes[p_index])
                     if lam_p not in lam_range_with_reciprocals:
                         print("ERROR (Code point D): lambda not in the table of calculated values")
@@ -197,11 +197,10 @@ def generate_R2Bexact_periodic(posdata,  box_bottom_left, box_top_right, printou
                         nearby_beads_displacements.append(-displacements_pairs_scaled[kk])  # Note minus sign
                         nearby_beads.append(nearby_bead)
                         nearby_beads_distances.append(distances_pairs_scaled[kk])
-
                 A_sum = 0
                 pp = 0
                 for p_index in nearby_beads:
-                    lam_p = bead_sizes[a1_index]/bead_sizes[p_index]
+                    lam_p = bead_sizes[p_index] / bead_sizes[a1_index]
                     largest_size_p = max(bead_sizes[a1_index], bead_sizes[p_index])
                     if lam_p not in lam_range_with_reciprocals:
                         print("ERROR (Code point D): lambda not in the table of calculated values")
