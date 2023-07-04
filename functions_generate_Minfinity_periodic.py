@@ -615,6 +615,7 @@ def M33(i, j, k, l, r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn,
         return m_aa + sum_mr + sum_mk - m_k0
 
 
+@njit
 def con_M13(i, m, args):
     if m == 0:
         return (0.5*(s3+1)*M13(i, 0, 0, *args) + 0.5*(s3-1)*M13(i, 1, 1, *args))
@@ -628,6 +629,7 @@ def con_M13(i, m, args):
         return s2*M13(i, 1, 2, *args)
 
 
+@njit
 def con_M23(i, m, args):
     if m == 0:
         return 0.5*(s3+1)*M23(i, 0, 0, *args) + 0.5*(s3-1)*M23(i, 1, 1, *args)
@@ -641,6 +643,7 @@ def con_M23(i, m, args):
         return s2*M23(i, 1, 2, *args)
 
 
+@njit
 def con1_M33(n, k, l, args):
     if n == 0:
         return 0.5*(s3+1)*M33(0, 0, k, l, *args) + 0.5*(s3-1)*M33(1, 1, k, l, *args)
@@ -654,6 +657,7 @@ def con1_M33(n, k, l, args):
         return s2*M33(1, 2, k, l, *args)
 
 
+@njit
 def con_M33(n, m, args):
     if m == 0:
         return 0.5*(s3+1)*con1_M33(n, 0, 0, args) + 0.5*(s3-1)*con1_M33(n, 1, 1, args)
