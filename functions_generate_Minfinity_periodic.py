@@ -3,15 +3,13 @@
 # Adam Townsend, adam@adamtownsend.com, 10/01/2017
 
 import numpy as np
-from numpy import sqrt, pi
-from functions_shared import posdata_data
-from functions_shared import norm
+import math
+from functions_shared import posdata_data, norm, s2, s3
 from inputs import how_far_to_reproduce_gridpoints, bead_bead_interactions
 from scipy.sparse import coo_matrix
-from scipy.special import erfc, erf
-import math
-from numba import njit
 from math import erfc, pi, exp
+from numba import njit
+
 
 # === DERIVATIVES OF r erfc (lambda r) ===
 # 1st derivatives
@@ -133,8 +131,6 @@ def generate_erfcs(s, lamb):
 
 # === CONSTANTS ===
 
-s3 = sqrt(3)
-s2 = sqrt(2)
 kronmatrix = [[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 1, 0, 0], [0, 0, 0, 1, 0], [0, 0, 0, 0, 1]]
 # NOTE: kron3traceless_ijkl = d_ik d_jl + d_il d_jk - 2/3 d_ij d_kl
 kron3tracelessmatrix = [[[[1.3333333333333335, 0.0, 0.0, 0.0, 0.0],   [0.0, -0.6666666666666666, 0.0, 0.0, 0.0],   [0.0, 0.0, -0.6666666666666666, 0.0, 0.0],   [0.0, 0.0, 0.0, -0.6666666666666666, 0.0],   [0.0, 0.0, 0.0, 0.0, -0.6666666666666666]],

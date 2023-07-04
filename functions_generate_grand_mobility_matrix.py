@@ -5,11 +5,10 @@
 from functions_generate_Minfinity import generate_Minfinity
 from functions_generate_R2Bexact import generate_R2Bexact
 from functions_generate_Minfinity_periodic import generate_Minfinity_periodic
-from functions_shared import save_matrix, tick, tock, posdata_data
+from functions_shared import save_matrix, posdata_data
 import time
 from numpy import linalg
 import numpy as np
-from inputs import cutoff_factor, num_frames, text_only, viewbox_bottomleft_topright, printout, setup_number, posdata, s_dash_range, lam_range, lam_range_with_reciprocals, XYZ_raw, view_labels, fps, viewing_angle, timestep, trace_paths, two_d_plot, save_positions_every_n_timesteps, save_forces_every_n_timesteps, XYZf, use_XYZd_values, input_form, invert_m_every
 
 
 def generate_grand_resistance_matrix(posdata, last_generated_Minfinity_inverse, regenerate_Minfinity=False, cutoff_factor=2, printout=0, use_XYZd_values=True, use_drag_Minfinity=False, use_Minfinity_only=False, frameno=0, checkpoint_start_from_frame=0, feed_every_n_timesteps=0, mu=1):

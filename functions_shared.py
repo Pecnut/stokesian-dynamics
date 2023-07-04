@@ -8,6 +8,8 @@ import time
 import sys
 from numba import njit
 
+s3 = sqrt(3)
+s2 = sqrt(2)
 
 def throw_error(message):
     """Quit immediately with a given error message."""

@@ -6,13 +6,11 @@
 
 import numpy as np
 from numpy import sqrt, pi
-from functions_shared import posdata_data, levi, norm
+from functions_shared import posdata_data, levi, norm, s2, s3
 from inputs import bead_bead_interactions
 from scipy.sparse import coo_matrix
 from numba import njit
 
-s3 = sqrt(3)
-s2 = sqrt(2)
 kronmatrix = [[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 1, 0, 0], [0, 0, 0, 1, 0], [0, 0, 0, 0, 1]]
 kronkronmatrix = [[[[1, 0, 0, 0, 0],   [0, 1, 0, 0, 0],   [0, 0, 1, 0, 0],   [0, 0, 0, 1, 0],   [0, 0, 0, 0, 1]],
   [[0, 0, 0, 0, 0],   [0, 0, 0, 0, 0],   [0, 0, 0, 0, 0],   [0, 0, 0, 0, 0],   [0, 0, 0, 0, 0]],

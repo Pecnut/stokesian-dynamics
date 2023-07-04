@@ -4,18 +4,16 @@
 
 # Reference: A. K. Townsend, 2017. The mechanics of suspensions. PhD thesis, UCL.
 # See section 2.4.2 for definitions, which are adapted from
-# section 7.2 of Kim & Karrila, 2005. Microhydrodynamics. 
+# section 7.2 of Kim & Karrila, 2005. Microhydrodynamics.
 
 import numpy as np
-from functions_shared import posdata_data, levi, close_particles
+from functions_shared import posdata_data, levi, close_particles, s2, s3
 from scipy import sparse
 from inputs import s_dash_range, lam_range_with_reciprocals, XYZ_raw, bead_bead_interactions
 from numba import njit
 
-s3 = np.sqrt(3)
-s2 = np.sqrt(2)
-kronmatrix = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
+kronmatrix = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
 @njit
 def L1(d, i, j):
@@ -249,7 +247,7 @@ def con1_Mf(gamma, d, lam_index, s_dash, n, k, l):
 @njit
 def con_Mf(gamma, d, lam_index, s_dash, n, m):
     """Element nm of (condensed) R2Bexact submatrix M. See PhD thesis (2.69),
-    and see section 2.4.4 for condensation details."""    
+    and see section 2.4.4 for condensation details."""
     if m == 0:
         return (0.5 * (s3+1) * con1_Mf(gamma, d, lam_index, s_dash, n, 0, 0)
                 + 0.5 * (s3-1) * con1_Mf(gamma, d, lam_index, s_dash, n, 1, 1))
