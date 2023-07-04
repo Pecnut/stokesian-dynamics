@@ -185,7 +185,7 @@ def are_some_of_the_particles_too_close(error, printout, s_dash_range, sphere_po
     return error
 
 
-def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_generated_Minfinity_inverse, regenerate_Minfinity, input_form, cutoff_factor, printout, use_XYZd_values, use_drag_Minfinity, use_Minfinity_only, extract_force_on_wall_due_to_dumbbells, last_velocities, last_velocity_vector, checkpoint_start_from_frame,  box_bottom_left, box_top_right, feed_every_n_timesteps=0):
+def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_generated_Minfinity_inverse, regenerate_Minfinity, input_form, cutoff_factor, printout, use_drag_Minfinity, use_Minfinity_only, extract_force_on_wall_due_to_dumbbells, last_velocities, last_velocity_vector, checkpoint_start_from_frame,  box_bottom_left, box_top_right, feed_every_n_timesteps=0):
     """Solve the grand mobility problem: for given force/velocity inputs, return all computed velocities/forces.
 
     Args (selected):
@@ -219,10 +219,10 @@ def generate_output_FTSUOE(posdata, frameno, timestep, input_number, last_genera
     else:
         if not np.array_equal(box_bottom_left - box_top_right, np.array([0, 0, 0])):
             # periodic
-            (grand_resistance_matrix, heading, last_generated_Minfinity_inverse, gen_times) = generate_grand_resistance_matrix_periodic(posdata, last_generated_Minfinity_inverse,  box_bottom_left, box_top_right, regenerate_Minfinity=regenerate_Minfinity, cutoff_factor=cutoff_factor, printout=printout, use_XYZd_values=use_XYZd_values, use_drag_Minfinity=use_drag_Minfinity, use_Minfinity_only=use_Minfinity_only, frameno=frameno, checkpoint_start_from_frame=checkpoint_start_from_frame, feed_every_n_timesteps=feed_every_n_timesteps, O_infinity=O_infinity, E_infinity=Ea_in[0], timestep=timestep, centre_of_background_flow=centre_of_background_flow, mu=mu, amplitude=amplitude, frequency=frequency)
+            (grand_resistance_matrix, heading, last_generated_Minfinity_inverse, gen_times) = generate_grand_resistance_matrix_periodic(posdata, last_generated_Minfinity_inverse,  box_bottom_left, box_top_right, regenerate_Minfinity=regenerate_Minfinity, cutoff_factor=cutoff_factor, printout=printout, use_drag_Minfinity=use_drag_Minfinity, use_Minfinity_only=use_Minfinity_only, frameno=frameno, checkpoint_start_from_frame=checkpoint_start_from_frame, feed_every_n_timesteps=feed_every_n_timesteps, O_infinity=O_infinity, E_infinity=Ea_in[0], timestep=timestep, centre_of_background_flow=centre_of_background_flow, mu=mu, amplitude=amplitude, frequency=frequency)
         else:
             # non-periodic
-            (grand_resistance_matrix, heading, last_generated_Minfinity_inverse, gen_times) = generate_grand_resistance_matrix(posdata, last_generated_Minfinity_inverse, regenerate_Minfinity=regenerate_Minfinity, cutoff_factor=cutoff_factor, printout=printout, use_XYZd_values=use_XYZd_values, use_drag_Minfinity=use_drag_Minfinity, use_Minfinity_only=use_Minfinity_only, frameno=frameno, checkpoint_start_from_frame=checkpoint_start_from_frame, feed_every_n_timesteps=feed_every_n_timesteps, mu=mu)
+            (grand_resistance_matrix, heading, last_generated_Minfinity_inverse, gen_times) = generate_grand_resistance_matrix(posdata, last_generated_Minfinity_inverse, regenerate_Minfinity=regenerate_Minfinity, cutoff_factor=cutoff_factor, printout=printout, use_drag_Minfinity=use_drag_Minfinity, use_Minfinity_only=use_Minfinity_only, frameno=frameno, checkpoint_start_from_frame=checkpoint_start_from_frame, feed_every_n_timesteps=feed_every_n_timesteps, mu=mu)
 
         solve_time_start = time.time()
 

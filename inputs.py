@@ -158,14 +158,16 @@ use_drag_Minfinity = False
 # Only use Minfinity, i.e. turn off R2Bexact. Mostly put in for a little discussion.
 use_Minfinity_only = False
 
-# Use the "d" values of the XYZ scalars, i.e. use those with R2binfinity subtracted off in advance (it's quicker).
-use_XYZd_values = True  # No longer works if you make this FAlse
-
-# Only relevant if  use_drag_Minfinity = True  and  use_XYZd_values = True
-# If use_drag_Minfinity = True, there is a choice of using 'd' scalars where the drag Minfinity
-# is subtracted, or using 'd' scalars where the full Minfinity is subtracted. You might pick the drag version if you wanted
-# to make sure that the two-sphere case works, but you might pick the full version if you have a dense suspension.
-use_usual_scalars = False
+# Only relevant if  use_drag_Minfinity = True.
+# The precomputed XYZ scalars in the resistance matrix already have R2binfinity
+# subtracted off them (it's quicker). For historical reasons, they are called 
+# 'd' scalars and the data files are labelled with '-d'.
+# If use_drag_Minfinity = True, there is a choice of using 'd' scalars where 
+# the drag Minfinity is subtracted, or using 'd' scalars where the full 
+# Minfinity is subtracted. You might pick the drag version if you wanted
+# to make sure that the two-sphere case works, but you might pick the full 
+# version if you have a dense suspension.
+use_full_Minfinity_scalars_with_drag_Minfinity = False
 
 # --------------------
 # VIDEO-RELATED INPUTS
@@ -206,13 +208,11 @@ for lam in lam_range_with_reciprocals:
 lam_range_with_reciprocals.sort()
 
 # Decide here whether we are going to use the d values or not
-if use_XYZd_values:
-    if use_drag_Minfinity and use_usual_scalars or not use_drag_Minfinity:
-        filename = f'{resistance_scalars_folder}/scalars_general_resistance_blob_d.txt'
-    else:
-        filename = f'{resistance_scalars_folder}/scalars_general_resistance_blob_dnominf.txt'
+if not use_drag_Minfinity or (use_drag_Minfinity and use_full_Minfinity_scalars_with_drag_Minfinity):
+    filename = f'{resistance_scalars_folder}/scalars_general_resistance_blob_d.txt'
 else:
-    filename = f'{resistance_scalars_folder}/scalars_general_resistance_blob.txt'
+    filename = f'{resistance_scalars_folder}/scalars_general_resistance_blob_dnominf.txt'
+
 try:
     with open(filename, 'rb') as inputfile:
         XYZ_raw = np.load(inputfile)
