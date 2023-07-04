@@ -11,14 +11,22 @@ from numpy import linalg
 import numpy as np
 
 
-def generate_grand_resistance_matrix(posdata, last_generated_Minfinity_inverse, regenerate_Minfinity=False, cutoff_factor=2, printout=0, use_XYZd_values=True, use_drag_Minfinity=False, use_Minfinity_only=False, frameno=0, checkpoint_start_from_frame=0, feed_every_n_timesteps=0, mu=1):
-    '''
-    if use_XYZd_values:
-        d = "-d"
-    else:
-        d = ""
-    '''
-    d = "-d"
+def generate_grand_resistance_matrix(posdata, 
+        last_generated_Minfinity_inverse, 
+        regenerate_Minfinity=False, cutoff_factor=2, printout=0, 
+        use_drag_Minfinity=False, use_Minfinity_only=False, frameno=0, mu=1):
+    """Return the grand resistance matrix.
+    
+    Args:
+        posdata: Particle position, size and count data
+        last_generated_Minfinity_inverse: Precomputed Minfinity_inverse matrix
+            from a previous timestep or timestep stage which may want to be 
+            used here.
+        regenerate_Minfinity (bool): Instruction to either use the precomputed
+            Minfinity_inverse (False) or to generate a new one (True)
+        cutoff_factor: Cutoff factor for separation when R2Bexact applies
+        printout: Flag you can use to toggle debug information
+    """
 
     Minfinity_start_time = time.time()
     if not(use_drag_Minfinity):
@@ -82,9 +90,14 @@ def generate_grand_resistance_matrix(posdata, last_generated_Minfinity_inverse, 
     return (grand_resistance_matrix, heading, Minfinity_inverse, gen_times)
 
 
-def generate_grand_resistance_matrix_periodic(posdata, last_generated_Minfinity_inverse,  box_bottom_left, box_top_right, regenerate_Minfinity=False, cutoff_factor=2, printout=0, use_XYZd_values=True, use_drag_Minfinity=False, use_Minfinity_only=False, frameno=0, checkpoint_start_from_frame=0, feed_every_n_timesteps=0, O_infinity=np.array([0, 0, 0]), E_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]), timestep=0.1, centre_of_background_flow=np.array([0, 0, 0]), mu=1, amplitude=1, frequency=1):
-    d = "-d"
-
+def generate_grand_resistance_matrix_periodic(posdata, 
+        last_generated_Minfinity_inverse,  box_bottom_left, box_top_right, 
+        regenerate_Minfinity=False, cutoff_factor=2, printout=0, 
+        use_drag_Minfinity=False, use_Minfinity_only=False, frameno=0,
+        O_infinity=np.array([0, 0, 0]), 
+        E_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]), 
+        timestep=0.1, centre_of_background_flow=np.array([0, 0, 0]), 
+        mu=1, amplitude=1, frequency=1):
     if not(use_drag_Minfinity):  # i.e. if we should do Minfinity properly:
         Minfinity_start_time = time.time()
         if regenerate_Minfinity:
