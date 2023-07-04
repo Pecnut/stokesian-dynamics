@@ -729,20 +729,34 @@ if error == 0:
     print(info_box)
 
     print("[Generating " + filename + "]")
-    print("                      " + " " * 2 * len(str(num_frames)) + "[ Minfy  ] [invMinfy] [R2Bex'd'] [ U=R\F  ] [ Saving ] [MaxMemry] [[ Total  ]] [TimeLeft] [ ETA ]")
+    print("                      " + " " * 2 * len(str(num_frames)) 
+          + "[ Minfy  ] [invMinfy] [R2Bex'd'] [ U=R\F  ] [ Saving ] [MaxMemry] [[ Total  ]] [TimeLeft] [ ETA ]")
 
-    generate_frame_args = [grand_mobility_matrix, text_only, cutoff_factor, viewbox_bottomleft_topright, printout, view_labels, timestep, trace_paths, input_form, filename, output_folder, legion_random_id, box_bottom_left, box_top_right]
     if text_only == 0 and num_frames > 1:
-        ani = animation.FuncAnimation(fig, generate_frame, init_func=initialise_frame,
+        generate_frame_args = [grand_mobility_matrix, text_only, 
+                        cutoff_factor, viewbox_bottomleft_topright, 
+                        printout, view_labels, timestep, trace_paths, 
+                        input_form, filename, output_folder, 
+                        legion_random_id, box_bottom_left, box_top_right]
+        ani = animation.FuncAnimation(fig, generate_frame, 
+                                      init_func=initialise_frame,
                                       frames=range(checkpoint_start_from_frame,num_frames),
                                       fargs=generate_frame_args, repeat=False, 
                                       interval=200)
         plt.show()
     else:
         for frameno in range(checkpoint_start_from_frame, num_frames):
-            generate_frame(frameno, grand_mobility_matrix, text_only, cutoff_factor, viewbox_bottomleft_topright, printout, view_labels, timestep, trace_paths, input_form, filename, output_folder, legion_random_id, box_bottom_left, box_top_right)
+            generate_frame(frameno, grand_mobility_matrix, text_only, 
+                           cutoff_factor, viewbox_bottomleft_topright, 
+                           printout, view_labels, timestep, trace_paths, 
+                           input_form, filename, output_folder, 
+                           legion_random_id, box_bottom_left, box_top_right)
 
-    (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax, num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
+    (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, 
+     dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, 
+     element_sizes, element_positions, element_deltax, num_elements, 
+     num_elements_array, element_type, uv_start, uv_size, 
+     element_start_count) = posdata_data(posdata)
 
     # Final save
     if save_forces_every_n_timesteps > 0 or save_positions_every_n_timesteps > 0:
@@ -752,14 +766,20 @@ if error == 0:
                             force_on_wall_due_to_dumbbells=saved_force_on_wall_due_to_dumbbells,
                             sphere_rotations=saved_sphere_rotations)
         # Remove backup file
-        if os.path.exists(output_folder + '/' + filename + legion_random_id + '_TEMP.npz'):
-            os.remove(output_folder + '/' + filename + legion_random_id + '_TEMP.npz')
+        backup_file = output_folder + '/' + filename + legion_random_id + '_TEMP.npz'
+        if os.path.exists(backup_file):
+            os.remove(backup_file)
 
     total_elapsed_time = time.time() - total_time_start
     print("[Total time to run " + format_elapsed_time(total_elapsed_time) + "]")
     print("[Complete: " + filename + "]")
     if send_email:
-        send_email("SD job on " + socket.gethostname() + " complete", "The job on " + socket.gethostname() + ", with filename\n\n" + filename + ",\n\n which started on\n\n" + datetime.datetime.fromtimestamp(total_time_start).strftime('%A %-d %B %Y, %H:%M') + ",\n\nis now complete. It took " + format_elapsed_time(total_elapsed_time) + ".")
+        send_email("SD job on " + socket.gethostname() + " complete", 
+                   ("The job on " + socket.gethostname() + ", with filename\n\n"
+                   + filename + ",\n\n which started on\n\n" + 
+                   datetime.datetime.fromtimestamp(total_time_start).strftime('%A %-d %B %Y, %H:%M') 
+                   + ",\n\nis now complete. It took " 
+                   + format_elapsed_time(total_elapsed_time) + "."))
     print("")
 
     if sys.platform == "win32" and text_only == 0:
