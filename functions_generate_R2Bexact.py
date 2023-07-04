@@ -9,7 +9,7 @@
 import numpy as np
 from functions_shared import posdata_data, levi, close_particles
 from scipy import sparse
-from inputs import s_dash_range, lam_range_with_reciprocals, XYZ_raw, fully_2d_problem, bead_bead_interactions
+from inputs import s_dash_range, lam_range_with_reciprocals, XYZ_raw, bead_bead_interactions
 from numba import njit
 
 s3 = np.sqrt(3)
@@ -146,7 +146,7 @@ def ZM(gam, s, lam_index):
 
 
 @njit
-def Af(gamma, d, lam_index, ss, i, j, fully_2d_problem=False):
+def Af(gamma, d, lam_index, ss, i, j):
     """Element ij of R2Bexact submatrix A. See PhD thesis (2.69)."""
     XAg = XA(gamma, ss, lam_index)
     YAg = YA(gamma, ss, lam_index)
@@ -154,14 +154,14 @@ def Af(gamma, d, lam_index, ss, i, j, fully_2d_problem=False):
 
 
 @njit
-def Bf(gamma, d, lam_index, ss, i, j, fully_2d_problem=False):
+def Bf(gamma, d, lam_index, ss, i, j):
     """Element ij of R2Bexact submatrix B. See PhD thesis (2.69)."""
     YBg = YB(gamma, ss, lam_index)
     return YBg * L3(d, i, j)
 
 
 @njit
-def Cf(gamma, d, lam_index, ss, i, j, fully_2d_problem=False):
+def Cf(gamma, d, lam_index, ss, i, j):
     """Element ij of R2Bexact submatrix C. See PhD thesis (2.69)."""
     XCg = XC(gamma, ss, lam_index)
     YCg = YC(gamma, ss, lam_index)
@@ -169,7 +169,7 @@ def Cf(gamma, d, lam_index, ss, i, j, fully_2d_problem=False):
 
 
 @njit
-def Gf(gamma, d, lam_index, ss, i, j, k, fully_2d_problem=False):
+def Gf(gamma, d, lam_index, ss, i, j, k):
     """Element ijk of uncondensed R2Bexact submatrix G. See PhD thesis (2.69)."""
     XGg = XG(gamma, ss, lam_index)
     YGg = YG(gamma, ss, lam_index)
@@ -177,14 +177,14 @@ def Gf(gamma, d, lam_index, ss, i, j, k, fully_2d_problem=False):
 
 
 @njit
-def Hf(gamma, d, lam_index, ss, i, j, k, fully_2d_problem=False):
+def Hf(gamma, d, lam_index, ss, i, j, k):
     """Element ijk of uncondensed R2Bexact submatrix H. See PhD thesis (2.69)."""
     YHg = YH(gamma, ss, lam_index)
     return YHg * L6(d, i, j, k)
 
 
 @njit
-def Mf(gamma, d, lam_index, ss, i, j, k, l, fully_2d_problem=False):
+def Mf(gamma, d, lam_index, ss, i, j, k, l):
     """Element ijkl of uncondensed R2Bexact submatrix M. See PhD thesis (2.69)."""
     XMg = XM(gamma, ss, lam_index)
     YMg = YM(gamma, ss, lam_index)
@@ -193,75 +193,75 @@ def Mf(gamma, d, lam_index, ss, i, j, k, l, fully_2d_problem=False):
 
 
 @njit
-def con_Gf(gamma, d, lam_index, s_dash, m, i, fully_2d_problem=False):
+def con_Gf(gamma, d, lam_index, s_dash, m, i):
     """Element mi of (condensed) R2Bexact submatrix G. See PhD thesis (2.69), 
     and see section 2.4.4 for condensation details."""
     if m == 0:
-        return (0.5 * (s3+1) * Gf(gamma, d, lam_index, s_dash, 0, 0, i, fully_2d_problem)
-                + 0.5 * (s3-1) * Gf(gamma, d, lam_index, s_dash, 1, 1, i, fully_2d_problem))
+        return (0.5 * (s3+1) * Gf(gamma, d, lam_index, s_dash, 0, 0, i)
+                + 0.5 * (s3-1) * Gf(gamma, d, lam_index, s_dash, 1, 1, i))
     elif m == 1:
-        return s2 * Gf(gamma, d, lam_index, s_dash, 0, 1, i, fully_2d_problem)
+        return s2 * Gf(gamma, d, lam_index, s_dash, 0, 1, i)
     elif m == 2:
-        return (0.5 * (s3-1) * Gf(gamma, d, lam_index, s_dash, 0, 0, i, fully_2d_problem)
-                + 0.5 * (s3+1) * Gf(gamma, d, lam_index, s_dash, 1, 1, i, fully_2d_problem))
+        return (0.5 * (s3-1) * Gf(gamma, d, lam_index, s_dash, 0, 0, i)
+                + 0.5 * (s3+1) * Gf(gamma, d, lam_index, s_dash, 1, 1, i))
     elif m == 3:
-        return s2 * Gf(gamma, d, lam_index, s_dash, 0, 2, i, fully_2d_problem)
+        return s2 * Gf(gamma, d, lam_index, s_dash, 0, 2, i)
     else:
-        return s2 * Gf(gamma, d, lam_index, s_dash, 1, 2, i, fully_2d_problem)
+        return s2 * Gf(gamma, d, lam_index, s_dash, 1, 2, i)
 
 
 @njit
-def con_Hf(gamma, d, lam_index, s_dash, m, i, fully_2d_problem=False):
+def con_Hf(gamma, d, lam_index, s_dash, m, i):
     """Element mi of (condensed) R2Bexact submatrix H. See PhD thesis (2.69), 
     and see section 2.4.4 for condensation details."""
     if m == 0:
-        return (0.5 * (s3+1) * Hf(gamma, d, lam_index, s_dash, 0, 0, i, fully_2d_problem)
-                + 0.5 * (s3-1) * Hf(gamma, d, lam_index, s_dash, 1, 1, i, fully_2d_problem))
+        return (0.5 * (s3+1) * Hf(gamma, d, lam_index, s_dash, 0, 0, i)
+                + 0.5 * (s3-1) * Hf(gamma, d, lam_index, s_dash, 1, 1, i))
     elif m == 1:
-        return s2 * Hf(gamma, d, lam_index, s_dash, 0, 1, i, fully_2d_problem)
+        return s2 * Hf(gamma, d, lam_index, s_dash, 0, 1, i)
     elif m == 2:
-        return (0.5 * (s3-1) * Hf(gamma, d, lam_index, s_dash, 0, 0, i, fully_2d_problem)
-                + 0.5 * (s3+1) * Hf(gamma, d, lam_index, s_dash, 1, 1, i, fully_2d_problem))
+        return (0.5 * (s3-1) * Hf(gamma, d, lam_index, s_dash, 0, 0, i)
+                + 0.5 * (s3+1) * Hf(gamma, d, lam_index, s_dash, 1, 1, i))
     elif m == 3:
-        return s2 * Hf(gamma, d, lam_index, s_dash, 0, 2, i, fully_2d_problem)
+        return s2 * Hf(gamma, d, lam_index, s_dash, 0, 2, i)
     else:
-        return s2 * Hf(gamma, d, lam_index, s_dash, 1, 2, i, fully_2d_problem)
+        return s2 * Hf(gamma, d, lam_index, s_dash, 1, 2, i)
 
 
 @njit
-def con1_Mf(gamma, d, lam_index, s_dash, n, k, l, fully_2d_problem=False):
+def con1_Mf(gamma, d, lam_index, s_dash, n, k, l):
     """Element nkl of partially condensed R2Bexact submatrix M. See PhD thesis 
     (2.69), and see section 2.4.4 for condensation details."""
     if n == 0:
-        return (0.5 * (s3+1) * Mf(gamma, d, lam_index, s_dash, 0, 0, k, l, fully_2d_problem)
-                + 0.5 * (s3-1) * Mf(gamma, d, lam_index, s_dash, 1, 1, k, l, fully_2d_problem))
+        return (0.5 * (s3+1) * Mf(gamma, d, lam_index, s_dash, 0, 0, k, l)
+                + 0.5 * (s3-1) * Mf(gamma, d, lam_index, s_dash, 1, 1, k, l))
     elif n == 1:
-        return s2 * Mf(gamma, d, lam_index, s_dash, 0, 1, k, l, fully_2d_problem)
+        return s2 * Mf(gamma, d, lam_index, s_dash, 0, 1, k, l)
     elif n == 2:
-        return (0.5 * (s3-1) * Mf(gamma, d, lam_index, s_dash, 0, 0, k, l, fully_2d_problem)
-                + 0.5 * (s3+1) * Mf(gamma, d, lam_index, s_dash, 1, 1, k, l, fully_2d_problem))
+        return (0.5 * (s3-1) * Mf(gamma, d, lam_index, s_dash, 0, 0, k, l)
+                + 0.5 * (s3+1) * Mf(gamma, d, lam_index, s_dash, 1, 1, k, l))
     elif n == 3:
-        return s2 * Mf(gamma, d, lam_index, s_dash, 0, 2, k, l, fully_2d_problem)
+        return s2 * Mf(gamma, d, lam_index, s_dash, 0, 2, k, l)
     else:
-        return s2 * Mf(gamma, d, lam_index, s_dash, 1, 2, k, l, fully_2d_problem)
+        return s2 * Mf(gamma, d, lam_index, s_dash, 1, 2, k, l)
 
 
 @njit
-def con_Mf(gamma, d, lam_index, s_dash, n, m, fully_2d_problem=False):
+def con_Mf(gamma, d, lam_index, s_dash, n, m):
     """Element nm of (condensed) R2Bexact submatrix M. See PhD thesis (2.69),
     and see section 2.4.4 for condensation details."""    
     if m == 0:
-        return (0.5 * (s3+1) * con1_Mf(gamma, d, lam_index, s_dash, n, 0, 0, fully_2d_problem)
-                + 0.5 * (s3-1) * con1_Mf(gamma, d, lam_index, s_dash, n, 1, 1, fully_2d_problem))
+        return (0.5 * (s3+1) * con1_Mf(gamma, d, lam_index, s_dash, n, 0, 0)
+                + 0.5 * (s3-1) * con1_Mf(gamma, d, lam_index, s_dash, n, 1, 1))
     elif m == 1:
-        return s2 * con1_Mf(gamma, d, lam_index, s_dash, n, 0, 1, fully_2d_problem)
+        return s2 * con1_Mf(gamma, d, lam_index, s_dash, n, 0, 1)
     elif m == 2:
-        return (0.5 * (s3-1) * con1_Mf(gamma, d, lam_index, s_dash, n, 0, 0, fully_2d_problem)
-                + 0.5 * (s3+1) * con1_Mf(gamma, d, lam_index, s_dash, n, 1, 1, fully_2d_problem))
+        return (0.5 * (s3-1) * con1_Mf(gamma, d, lam_index, s_dash, n, 0, 0)
+                + 0.5 * (s3+1) * con1_Mf(gamma, d, lam_index, s_dash, n, 1, 1))
     elif m == 3:
-        return s2 * con1_Mf(gamma, d, lam_index, s_dash, n, 0, 2, fully_2d_problem)
+        return s2 * con1_Mf(gamma, d, lam_index, s_dash, n, 0, 2)
     else:
-        return s2 * con1_Mf(gamma, d, lam_index, s_dash, n, 1, 2, fully_2d_problem)
+        return s2 * con1_Mf(gamma, d, lam_index, s_dash, n, 1, 2)
 
 
 @njit
@@ -309,7 +309,7 @@ def generate_R2Bexact(posdata,
     Returns:
         R2Bexact matrix.
     """
-    global fully_2d_problem, average_size_matrix, upper_triangle
+    global average_size_matrix, upper_triangle
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
     R2Bexact_sidelength = 11 * num_spheres + 6 * num_dumbbells
     R2Bexact = sparse.lil_matrix((R2Bexact_sidelength, R2Bexact_sidelength), dtype=float)
@@ -373,12 +373,12 @@ def generate_R2Bexact(posdata,
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
                     d_p = r_p / s_dash_p
-                    A_sum += np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j, fully_2d_problem)*largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
-                    Bt_sum += np.asarray([[Bf(0, d_p, lam_index_p, s_dash_p, j, i, fully_2d_problem)*largest_size_p**uv_power[0][1] for j in range(3)] for i in range(3)])
-                    C_sum += np.asarray([[Cf(0, d_p, lam_index_p, s_dash_p, i, j, fully_2d_problem)*largest_size_p**uv_power[1][1] for j in range(3)] for i in range(3)])
-                    Gt_sum += np.asarray([[con_Gf(0, d_p, lam_index_p, s_dash_p, j, i, fully_2d_problem)*largest_size_p**uv_power[0][2] for j in range(5)] for i in range(3)])
-                    Ht_sum += np.asarray([[con_Hf(0, d_p, lam_index_p, s_dash_p, j, i, fully_2d_problem)*largest_size_p**uv_power[1][2] for j in range(5)] for i in range(3)])
-                    M_sum += np.asarray([[con_Mf(0, d_p, lam_index_p, s_dash_p, i, j, fully_2d_problem)*largest_size_p**uv_power[2][2] for j in range(5)] for i in range(5)])
+                    A_sum += np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j)*largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
+                    Bt_sum += np.asarray([[Bf(0, d_p, lam_index_p, s_dash_p, j, i)*largest_size_p**uv_power[0][1] for j in range(3)] for i in range(3)])
+                    C_sum += np.asarray([[Cf(0, d_p, lam_index_p, s_dash_p, i, j)*largest_size_p**uv_power[1][1] for j in range(3)] for i in range(3)])
+                    Gt_sum += np.asarray([[con_Gf(0, d_p, lam_index_p, s_dash_p, j, i)*largest_size_p**uv_power[0][2] for j in range(5)] for i in range(3)])
+                    Ht_sum += np.asarray([[con_Hf(0, d_p, lam_index_p, s_dash_p, j, i)*largest_size_p**uv_power[1][2] for j in range(5)] for i in range(3)])
+                    M_sum += np.asarray([[con_Mf(0, d_p, lam_index_p, s_dash_p, i, j)*largest_size_p**uv_power[2][2] for j in range(5)] for i in range(5)])
                     pp += 1
                 R2Bexact[A_coords] = A_sum
                 R2Bexact[Bt_coords] = Bt_sum
@@ -388,20 +388,20 @@ def generate_R2Bexact(posdata,
                 R2Bexact[M_coords] = M_sum
 
             else:
-                R2Bexact[A_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
-                R2Bexact[Bt_coords] = [[Bf(1, -d, lam_index_recip, s_dash, j, i, fully_2d_problem)*largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
-                R2Bexact[C_coords] = [[Cf(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[1][1] for j in range(3)] for i in range(3)]
-                R2Bexact[Gt_coords] = [[con_Gf(1, -d, lam_index_recip, s_dash, j, i, fully_2d_problem)*largest_size**uv_power[0][2] for j in range(5)] for i in range(3)]
-                R2Bexact[Ht_coords] = [[con_Hf(1, -d, lam_index_recip, s_dash, j, i, fully_2d_problem)*largest_size**uv_power[1][2] for j in range(5)] for i in range(3)]
-                R2Bexact[M_coords] = [[con_Mf(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[2][2] for j in range(5)] for i in range(5)]
+                R2Bexact[A_coords] = [[Af(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
+                R2Bexact[Bt_coords] = [[Bf(1, -d, lam_index_recip, s_dash, j, i)*largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
+                R2Bexact[C_coords] = [[Cf(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[1][1] for j in range(3)] for i in range(3)]
+                R2Bexact[Gt_coords] = [[con_Gf(1, -d, lam_index_recip, s_dash, j, i)*largest_size**uv_power[0][2] for j in range(5)] for i in range(3)]
+                R2Bexact[Ht_coords] = [[con_Hf(1, -d, lam_index_recip, s_dash, j, i)*largest_size**uv_power[1][2] for j in range(5)] for i in range(3)]
+                R2Bexact[M_coords] = [[con_Mf(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[2][2] for j in range(5)] for i in range(5)]
                 if lam == 1:
                     R2Bexact[Bt_coords_21] = -R2Bexact[Bt_coords]
                     R2Bexact[Gt_coords_21] = -R2Bexact[Gt_coords]
                     R2Bexact[Ht_coords_21] = R2Bexact[Ht_coords]
                 else:
-                    R2Bexact[Bt_coords_21] = [[Bf(1, d, lam_index, s_dash, j, i, fully_2d_problem)*largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
-                    R2Bexact[Gt_coords_21] = [[con_Gf(1, d, lam_index, s_dash, j, i, fully_2d_problem)*largest_size**uv_power[0][2] for j in range(5)] for i in range(3)]
-                    R2Bexact[Ht_coords_21] = [[con_Hf(1, d, lam_index, s_dash, j, i, fully_2d_problem)*largest_size**uv_power[1][2] for j in range(5)] for i in range(3)]
+                    R2Bexact[Bt_coords_21] = [[Bf(1, d, lam_index, s_dash, j, i)*largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
+                    R2Bexact[Gt_coords_21] = [[con_Gf(1, d, lam_index, s_dash, j, i)*largest_size**uv_power[0][2] for j in range(5)] for i in range(3)]
+                    R2Bexact[Ht_coords_21] = [[con_Hf(1, d, lam_index, s_dash, j, i)*largest_size**uv_power[1][2] for j in range(5)] for i in range(3)]
 
         elif a1_index < num_spheres and a2_index >= num_spheres and a2_index < num_spheres + num_dumbbells:
             # Sphere to dumbbell bead 1
@@ -410,9 +410,9 @@ def generate_R2Bexact(posdata,
             R24_coords = np.s_[3*num_spheres+a1_index*3:3*num_spheres+(a1_index+1)*3, 11*num_spheres+a2_index_d*3: 11*num_spheres + (a2_index_d+1)*3]
             R34_coords = np.s_[6*num_spheres+a1_index*5:6*num_spheres+(a1_index+1)*5, 11*num_spheres+a2_index_d*3: 11*num_spheres + (a2_index_d+1)*3]
 
-            R2Bexact[R14_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
-            R2Bexact[R24_coords] = [[Bf(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
-            R2Bexact[R34_coords] = [[con_Gf(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][2] for j in range(3)] for i in range(5)]
+            R2Bexact[R14_coords] = [[Af(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
+            R2Bexact[R24_coords] = [[Bf(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
+            R2Bexact[R34_coords] = [[con_Gf(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][2] for j in range(3)] for i in range(5)]
 
         elif a1_index < num_spheres and a2_index >= num_spheres + num_dumbbells:
             # Sphere to dumbbell bead 2
@@ -421,9 +421,9 @@ def generate_R2Bexact(posdata,
             R25_coords = np.s_[3*num_spheres+a1_index*3:3*num_spheres+(a1_index+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
             R35_coords = np.s_[6*num_spheres+a1_index*5:6*num_spheres+(a1_index+1)*5, 11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
 
-            R2Bexact[R15_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
-            R2Bexact[R25_coords] = [[Bf(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
-            R2Bexact[R35_coords] = [[con_Gf(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][2] for j in range(3)] for i in range(5)]
+            R2Bexact[R15_coords] = [[Af(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
+            R2Bexact[R25_coords] = [[Bf(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
+            R2Bexact[R35_coords] = [[con_Gf(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][2] for j in range(3)] for i in range(5)]
 
         elif a1_index >= num_spheres and a1_index < num_spheres + num_dumbbells and a2_index >= num_spheres and a2_index < num_spheres + num_dumbbells:
             # Dumbbell bead 1 to dumbbell bead 1
@@ -457,12 +457,12 @@ def generate_R2Bexact(posdata,
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
                     d_p = r_p / s_dash_p
-                    A_sum = A_sum + np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j, fully_2d_problem) * largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
+                    A_sum = A_sum + np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j) * largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
                     pp = pp + 1
                 R2Bexact[R44_coords] = A_sum
             else:
                 if bead_bead_interactions:
-                    R2Bexact[R44_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
+                    R2Bexact[R44_coords] = [[Af(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
 
         elif a1_index >= num_spheres and a1_index < num_spheres + num_dumbbells and a2_index >= num_spheres + num_dumbbells:
             # Dumbbell bead 1 to dumbbell bead 2
@@ -470,7 +470,7 @@ def generate_R2Bexact(posdata,
                 a1_index_d = a1_index - num_spheres
                 a2_index_d = a2_index - num_spheres - num_dumbbells
                 R45_coords = np.s_[11*num_spheres+a1_index_d*3:11*num_spheres+(a1_index_d+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
-                R2Bexact[R45_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
+                R2Bexact[R45_coords] = [[Af(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
 
         else:
             # Dumbbell bead 2 to dumbbell bead 2
@@ -504,12 +504,12 @@ def generate_R2Bexact(posdata,
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
                     d_p = r_p / s_dash_p
-                    A_sum = A_sum + np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j, fully_2d_problem) * largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
+                    A_sum = A_sum + np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j) * largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
                     pp = pp + 1
                 R2Bexact[R55_coords] = A_sum
             else:
                 if bead_bead_interactions:
-                    R2Bexact[R55_coords] = [[Af(1, d, lam_index, s_dash, i, j, fully_2d_problem) * largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
+                    R2Bexact[R55_coords] = [[Af(1, d, lam_index, s_dash, i, j) * largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
         ii = ii + 1
 
     # Scale by 6pi
