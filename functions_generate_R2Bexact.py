@@ -15,6 +15,7 @@ from numba import njit
 
 kronmatrix = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
+
 @njit
 def L1(d, i, j):
     """Unit displacement tensor L1 used in A & C. See PhD thesis (2.70)."""
@@ -309,7 +310,12 @@ def generate_R2Bexact(posdata,
         "R2Bexact": Human readable name of the matrix
     """
     global average_size_matrix, upper_triangle
-    (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
+    (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
+        dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells,
+        element_sizes, element_positions, element_deltax,  num_elements,
+        num_elements_array, element_type, uv_start, uv_size,
+        element_start_count) = posdata_data(posdata)
+
     R2Bexact_sidelength = 11 * num_spheres + 6 * num_dumbbells
     R2Bexact = sparse.lil_matrix((R2Bexact_sidelength, R2Bexact_sidelength), dtype=float)
     bead_positions = np.concatenate([sphere_positions, dumbbell_positions - 0.5 * dumbbell_deltax, dumbbell_positions + 0.5 * dumbbell_deltax])
@@ -524,10 +530,16 @@ def generate_R2Bexact(posdata,
     #   "L"                         "R"
 
     # I know that we could generate L and R elsewhere rather than doing it every timestep but it takes 0.01s for a few thousand dumbbells so for now I don't mind
-    Lrow = np.array([i for i in range(11*num_spheres + 6*num_dumbbells)] + [i + 11*num_spheres for i in range(3*num_dumbbells)] + [i + 11*num_spheres + 3*num_dumbbells for i in range(3*num_dumbbells)])
-    Lcol = np.array([i for i in range(11*num_spheres + 6*num_dumbbells)] + [i + 11*num_spheres + 3*num_dumbbells for i in range(3*num_dumbbells)] + [i + 11*num_spheres for i in range(3*num_dumbbells)])
-    Ldata = np.array([1 for i in range(11*num_spheres + 9*num_dumbbells)] + [-1 for i in range(3*num_dumbbells)])
-    L = sparse.coo_matrix((Ldata, (Lrow, Lcol)), shape=(11*num_spheres+6*num_dumbbells, 11*num_spheres+6*num_dumbbells))
+    Lrow = np.array([i for i in range(11*num_spheres + 6*num_dumbbells)]
+                    + [i + 11*num_spheres for i in range(3*num_dumbbells)]
+                    + [i + 11*num_spheres + 3*num_dumbbells for i in range(3*num_dumbbells)])
+    Lcol = np.array([i for i in range(11*num_spheres + 6*num_dumbbells)]
+                    + [i + 11*num_spheres + 3*num_dumbbells for i in range(3*num_dumbbells)]
+                    + [i + 11*num_spheres for i in range(3*num_dumbbells)])
+    Ldata = np.array([1 for i in range(11*num_spheres + 9*num_dumbbells)]
+                     + [-1 for i in range(3*num_dumbbells)])
+    L = sparse.coo_matrix((Ldata, (Lrow, Lcol)),
+                          shape=(11*num_spheres+6*num_dumbbells, 11*num_spheres+6*num_dumbbells))
     R = L.transpose()
 
     return (mu*(L*R2Bexact*R), "R2Bexact")
