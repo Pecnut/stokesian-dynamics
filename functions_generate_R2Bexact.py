@@ -228,17 +228,33 @@ def XYZ(scalar_index, gamma, s_dash, lam_index):
     # return np.interp(s_dash,s_dash_range,interp_y,left=XYZ_raw[scalar_index,gamma,0,lam_index],right=0) # Numba only has a version of interp for the first three arguments. (Originally from periodic.)
 
 
-def generate_R2Bexact(posdata, 
-                      box_bottom_left = np.array([0, 0, 0]), 
-                      box_top_right = np.array([0, 0, 0]),
-                      O_infinity = np.array([0, 0, 0]), 
-                      E_infinity = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]),
-                      timestep = 0.1, 
-                      centre_of_background_flow = np.array([0, 0, 0]), 
-                      frequency = 1, amplitude = 1,
-                      cutoff_factor = 2, printout = 0, frameno = 0, 
-                      checkpoint_start_from_frame = 0, feed_every_n_timesteps = 0, 
-                      mu = 1):
+def generate_R2Bexact(posdata,
+                      printout=0, cutoff_factor=2, frameno=0, mu=1,
+                      box_bottom_left=np.array([0, 0, 0]),
+                      box_top_right=np.array([0, 0, 0]),
+                      O_infinity=np.array([0, 0, 0]),
+                      E_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]),
+                      timestep=0.1,
+                      centre_of_background_flow=np.array([0, 0, 0]),
+                      frequency=1, amplitude=1):
+    """Generate R2Bexact matrix, for either nonperiodic or periodic domain.
+
+    Args:
+        posdata: Particle position, size and count data
+        printout: (Unused) flag which allows you to put in debug statements
+        cutoff_factor: Separation distance, multiple of (a1+a2) below which 
+            R2Bexact applies
+        frameno: Frame number
+        mu: viscosity
+        [All arguments below should be ignored for non-periodic domains]
+        box_bottom_left, box_top_right: Periodic box coordinates. If equal, 
+            domain is assumed to be non-periodic and all remaining args are 
+            ignored. 
+        O_infinity, ..., amplitude: Periodic/constant shear parameters
+    
+    Returns:
+        R2Bexact matrix.
+    """
     global fully_2d_problem, average_size_matrix, upper_triangle
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
     R2Bexact_sidelength = 11 * num_spheres + 6 * num_dumbbells
@@ -256,7 +272,7 @@ def generate_R2Bexact(posdata,
         s_dash = distances_pairs_scaled[ii]  # np.linalg.norm(r)
         if a1_index != a2_index:
             d = r / s_dash
-        lam = size_ratios[ii] # Convention is a2/a1
+        lam = size_ratios[ii]  # Convention is a2/a1
         lam_index = np.where(lam_range_with_reciprocals == lam)[0][0]
         lam_index_recip = np.where(lam_range_with_reciprocals == 1. / lam)[0][0]
         largest_size = max(bead_sizes[a1_index], bead_sizes[a2_index])

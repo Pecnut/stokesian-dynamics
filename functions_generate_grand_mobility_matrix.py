@@ -51,7 +51,9 @@ def generate_grand_resistance_matrix(posdata, last_generated_Minfinity_inverse, 
         # Whether we use the d values or not is selected in inputs.py where we read in XYZ_raw.
         if printout > 1:
             print("cutoff_factor is ", cutoff_factor)
-        (R2Bexact, heading) = generate_R2Bexact(posdata, printout, cutoff_factor=cutoff_factor, frameno=frameno, checkpoint_start_from_frame=checkpoint_start_from_frame, feed_every_n_timesteps=feed_every_n_timesteps, mu=mu)
+        (R2Bexact, heading) = generate_R2Bexact(posdata, printout=printout, 
+                                                cutoff_factor=cutoff_factor, 
+                                                frameno=frameno, mu=mu)
         R2Bexact_elapsed_time = time.time() - R2Bexact_start_time
         if printout > 0:
             print("R2Bexact")
@@ -104,8 +106,19 @@ def generate_grand_resistance_matrix_periodic(posdata, last_generated_Minfinity_
 
     if not use_Minfinity_only:
         R2Bexact_start_time = time.time()
-        (R2Bexact, heading) = generate_R2Bexact(posdata, box_bottom_left=box_bottom_left, box_top_right=box_top_right, printout=printout, cutoff_factor=cutoff_factor, frameno=frameno, checkpoint_start_from_frame=checkpoint_start_from_frame,
-                                                feed_every_n_timesteps=feed_every_n_timesteps, O_infinity=O_infinity, E_infinity=E_infinity, timestep=timestep, centre_of_background_flow=centre_of_background_flow, mu=mu, frequency=frequency, amplitude=amplitude)
+        (R2Bexact, heading) = generate_R2Bexact(posdata, 
+                                                printout=printout, 
+                                                cutoff_factor=cutoff_factor, 
+                                                frameno=frameno,   
+                                                mu=mu,
+                                                box_bottom_left=box_bottom_left, 
+                                                box_top_right=box_top_right, 
+                                                O_infinity=O_infinity, 
+                                                E_infinity=E_infinity, 
+                                                timestep=timestep, 
+                                                centre_of_background_flow=centre_of_background_flow,
+                                                frequency=frequency, 
+                                                amplitude=amplitude)
         R2Bexact_elapsed_time = time.time() - R2Bexact_start_time
         grand_resistance_matrix = Minfinity_inverse + R2Bexact.toarray()
     else:
