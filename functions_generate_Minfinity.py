@@ -6,7 +6,7 @@
 
 import numpy as np
 from numpy import sqrt, pi
-from functions_shared import posdata_data, levi, norm, s2, s3
+from functions_shared import posdata_data, levi, norm, s2, s3, submatrix_coords
 from inputs import bead_bead_interactions
 from scipy.sparse import coo_matrix
 from numba import njit
@@ -284,18 +284,14 @@ def generate_Minfinity(posdata, printout=0, frameno=0, mu=1):
             r = np.array([r[0]*ss_out/s, r[1]*ss_out/s, r[2]*ss_out/s])
             s = ss_out
 
+        (A_coords, Bt_coords, Bt_coords_21, Gt_coords, Gt_coords_21,
+         C_coords, Ht_coords, Ht_coords_21, M_coords,
+         M14_coords, M24_coords, M34_coords, M44_coords,
+         M15_coords, M25_coords, M35_coords, M45_coords,
+         M55_coords) = submatrix_coords(a1_index, a2_index, num_spheres, num_dumbbells)
+
         if a1_index < num_spheres and a2_index < num_spheres:
             # Sphere to sphere
-            A_coords = np.s_[a1_index*3:(a1_index+1)*3, a2_index*3:(a2_index+1)*3]
-            Bt_coords = np.s_[a1_index*3:(a1_index+1)*3, 3*num_spheres+a2_index*3: 3*num_spheres+(a2_index+1)*3]
-            Bt_coords_21 = np.s_[a2_index*3:(a2_index+1)*3, 3*num_spheres+a1_index*3: 3*num_spheres+(a1_index+1)*3]
-            Gt_coords = np.s_[a1_index*3:(a1_index+1)*3, 6*num_spheres+a2_index*5: 6*num_spheres+(a2_index+1)*5]
-            Gt_coords_21 = np.s_[a2_index*3:(a2_index+1)*3, 6*num_spheres+a1_index*5: 6*num_spheres+(a1_index+1)*5]
-            C_coords = np.s_[3*num_spheres+a1_index*3: 3*num_spheres+(a1_index+1)*3, 3*num_spheres+a2_index*3: 3*num_spheres+(a2_index+1)*3]
-            Ht_coords = np.s_[3*num_spheres+a1_index*3: 3*num_spheres+(a1_index+1)*3, 6*num_spheres+a2_index*5: 6*num_spheres+(a2_index+1)*5]
-            Ht_coords_21 = np.s_[3*num_spheres+a2_index*3: 3*num_spheres+(a2_index+1)*3, 6*num_spheres+a1_index*5: 6*num_spheres+(a1_index+1)*5]
-            M_coords = np.s_[6*num_spheres+a1_index*5: 6*num_spheres+(a1_index+1)*5, 6*num_spheres+a2_index*5: 6*num_spheres+(a2_index+1)*5]
-
             Minfinity[A_coords] = [[M11(r[i], r[j], s, a1, a2, i, j, c, mu) for j in range(3)] for i in range(3)]
             Minfinity[Bt_coords] = [[M12(r, s, a1, a2, i, j, c, mu) for j in range(3)] for i in range(3)]
             Minfinity[C_coords] = [[M22(r, s, a1, a2, i, j, c, mu) for j in range(3)] for i in range(3)]
@@ -314,14 +310,6 @@ def generate_Minfinity(posdata, printout=0, frameno=0, mu=1):
         elif a1_index < num_spheres and a2_index < num_spheres + num_dumbbells:
             # Sphere to dumbbell bead 1
             mr = [-r[0], -r[1], -r[2]]
-            a2_index_d = a2_index-num_spheres
-            M14_coords = np.s_[a1_index*3:(a1_index+1)*3,
-                               11*num_spheres+a2_index_d*3: 11*num_spheres+(a2_index_d+1)*3]
-            M24_coords = np.s_[3*num_spheres+a1_index*3: 3*num_spheres+(a1_index+1)*3,
-                               11*num_spheres+a2_index_d*3: 11*num_spheres+(a2_index_d+1)*3]
-            M34_coords = np.s_[6*num_spheres+a1_index*5: 6*num_spheres+(a1_index+1)*5,
-                               11*num_spheres+a2_index_d*3: 11*num_spheres+(a2_index_d+1)*3]
-
             Minfinity[M14_coords] = [[M11(r[i], r[j], s, a1, a2, i, j, c, mu) for j in range(3)] for i in range(3)]
             Minfinity[M24_coords] = [[M12(mr, s, a2, a1, j, i, c, mu) for j in range(3)] for i in range(3)]
             Minfinity[M34_coords] = [[con_M13(mr, s, a1, a2, j, i, c, mu) for j in range(3)] for i in range(5)]
@@ -329,50 +317,30 @@ def generate_Minfinity(posdata, printout=0, frameno=0, mu=1):
         elif a1_index < num_spheres:
             # Sphere to dumbbell bead 2
             mr = [-r[0], -r[1], -r[2]]
-            a2_index_d = a2_index-num_spheres-num_dumbbells
-            M15_coords = np.s_[a1_index*3: (a1_index+1)*3,
-                               11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
-            M25_coords = np.s_[3*num_spheres+a1_index*3: 3*num_spheres+(a1_index+1)*3,
-                               11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
-            M35_coords = np.s_[6*num_spheres+a1_index*5: 6*num_spheres+(a1_index+1)*5,
-                               11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
-
             Minfinity[M15_coords] = [[M11(r[i], r[j], s, a1, a2, i, j, c, mu) for j in range(3)] for i in range(3)]
             Minfinity[M25_coords] = [[M12(mr, s, a2, a1, j, i, c, mu) for j in range(3)] for i in range(3)]
             Minfinity[M35_coords] = [[con_M13(mr, s, a1, a2, j, i, c, mu) for j in range(3)] for i in range(5)]
 
-        elif (
-            a1_index < num_spheres + num_dumbbells
-            and a2_index >= num_spheres
-            and a2_index < num_spheres + num_dumbbells
-        ):
+        elif (a1_index < num_spheres + num_dumbbells
+              and a2_index >= num_spheres
+              and a2_index < num_spheres + num_dumbbells):
             # Dumbbell bead 1 to dumbbell bead 1
             a1_index_d = a1_index-num_spheres
             a2_index_d = a2_index-num_spheres
             if bead_bead_interactions or a1_index_d == a2_index_d:
-                M44_coords = np.s_[11*num_spheres+a1_index_d*3: 11*num_spheres+(a1_index_d+1)*3,
-                                   11*num_spheres+a2_index_d*3: 11*num_spheres+(a2_index_d+1)*3]
                 Minfinity[M44_coords] = [[M11(r[i], r[j], s, a1, a2, i, j, c, mu) for j in range(3)] for i in range(3)]
 
-        elif (
-            a1_index < num_spheres + num_dumbbells
-            and a2_index >= num_spheres + num_dumbbells
-        ):
+        elif (a1_index < num_spheres + num_dumbbells
+              and a2_index >= num_spheres + num_dumbbells):
             if bead_bead_interactions:
                 # Dumbbell bead 1 to dumbbell bead 2
-                a1_index_d = a1_index-num_spheres
-                a2_index_d = a2_index-num_spheres-num_dumbbells
-                M45_coords = np.s_[11*num_spheres+a1_index_d*3: 11*num_spheres+(a1_index_d+1)*3,
-                                   11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
                 Minfinity[M45_coords] = [[M11(r[i], r[j], s, a1, a2, i, j, c, mu) for j in range(3)] for i in range(3)]
 
         else:
             # Dumbbell bead 2 to dumbbell bead 2
-            a1_index_d = a1_index-num_spheres-num_dumbbells
-            a2_index_d = a2_index-num_spheres-num_dumbbells
-            if bead_bead_interactions or a1_index_d == a2_index_d:
-                M55_coords = np.s_[11*num_spheres+3*num_dumbbells+a1_index_d*3: 11*num_spheres+3*num_dumbbells+(a1_index_d+1)*3,
-                                   11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
+            a1_index_d2 = a1_index-num_spheres-num_dumbbells
+            a2_index_d2 = a2_index-num_spheres-num_dumbbells
+            if bead_bead_interactions or a1_index_d2 == a2_index_d2:
                 Minfinity[M55_coords] = [[M11(r[i], r[j], s, a1, a2, i, j, c, mu) for j in range(3)] for i in range(3)]
 
     # symmetrise

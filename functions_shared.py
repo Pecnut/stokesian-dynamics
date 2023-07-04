@@ -82,6 +82,48 @@ def save_matrix(matrix, heading, filename):
         np.savetxt(outputfile, matrix, newline="\n", fmt="% .8e")
 
 
+def submatrix_coords(a1_index, a2_index, num_spheres, num_dumbbells):
+    """Return a tuple of the coordinates for the submatrices of a pair of particles."""
+    R1 = np.s_[a1_index*3:(a1_index+1)*3]
+    R2 = np.s_[3*num_spheres+a1_index*3:3*num_spheres+(a1_index+1)*3]
+    R3 = np.s_[6*num_spheres+a1_index*5:6*num_spheres+(a1_index+1)*5]
+    C1 = np.s_[a2_index*3:(a2_index+1)*3]
+    C2 = np.s_[3*num_spheres+a2_index*3:3*num_spheres+(a2_index+1)*3]
+    C3 = np.s_[6*num_spheres+a2_index*5:6*num_spheres+(a2_index+1)*5]
+    a1_index_d = a1_index-num_spheres
+    a2_index_d = a2_index-num_spheres
+    R4 = np.s_[11*num_spheres+a1_index_d*3:11*num_spheres+(a1_index_d+1)*3]
+    C4 = np.s_[11*num_spheres+a2_index_d*3:11*num_spheres+(a2_index_d+1)*3]
+    a1_index_d2 = a1_index-num_spheres-num_dumbbells
+    a2_index_d2 = a2_index-num_spheres-num_dumbbells
+    R5 = np.s_[11*num_spheres+3*num_dumbbells+a1_index_d2*3:11*num_spheres+3*num_dumbbells+(a1_index_d2+1)*3]
+    C5 = np.s_[11*num_spheres+3*num_dumbbells+a2_index_d2*3:11*num_spheres+3*num_dumbbells+(a2_index_d2+1)*3]
+
+    A_coords = np.s_[R1, C1]
+    Bt_coords = np.s_[R1, C2]
+    Bt_coords_21 = np.s_[C1, R2]
+    Gt_coords = np.s_[R1, C3]
+    Gt_coords_21 = np.s_[C1, R3]
+    C_coords = np.s_[R2, C2]
+    Ht_coords = np.s_[R2, C3]
+    Ht_coords_21 = np.s_[C2, R3]
+    M_coords = np.s_[R3, C3]
+    M14_coords = np.s_[R1, C4]
+    M24_coords = np.s_[R2, C4]
+    M34_coords = np.s_[R3, C4]
+    M44_coords = np.s_[R4, C4]
+    M15_coords = np.s_[R1, C5]
+    M25_coords = np.s_[R2, C5]
+    M35_coords = np.s_[R3, C5]
+    M45_coords = np.s_[R4, C5]
+    M55_coords = np.s_[R5, C5]
+
+    return (A_coords, Bt_coords, Bt_coords_21, Gt_coords, Gt_coords_21,
+            C_coords, Ht_coords, Ht_coords_21, M_coords,
+            M14_coords, M24_coords, M34_coords, M44_coords,
+            M15_coords, M25_coords, M35_coords, M45_coords, M55_coords)
+
+
 def posdata_data(posdata):
     """Return useful particle position, size and count information from a single `posdata` list."""
     (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax) = posdata
