@@ -305,7 +305,8 @@ def generate_R2Bexact(posdata,
         O_infinity, ..., amplitude: Periodic/constant shear parameters
 
     Returns:
-        R2Bexact matrix.
+        mu*(L*R2Bexact*R): R2Bexact matrix
+        "R2Bexact": Human readable name of the matrix
     """
     global average_size_matrix, upper_triangle
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
