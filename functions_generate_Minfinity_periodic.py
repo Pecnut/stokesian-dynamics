@@ -464,8 +464,8 @@ def M11(i, j, r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn,
         # (4)
         # Imaginary part of e(i*k.r) always cancels out over the sum I think (should probably try to show this but I'm pretty certain)
         sum_ak = 1./L**3 * sum([
-            math.cos(np.dot(K_lmn[q], r)) * aktilde(K_lmn[q], Ks_lmn[q], a1,
-                                                    a2, i, j, RR_K[q], c)
+            math.cos(np.dot(K_lmn[q], r)) 
+            * aktilde(K_lmn[q], Ks_lmn[q], a1, a2, i, j, RR_K[q], c)
             for q in range(num_K_points)])
         return sum_ar + sum_ak
     else:
@@ -532,8 +532,8 @@ def M22(i, j, r, s, a1, a2, erfcs, L, X_lmn, Xdash_lmn, Sdash_lmn,
             for q in range(num_X_points)])
         # (4)
         sum_ck = 1./L**3 * sum([
-            math.cos(np.dot(K_lmn[q], r)) * cktilde(K_lmn[q], Ks_lmn[q],
-                                                    a1, a2, i, j, RR_K[q], c)
+            math.cos(np.dot(K_lmn[q], r))
+            * cktilde(K_lmn[q], Ks_lmn[q], a1, a2, i, j, RR_K[q], c)
             for q in range(num_K_points)])
         return sum_cr + sum_ck
     else:
@@ -563,8 +563,8 @@ def M23(i, j, k, r, s, a1, a2, L, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn,
             for q in range(num_X_points)])
         # (4)
         sum_htk = 1./L**3 * sum([
-            math.cos(np.dot(K_lmn[q], r)) * htktilde(K_lmn[q], Ks_lmn[q], a1,
-                                                     a2, i, j, k, RR_K[q], c)
+            math.cos(np.dot(K_lmn[q], r))
+            * htktilde(K_lmn[q], Ks_lmn[q], a1, a2, i, j, k, RR_K[q], c)
             for q in range(num_K_points)])
         return sum_htr + sum_htk
     else:
@@ -591,8 +591,8 @@ def M33(i, j, k, l, r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn,
             for q in range(num_X_points)])
         # (4)
         sum_mk = 1./L**3 * sum([
-            math.cos(np.dot(K_lmn[q], r)) * mktilde(K_lmn[q], Ks_lmn[q], a1,
-                                                    a2, i, j, k, l, RR_K[q], c)
+            math.cos(np.dot(K_lmn[q], r))
+            * mktilde(K_lmn[q], Ks_lmn[q], a1, a2, i, j, k, l, RR_K[q], c)
             for q in range(num_K_points)])
         return sum_mr + sum_mk
     else:
@@ -816,8 +816,8 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
                        c, mu, s_lmn,
                        erfcs_lmn)) for j in range(5)] for i in range(5)]
 
-        elif (a1_index < num_spheres 
-              and a2_index >= num_spheres 
+        elif (a1_index < num_spheres
+              and a2_index >= num_spheres
               and a2_index < num_spheres + num_dumbbells):
             # Sphere to dumbbell bead 1
             mr = [-r[0], -r[1], -r[2]]
@@ -878,8 +878,8 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
                 j, i, (mr, s, a1, a2, X_lmn, num_X_points, c, mu, m_s_lmn,
                        m_erfcs_lmn)) for j in range(3)] for i in range(5)]
 
-        elif (a1_index >= num_spheres 
-              and a1_index < num_spheres + num_dumbbells 
+        elif (a1_index >= num_spheres
+              and a1_index < num_spheres + num_dumbbells
               and a2_index >= num_spheres and a2_index < num_spheres + num_dumbbells):
             # Dumbbell bead 1 to dumbbell bead 1
             a1_index_d = a1_index-num_spheres
