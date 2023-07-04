@@ -601,7 +601,9 @@ def M33(r, s, a1, a2, i, j, k, l, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn,
             for q in range(num_K_points)])
         # (5)
         m_k0 = c*(-8*lamb**3/(3*math.sqrt(math.pi)) 
-                  + (a1**2 + a2**2)/10. * (168*lamb**5)/(5*math.sqrt(math.pi))) * -3*kron3tracelessmatrix[i][j][k][l]
+                  + ((a1**2 + a2**2)/10. 
+                     * (168*lamb**5)/(5*math.sqrt(math.pi)) 
+                     * -3*kron3tracelessmatrix[i][j][k][l]))
         return m_aa + sum_mr + sum_mk - m_k0
 
 
