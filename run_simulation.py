@@ -733,11 +733,14 @@ if error == 0:
 
     generate_frame_args = [grand_mobility_matrix, text_only, cutoff_factor, viewbox_bottomleft_topright, printout, view_labels, timestep, trace_paths, input_form, filename, output_folder, legion_random_id, box_bottom_left, box_top_right]
     if text_only == 0 and num_frames > 1:
-        ani = animation.FuncAnimation(fig, generate_frame, init_func=initialise_frame, frames=num_frames, fargs=generate_frame_args, repeat=False, interval=200, save_count=num_frames)
+        ani = animation.FuncAnimation(fig, generate_frame, init_func=initialise_frame,
+                                      frames=range(checkpoint_start_from_frame,num_frames),
+                                      fargs=generate_frame_args, repeat=False, 
+                                      interval=200)
         plt.show()
     else:
-        for counter in range(checkpoint_start_from_frame, num_frames):
-            generate_frame(counter, grand_mobility_matrix, text_only, cutoff_factor, viewbox_bottomleft_topright, printout, view_labels, timestep, trace_paths, input_form, filename, output_folder, legion_random_id, box_bottom_left, box_top_right)
+        for frameno in range(checkpoint_start_from_frame, num_frames):
+            generate_frame(frameno, grand_mobility_matrix, text_only, cutoff_factor, viewbox_bottomleft_topright, printout, view_labels, timestep, trace_paths, input_form, filename, output_folder, legion_random_id, box_bottom_left, box_top_right)
 
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax, num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
 
