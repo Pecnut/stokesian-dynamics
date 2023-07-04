@@ -3,6 +3,8 @@
 # Adam Townsend, adam@adamtownsend.com, 07/06/2017
 
 # Reference: A. K. Townsend, 2017. The mechanics of suspensions. PhD thesis, UCL.
+# See section 2.4.2 for definitions, which are adapted from
+# section 7.2 of Kim & Karrila, 2005. Microhydrodynamics. 
 
 import numpy as np
 from functions_shared import posdata_data, levi, close_particles
@@ -17,53 +19,75 @@ kronmatrix = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
 @njit
 def L1(d, i, j):
-    return d[i] * d[j]
+    """Unit displacement tensor L1 used in A & C. See PhD thesis (2.70)."""
+    return d[i]*d[j]
 
 
 @njit
 def L2(d, i, j):
-    return kronmatrix[i][j] - d[i] * d[j]
+    """Unit displacement tensor L2 used in A & C. See PhD thesis (2.70)."""
+    return kronmatrix[i][j] - d[i]*d[j]
 
 
 @njit
 def L3(d, i, j):
+    """Unit displacement tensor L3 used in B. See PhD thesis (2.70)."""
     if i == j:
         return 0
     else:
-        return sum([levi(i, j, k) * d[k] for k in range(3) if k not in [i, j]])
+        return sum([levi(i, j, k)*d[k] for k in range(3) if k not in [i, j]])
 
 
 @njit
 def L4(d, i, j, k):
-    return (d[i] * d[j] - kronmatrix[i][j] / 3.) * d[k]
+    """Unit displacement tensor L4 used in G. See PhD thesis (2.70)."""
+    return (d[i]*d[j] - kronmatrix[i][j]/3) * d[k]
 
 
 @njit
 def L5(d, i, j, k):
-    return (d[i] * kronmatrix[j][k] + d[j] * kronmatrix[i][k] - 2 * d[i] * d[j] * d[k])
+    """Unit displacement tensor L5 used in G. See PhD thesis (2.70)."""
+    return (d[i]*kronmatrix[j][k] + d[j]*kronmatrix[i][k] - 2*d[i]*d[j]*d[k])
 
 
 @njit
 def L6(d, i, j, k):
+    """Unit displacement tensor L6 used in H. See PhD thesis (2.70)."""
     return sum([
-        levi(i, k, l) * d[l] * d[j] for l in range(3) if l not in [i, k]
+        levi(i, k, l)*d[l]*d[j] for l in range(3) if l not in [i, k]
     ]) + sum([
-        levi(j, k, l) * d[l] * d[i] for l in range(3) if l not in [k, j]])
+        levi(j, k, l)*d[l]*d[i] for l in range(3) if l not in [k, j]])
 
 
 @njit
 def L7(d, i, j, k, l):
-    return 1.5 * (d[i] * d[j] - kronmatrix[i][j] / 3.) * (d[k] * d[l] - kronmatrix[k][l] / 3.)
+    """Unit displacement tensor L7 used in M. See PhD thesis (2.70)."""
+    return 1.5 * (d[i]*d[j] - kronmatrix[i][j]/3) * (d[k]*d[l] - kronmatrix[k][l]/3)
 
 
 @njit
 def L8(d, i, j, k, l):
-    return 0.5 * (d[i] * kronmatrix[j][l] * d[k] + d[j] * kronmatrix[i][l] * d[k] + d[i] * kronmatrix[j][k] * d[l] + d[j] * kronmatrix[i][k] * d[l] - 4 * d[i] * d[j] * d[k] * d[l])
+    """Unit displacement tensor L8 used in M. See PhD thesis (2.70)."""
+    return 0.5 * (d[i]*kronmatrix[j][l]*d[k]
+                  + d[j]*kronmatrix[i][l]*d[k]
+                  + d[i]*kronmatrix[j][k]*d[l]
+                  + d[j]*kronmatrix[i][k]*d[l]
+                  - 4*d[i]*d[j]*d[k]*d[l])
 
 
 @njit
 def L9(d, i, j, k, l):
-    return 0.5 * (kronmatrix[i][k] * kronmatrix[j][l] + kronmatrix[j][k] * kronmatrix[i][l] - kronmatrix[i][j] * kronmatrix[k][l] + d[i] * d[j] * kronmatrix[k][l] + kronmatrix[i][j] * d[k] * d[l] - d[i] * kronmatrix[j][l] * d[k] - d[j] * kronmatrix[i][l] * d[k] - d[i] * kronmatrix[j][k] * d[l] - d[j] * kronmatrix[i][k] * d[l] + d[i] * d[j] * d[k] * d[l])
+    """Unit displacement tensor L9 used in M. See PhD thesis (2.70)."""
+    return 0.5 * (kronmatrix[i][k]*kronmatrix[j][l]
+                  + kronmatrix[j][k]*kronmatrix[i][l]
+                  - kronmatrix[i][j]*kronmatrix[k][l]
+                  + d[i]*d[j]*kronmatrix[k][l]
+                  + kronmatrix[i][j]*d[k]*d[l]
+                  - d[i]*kronmatrix[j][l]*d[k]
+                  - d[j]*kronmatrix[i][l]*d[k]
+                  - d[i]*kronmatrix[j][k]*d[l]
+                  - d[j]*kronmatrix[i][k]*d[l]
+                  + d[i]*d[j]*d[k]*d[l])
 
 
 @njit
@@ -123,6 +147,7 @@ def ZM(gam, s, lam_index):
 
 @njit
 def Af(gamma, d, lam_index, ss, i, j, fully_2d_problem=False):
+    """Element ij of R2Bexact submatrix A. See PhD thesis (2.69)."""
     XAg = XA(gamma, ss, lam_index)
     YAg = YA(gamma, ss, lam_index)
     return XAg * L1(d, i, j) + YAg * L2(d, i, j)
@@ -130,12 +155,14 @@ def Af(gamma, d, lam_index, ss, i, j, fully_2d_problem=False):
 
 @njit
 def Bf(gamma, d, lam_index, ss, i, j, fully_2d_problem=False):
+    """Element ij of R2Bexact submatrix B. See PhD thesis (2.69)."""
     YBg = YB(gamma, ss, lam_index)
     return YBg * L3(d, i, j)
 
 
 @njit
 def Cf(gamma, d, lam_index, ss, i, j, fully_2d_problem=False):
+    """Element ij of R2Bexact submatrix C. See PhD thesis (2.69)."""
     XCg = XC(gamma, ss, lam_index)
     YCg = YC(gamma, ss, lam_index)
     return XCg * L1(d, i, j) + YCg * L2(d, i, j)
@@ -143,6 +170,7 @@ def Cf(gamma, d, lam_index, ss, i, j, fully_2d_problem=False):
 
 @njit
 def Gf(gamma, d, lam_index, ss, i, j, k, fully_2d_problem=False):
+    """Element ijk of uncondensed R2Bexact submatrix G. See PhD thesis (2.69)."""
     XGg = XG(gamma, ss, lam_index)
     YGg = YG(gamma, ss, lam_index)
     return XGg * L4(d, i, j, k) + YGg * L5(d, i, j, k)
@@ -150,12 +178,14 @@ def Gf(gamma, d, lam_index, ss, i, j, k, fully_2d_problem=False):
 
 @njit
 def Hf(gamma, d, lam_index, ss, i, j, k, fully_2d_problem=False):
+    """Element ijk of uncondensed R2Bexact submatrix H. See PhD thesis (2.69)."""
     YHg = YH(gamma, ss, lam_index)
     return YHg * L6(d, i, j, k)
 
 
 @njit
 def Mf(gamma, d, lam_index, ss, i, j, k, l, fully_2d_problem=False):
+    """Element ijkl of uncondensed R2Bexact submatrix M. See PhD thesis (2.69)."""
     XMg = XM(gamma, ss, lam_index)
     YMg = YM(gamma, ss, lam_index)
     ZMg = ZM(gamma, ss, lam_index)
@@ -164,12 +194,16 @@ def Mf(gamma, d, lam_index, ss, i, j, k, l, fully_2d_problem=False):
 
 @njit
 def con_Gf(gamma, d, lam_index, s_dash, m, i, fully_2d_problem=False):
+    """Element mi of (condensed) R2Bexact submatrix G. See PhD thesis (2.69), 
+    and see section 2.4.4 for condensation details."""
     if m == 0:
-        return 0.5 * (s3 + 1) * Gf(gamma, d, lam_index, s_dash, 0, 0, i, fully_2d_problem) + 0.5 * (s3 - 1) * Gf(gamma, d, lam_index, s_dash, 1, 1, i, fully_2d_problem)
+        return (0.5 * (s3+1) * Gf(gamma, d, lam_index, s_dash, 0, 0, i, fully_2d_problem)
+                + 0.5 * (s3-1) * Gf(gamma, d, lam_index, s_dash, 1, 1, i, fully_2d_problem))
     elif m == 1:
         return s2 * Gf(gamma, d, lam_index, s_dash, 0, 1, i, fully_2d_problem)
     elif m == 2:
-        return 0.5 * (s3 - 1) * Gf(gamma, d, lam_index, s_dash, 0, 0, i, fully_2d_problem) + 0.5 * (s3 + 1) * Gf(gamma, d, lam_index, s_dash, 1, 1, i, fully_2d_problem)
+        return (0.5 * (s3-1) * Gf(gamma, d, lam_index, s_dash, 0, 0, i, fully_2d_problem)
+                + 0.5 * (s3+1) * Gf(gamma, d, lam_index, s_dash, 1, 1, i, fully_2d_problem))
     elif m == 3:
         return s2 * Gf(gamma, d, lam_index, s_dash, 0, 2, i, fully_2d_problem)
     else:
@@ -178,12 +212,16 @@ def con_Gf(gamma, d, lam_index, s_dash, m, i, fully_2d_problem=False):
 
 @njit
 def con_Hf(gamma, d, lam_index, s_dash, m, i, fully_2d_problem=False):
+    """Element mi of (condensed) R2Bexact submatrix H. See PhD thesis (2.69), 
+    and see section 2.4.4 for condensation details."""
     if m == 0:
-        return 0.5 * (s3 + 1) * Hf(gamma, d, lam_index, s_dash, 0, 0, i, fully_2d_problem) + 0.5 * (s3 - 1) * Hf(gamma, d, lam_index, s_dash, 1, 1, i, fully_2d_problem)
+        return (0.5 * (s3+1) * Hf(gamma, d, lam_index, s_dash, 0, 0, i, fully_2d_problem)
+                + 0.5 * (s3-1) * Hf(gamma, d, lam_index, s_dash, 1, 1, i, fully_2d_problem))
     elif m == 1:
         return s2 * Hf(gamma, d, lam_index, s_dash, 0, 1, i, fully_2d_problem)
     elif m == 2:
-        return 0.5 * (s3 - 1) * Hf(gamma, d, lam_index, s_dash, 0, 0, i, fully_2d_problem) + 0.5 * (s3 + 1) * Hf(gamma, d, lam_index, s_dash, 1, 1, i, fully_2d_problem)
+        return (0.5 * (s3-1) * Hf(gamma, d, lam_index, s_dash, 0, 0, i, fully_2d_problem)
+                + 0.5 * (s3+1) * Hf(gamma, d, lam_index, s_dash, 1, 1, i, fully_2d_problem))
     elif m == 3:
         return s2 * Hf(gamma, d, lam_index, s_dash, 0, 2, i, fully_2d_problem)
     else:
@@ -192,12 +230,16 @@ def con_Hf(gamma, d, lam_index, s_dash, m, i, fully_2d_problem=False):
 
 @njit
 def con1_Mf(gamma, d, lam_index, s_dash, n, k, l, fully_2d_problem=False):
+    """Element nkl of partially condensed R2Bexact submatrix M. See PhD thesis 
+    (2.69), and see section 2.4.4 for condensation details."""
     if n == 0:
-        return 0.5 * (s3 + 1) * Mf(gamma, d, lam_index, s_dash, 0, 0, k, l, fully_2d_problem) + 0.5 * (s3 - 1) * Mf(gamma, d, lam_index, s_dash, 1, 1, k, l, fully_2d_problem)
+        return (0.5 * (s3+1) * Mf(gamma, d, lam_index, s_dash, 0, 0, k, l, fully_2d_problem)
+                + 0.5 * (s3-1) * Mf(gamma, d, lam_index, s_dash, 1, 1, k, l, fully_2d_problem))
     elif n == 1:
         return s2 * Mf(gamma, d, lam_index, s_dash, 0, 1, k, l, fully_2d_problem)
     elif n == 2:
-        return 0.5 * (s3 - 1) * Mf(gamma, d, lam_index, s_dash, 0, 0, k, l, fully_2d_problem) + 0.5 * (s3 + 1) * Mf(gamma, d, lam_index, s_dash, 1, 1, k, l, fully_2d_problem)
+        return (0.5 * (s3-1) * Mf(gamma, d, lam_index, s_dash, 0, 0, k, l, fully_2d_problem)
+                + 0.5 * (s3+1) * Mf(gamma, d, lam_index, s_dash, 1, 1, k, l, fully_2d_problem))
     elif n == 3:
         return s2 * Mf(gamma, d, lam_index, s_dash, 0, 2, k, l, fully_2d_problem)
     else:
@@ -206,12 +248,16 @@ def con1_Mf(gamma, d, lam_index, s_dash, n, k, l, fully_2d_problem=False):
 
 @njit
 def con_Mf(gamma, d, lam_index, s_dash, n, m, fully_2d_problem=False):
+    """Element nm of (condensed) R2Bexact submatrix M. See PhD thesis (2.69),
+    and see section 2.4.4 for condensation details."""    
     if m == 0:
-        return 0.5 * (s3 + 1) * con1_Mf(gamma, d, lam_index, s_dash, n, 0, 0, fully_2d_problem) + 0.5 * (s3 - 1) * con1_Mf(gamma, d, lam_index, s_dash, n, 1, 1, fully_2d_problem)
+        return (0.5 * (s3+1) * con1_Mf(gamma, d, lam_index, s_dash, n, 0, 0, fully_2d_problem)
+                + 0.5 * (s3-1) * con1_Mf(gamma, d, lam_index, s_dash, n, 1, 1, fully_2d_problem))
     elif m == 1:
         return s2 * con1_Mf(gamma, d, lam_index, s_dash, n, 0, 1, fully_2d_problem)
     elif m == 2:
-        return 0.5 * (s3 - 1) * con1_Mf(gamma, d, lam_index, s_dash, n, 0, 0, fully_2d_problem) + 0.5 * (s3 + 1) * con1_Mf(gamma, d, lam_index, s_dash, n, 1, 1, fully_2d_problem)
+        return (0.5 * (s3-1) * con1_Mf(gamma, d, lam_index, s_dash, n, 0, 0, fully_2d_problem)
+                + 0.5 * (s3+1) * con1_Mf(gamma, d, lam_index, s_dash, n, 1, 1, fully_2d_problem))
     elif m == 3:
         return s2 * con1_Mf(gamma, d, lam_index, s_dash, n, 0, 2, fully_2d_problem)
     else:
@@ -220,6 +266,14 @@ def con_Mf(gamma, d, lam_index, s_dash, n, m, fully_2d_problem=False):
 
 @njit
 def XYZ(scalar_index, gamma, s_dash, lam_index):
+    """Look up value of X11A, X12A,..., Z12M scalar from pre-computed table.
+
+    Args:
+        scalar_index (int): 0 to 10, corresponds to X__A to Z__M.
+        gamma (int): 0 correpsonds to _11_, 1 corresponds to _12_.
+        s_dash: scaled centre-to-centre distance, 2s/(a+b).
+        lam_index: index of the size ratio b/a, depending on precomputed ratios.
+    """
     interp_y = XYZ_raw[scalar_index, gamma, :, lam_index]
     if s_dash > s_dash_range[-1]:
         print("S DASH OUT OF RANGE, functions_generate_R2Bexact.py")
@@ -251,7 +305,7 @@ def generate_R2Bexact(posdata,
             domain is assumed to be non-periodic and all remaining args are 
             ignored. 
         O_infinity, ..., amplitude: Periodic/constant shear parameters
-    
+
     Returns:
         R2Bexact matrix.
     """
