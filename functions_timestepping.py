@@ -4,7 +4,7 @@
 
 import numpy as np
 from numpy import linalg
-from functions_generate_grand_mobility_matrix import generate_grand_resistance_matrix, generate_grand_resistance_matrix_periodic
+from functions_generate_grand_resistance_matrix import generate_grand_resistance_matrix, generate_grand_resistance_matrix_periodic
 from functions_shared import posdata_data, format_elapsed_time, throw_error
 from functions_simulation_tools import construct_force_vector_from_fts, deconstruct_velocity_vector_for_fts, fts_to_fte_matrix, fte_to_ufte_matrix, ufte_to_ufteu_matrix, fts_to_duf_matrix
 from input_setups import input_ftsuoe
