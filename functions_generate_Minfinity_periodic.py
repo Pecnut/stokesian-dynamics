@@ -4,7 +4,8 @@
 
 import numpy as np
 import math
-from functions_shared import posdata_data, norm, s2, s3, submatrix_coords
+from functions_shared import (posdata_data, norm, s2, s3, submatrix_coords,
+                              is_sphere, is_dumbbell_bead_1, is_dumbbell_bead_2)
 from inputs import how_far_to_reproduce_gridpoints, bead_bead_interactions
 from scipy.sparse import coo_matrix
 from math import erfc, pi, exp
@@ -464,7 +465,7 @@ def M11(i, j, r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn,
         # (4)
         # Imaginary part of e(i*k.r) always cancels out over the sum I think (should probably try to show this but I'm pretty certain)
         sum_ak = 1./L**3 * sum([
-            math.cos(np.dot(K_lmn[q], r)) 
+            math.cos(np.dot(K_lmn[q], r))
             * aktilde(K_lmn[q], Ks_lmn[q], a1, a2, i, j, RR_K[q], c)
             for q in range(num_K_points)])
         return sum_ar + sum_ak
@@ -766,7 +767,7 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
          M15_coords, M25_coords, M35_coords, M45_coords,
          M55_coords) = submatrix_coords(a1_index, a2_index, num_spheres, num_dumbbells)
 
-        if a1_index < num_spheres and a2_index < num_spheres:
+        if is_sphere(a1_index) and is_sphere(a2_index):
             # Sphere to sphere
 
             erfcs = generate_erfcs(s, lamb)
@@ -814,9 +815,7 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
                        c, mu, s_lmn,
                        erfcs_lmn)) for j in range(5)] for i in range(5)]
 
-        elif (a1_index < num_spheres
-              and a2_index >= num_spheres
-              and a2_index < num_spheres + num_dumbbells):
+        elif is_sphere(a1_index) and is_dumbbell_bead_1(a2_index):
             # Sphere to dumbbell bead 1
             mr = [-r[0], -r[1], -r[2]]
             a2_index_d = a2_index-num_spheres
@@ -841,7 +840,7 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
                 j, i, (mr, s, a1, a2, X_lmn, num_X_points, c, mu, m_s_lmn,
                        m_erfcs_lmn)) for j in range(3)] for i in range(5)]
 
-        elif a1_index < num_spheres and a2_index >= num_spheres + num_dumbbells:
+        elif is_sphere(a1_index):
             # Sphere to dumbbell bead 2
             mr = [-r[0], -r[1], -r[2]]
             a2_index_d = a2_index-num_spheres-num_dumbbells
@@ -864,9 +863,7 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
                 j, i, (mr, s, a1, a2, X_lmn, num_X_points, c, mu, m_s_lmn,
                        m_erfcs_lmn)) for j in range(3)] for i in range(5)]
 
-        elif (a1_index >= num_spheres
-              and a1_index < num_spheres + num_dumbbells
-              and a2_index >= num_spheres and a2_index < num_spheres + num_dumbbells):
+        elif is_dumbbell_bead_1(a1_index) and is_dumbbell_bead_1(a2_index):
             # Dumbbell bead 1 to dumbbell bead 1
             a1_index_d = a1_index-num_spheres
             a2_index_d = a2_index-num_spheres
@@ -883,7 +880,7 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
                     num_X_points, num_Xdash_points, num_K_points, c, mu, s_lmn,
                     erfcs_lmn) for j in range(3)] for i in range(3)]
 
-        elif a1_index >= num_spheres and a1_index < num_spheres + num_dumbbells and a2_index >= num_spheres + num_dumbbells:
+        elif is_dumbbell_bead_1(a1_index) and is_dumbbell_bead_2(a2_index):
             # Dumbbell bead 1 to dumbbell bead 2
             a1_index_d = a1_index-num_spheres
             a2_index_d = a2_index-num_spheres-num_dumbbells

@@ -6,7 +6,8 @@
 
 import numpy as np
 from numpy import sqrt, pi
-from functions_shared import posdata_data, levi, norm, s2, s3, submatrix_coords
+from functions_shared import (posdata_data, levi, norm, s2, s3, submatrix_coords,
+                              is_sphere, is_dumbbell_bead_1, is_dumbbell_bead_2)
 from inputs import bead_bead_interactions
 from scipy.sparse import coo_matrix
 from numba import njit
@@ -273,7 +274,8 @@ def generate_Minfinity(posdata, printout=0, frameno=0, mu=1):
 
     c = 1./(8*pi*mu)
 
-    for a1_index, a2_index in [(u, v) for u in range(len(bead_sizes))
+    for a1_index, a2_index in [(u, v) 
+                               for u in range(len(bead_sizes))
                                for v in range(u, len(bead_sizes))]:
         r = -(bead_positions[a2_index] - bead_positions[a1_index])
         a1 = bead_sizes[a1_index]
@@ -290,7 +292,7 @@ def generate_Minfinity(posdata, printout=0, frameno=0, mu=1):
          M15_coords, M25_coords, M35_coords, M45_coords,
          M55_coords) = submatrix_coords(a1_index, a2_index, num_spheres, num_dumbbells)
 
-        if a1_index < num_spheres and a2_index < num_spheres:
+        if is_sphere(a1_index) and is_sphere(a2_index):
             # Sphere to sphere
             Minfinity[A_coords] = [[M11(r[i], r[j], s, a1, a2, i, j, c, mu) for j in range(3)] for i in range(3)]
             Minfinity[Bt_coords] = [[M12(r, s, a1, a2, i, j, c, mu) for j in range(3)] for i in range(3)]
@@ -307,29 +309,26 @@ def generate_Minfinity(posdata, printout=0, frameno=0, mu=1):
                 Minfinity[Gt_coords_21] = [[con_M13(-r, s, a2, a1, i, j, c, mu) for j in range(5)] for i in range(3)]
                 Minfinity[Ht_coords_21] = [[con_M23(-r, s, a2, a1, i, j, c, mu) for j in range(5)] for i in range(3)]
 
-        elif a1_index < num_spheres and a2_index < num_spheres + num_dumbbells:
+        elif is_sphere(a1_index) and is_dumbbell_bead_1(a2_index):
             # Sphere to dumbbell bead 1
             mr = [-r[0], -r[1], -r[2]]
             Minfinity[M14_coords] = [[M11(r[i], r[j], s, a1, a2, i, j, c, mu) for j in range(3)] for i in range(3)]
             Minfinity[M24_coords] = [[M12(mr, s, a2, a1, j, i, c, mu) for j in range(3)] for i in range(3)]
             Minfinity[M34_coords] = [[con_M13(mr, s, a1, a2, j, i, c, mu) for j in range(3)] for i in range(5)]
 
-        elif a1_index < num_spheres:
+        elif is_sphere(a1_index):
             # Sphere to dumbbell bead 2
             mr = [-r[0], -r[1], -r[2]]
             Minfinity[M15_coords] = [[M11(r[i], r[j], s, a1, a2, i, j, c, mu) for j in range(3)] for i in range(3)]
             Minfinity[M25_coords] = [[M12(mr, s, a2, a1, j, i, c, mu) for j in range(3)] for i in range(3)]
             Minfinity[M35_coords] = [[con_M13(mr, s, a1, a2, j, i, c, mu) for j in range(3)] for i in range(5)]
 
-        elif (a1_index < num_spheres + num_dumbbells
-              and a2_index >= num_spheres
-              and a2_index < num_spheres + num_dumbbells):
+        elif is_dumbbell_bead_1(a1_index) and is_dumbbell_bead_1(a2_index):
             # Dumbbell bead 1 to dumbbell bead 1
             if bead_bead_interactions or a1_index == a2_index:
                 Minfinity[M44_coords] = [[M11(r[i], r[j], s, a1, a2, i, j, c, mu) for j in range(3)] for i in range(3)]
 
-        elif (a1_index < num_spheres + num_dumbbells
-              and a2_index >= num_spheres + num_dumbbells):
+        elif is_dumbbell_bead_1(a1_index) and is_dumbbell_bead_2(a2_index):
             if bead_bead_interactions:
                 # Dumbbell bead 1 to dumbbell bead 2
                 Minfinity[M45_coords] = [[M11(r[i], r[j], s, a1, a2, i, j, c, mu) for j in range(3)] for i in range(3)]

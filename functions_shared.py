@@ -168,13 +168,19 @@ def add_sphere_rotations_to_positions(sphere_positions, sphere_sizes, sphere_rot
     return b
 
 
-def is_dumbbell(posdata, a_index):
-    (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
+def is_dumbbell(a_index, num_spheres):
     return a_index >= num_spheres
 
 
-def is_sphere(posdata, a_index):
-    (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
+def is_dumbbell_bead_1(a_index, num_spheres, num_dumbbells):
+    return (a_index >= num_spheres) and (a_index < num_spheres + num_dumbbells)
+
+
+def is_dumbbell_bead_2(a_index, num_spheres, num_dumbbells):
+    return a_index >= num_spheres + num_dumbbells
+
+
+def is_sphere(a_index, num_spheres):
     return a_index < num_spheres
 
 
