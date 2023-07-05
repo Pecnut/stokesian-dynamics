@@ -21,6 +21,18 @@ from numba import njit
 # 2nd derivatives
 @njit
 def DD_rerfclr(ri, rj, ss, erfc0, erfc1, erfc2, i, j):
+    """Return 2nd derivative of r erfc(lambda r), D_i D_j r erfc(lambda r).
+    See PhD thesis section A.2.5.
+    
+    Args:
+        ri: ith element of vector r
+        rj: jth element of vector r
+        ss: r ( = |vector r|)
+        erfc0: 0th derivative of erfc(lambda r)
+        erfc1: 1st derivative of erfc(lambda r)
+        erfc2: 2nd derivative of erfc(lambda r)
+        i, j: coordinate indices
+    """
     return (((i == j)/ss - ri*rj/ss**3)*erfc0
             + ((i == j) + ri*rj/ss**2)*erfc1
             + ri*rj/ss*erfc2)
@@ -28,6 +40,7 @@ def DD_rerfclr(ri, rj, ss, erfc0, erfc1, erfc2, i, j):
 
 @njit
 def Lap_rerfclr(ss, erfc0, erfc1, erfc2):
+    """Laplacian of r erfc(lambda r). See PhD thesis section A.2.5."""
     return 2/ss*erfc0 + 4*erfc1 + ss*erfc2
 
 # 3rd derivatives
@@ -35,6 +48,8 @@ def Lap_rerfclr(ss, erfc0, erfc1, erfc2):
 
 @njit
 def DDD_rerfclr(ri, rj, rl, ss, erfc0, erfc1, erfc2, erfc3, i, j, l):
+    """3rd derivative of r erfc(lambda r), D_i D_j D_l r erfc(lambda r).
+    See PhD thesis section A.2.5."""    
     a = -(i == j)*rl - (i == l)*rj - (j == l)*ri + 3*ri*rj*rl/ss**2
     return (1/ss**3*(a)*erfc0
             + 1/ss**2*(-a)*erfc1
@@ -44,6 +59,8 @@ def DDD_rerfclr(ri, rj, rl, ss, erfc0, erfc1, erfc2, erfc3, i, j, l):
 
 @njit
 def DLap_rerfclr(rl, ss, erfc0, erfc1, erfc2, erfc3):
+    """Derivative of Laplacian of r erfc(lambda r), D_l D^2 r erfc(lambda r).
+    See PhD thesis section A.2.5."""
     return -2*rl/ss**3*erfc0 + 2*rl/ss**2*erfc1 + 5*rl/ss*erfc2 + rl*erfc3
 
 # 4th derivatives
@@ -52,6 +69,8 @@ def DLap_rerfclr(rl, ss, erfc0, erfc1, erfc2, erfc3):
 @njit
 def DDDD_rerfclr(ri, rj, rl, rm, ss, erfc0, erfc1, erfc2, erfc3, erfc4,
                  i, j, l, m):
+    """4th derivative of r erfc(lambda r), D_i D_j D_l D_m r erfc(lambda r).
+    See PhD thesis section A.2.5."""
     kron_rr = ((i == j)*rl*rm + (i == l)*rj*rm + (l == j)*ri*rm + (i == m)*rj*rl
                + (j == m)*ri*rl + (l == m)*ri*rj)
     kron3 = (i == j)*(l == m) + (j == l)*(i == m) + (i == l)*(j == m)
@@ -68,6 +87,8 @@ def DDDD_rerfclr(ri, rj, rl, rm, ss, erfc0, erfc1, erfc2, erfc3, erfc4,
 
 @njit
 def DDLap_rerfclr(rl, rm, ss, erfc0, erfc1, erfc2, erfc3, erfc4, l, m):
+    """2nd derivative of Laplacian of r erfc(lambda r), 
+    D_l D_m D^2 r erfc(lambda r). See PhD thesis section A.2.5."""
     kron_lm = (l == m)
     rlrm = rl*rm
     a = -2*kron_lm/ss**3 + 6*rlrm/ss**5
@@ -80,6 +101,8 @@ def DDLap_rerfclr(rl, rm, ss, erfc0, erfc1, erfc2, erfc3, erfc4, l, m):
 
 @njit
 def LapLap_rerfclr(ss, erfc2, erfc3, erfc4):
+    """Double Laplacian of r erfc(lambda r), D^4 r erfc(lambda r).
+    See PhD thesis section A.2.5."""
     return 12/ss*erfc2 + 8*erfc3 + ss*erfc4
 
 # 5th derivatives
@@ -88,6 +111,8 @@ def LapLap_rerfclr(ss, erfc2, erfc3, erfc4):
 @njit
 def DDDLap_rerfclr(ri, rj, rk, ss, erfc0, erfc1, erfc2, erfc3, erfc4,
                    erfc5, i, j, k):
+    """3rd derivative of Laplacian of r erfc(lambda r), 
+    D_i D_j D_k D^2 r erfc(lambda r). See PhD thesis section A.2.5."""
     kron_r = (i == j)*rk + (i == k)*rj + (j == k)*ri
     a = 6*kron_r/ss**5 - 30*ri*rj*rk/ss**7
     rirjrk = ri*rj*rk
@@ -101,6 +126,8 @@ def DDDLap_rerfclr(ri, rj, rk, ss, erfc0, erfc1, erfc2, erfc3, erfc4,
 
 @njit
 def DLapLap_rerfclr(rk, ss, erfc2, erfc3, erfc4, erfc5):
+    """Derivative of double Laplacian of r erfc(lambda r), 
+    D_k D^4 r erfc(lambda r). See PhD thesis section A.2.5."""    
     return (-12*rk/ss**3*erfc2
             + 12*rk/ss**2*erfc3
             + 9*rk/ss*erfc4
@@ -112,6 +139,8 @@ def DLapLap_rerfclr(rk, ss, erfc2, erfc3, erfc4, erfc5):
 @njit
 def DDDDLap_rerfclr(ri, rj, rk, rl, ss, erfc0, erfc1, erfc2, erfc3, erfc4,
                     erfc5, erfc6, i, j, k, l):
+    """4th derivative of Laplacian of r erfc(lambda r), 
+    D_i D_j D_k D_l D^2 r erfc(lambda r). See PhD thesis section A.2.5."""    
     kron_rr = ((i == j)*rk*rl + (i == k)*rj*rl + (k == j)*ri*rl + (i == l)*rj*rk
                + (j == l)*ri*rk + (k == l)*ri*rj)
     kron3 = (i == j)*(k == l) + (j == k)*(i == l) + (i == k)*(j == l)
@@ -128,6 +157,8 @@ def DDDDLap_rerfclr(ri, rj, rk, rl, ss, erfc0, erfc1, erfc2, erfc3, erfc4,
 
 @njit
 def DDLapLap_rerfclr(rk, rl, ss, erfc2, erfc3, erfc4, erfc5, erfc6, k, l):
+    """2nd derivative of double Laplacian of r erfc(lambda r), 
+    D_k D_l D^4 r erfc(lambda r). See PhD thesis section A.2.5."""      
     a = -12*(k == l)/ss**3 + 36*rk*rl/ss**5
     return (a * erfc2
             + (-a)*ss*erfc3
@@ -139,6 +170,7 @@ def DDLapLap_rerfclr(rk, rl, ss, erfc2, erfc3, erfc4, erfc5, erfc6, k, l):
 # Derivatives of erfc (lambda r)
 @njit
 def generate_erfcs(s, lamb):
+    """0th to 6th derivatives of erfc(lambda r). See PhD thesis section A.2.6."""  
     E = 2/pi**0.5*exp(-s**2*lamb**2)*lamb
     erfc0 = erfc(lamb*s)
     erfc1 = -E
@@ -151,12 +183,13 @@ def generate_erfcs(s, lamb):
 
 # === CONSTANTS ===
 
+# kronmatrix = d_ij d_kl
+kronmatrix = np.array([[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 1, 0, 0], [0, 0, 0, 1, 0], [0, 0, 0, 0, 1]])
 
-kronmatrix = [[1, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 1, 0, 0], [0, 0, 0, 1, 0], [0, 0, 0, 0, 1]]
-# NOTE: kron3traceless_ijkl = d_ik d_jl + d_il d_jk - 2/3 d_ij d_kl
+# kron3traceless_ijkl = d_ik d_jl + d_il d_jk - 2/3 d_ij d_kl
 ft = 1.3333333333333333
 mtt = -0.6666666666666667
-kron3tracelessmatrix = [
+kron3tracelessmatrix = np.array([
     [[[ft, 0, 0, 0, 0],   [0, mtt, 0, 0, 0],   [0, 0, mtt, 0, 0],   [0, 0, 0, mtt, 0],   [0, 0, 0, 0, mtt]],
      [[0, 1, 0, 0, 0],   [1, 0, 0, 0, 0],   [0, 0, 0, 0, 0],   [0, 0, 0, 0, 0],   [0, 0, 0, 0, 0]],
      [[0, 0, 1, 0, 0],   [0, 0, 0, 0, 0],   [1, 0, 0, 0, 0],   [0, 0, 0, 0, 0],   [0, 0, 0, 0, 0]],
@@ -181,9 +214,7 @@ kron3tracelessmatrix = [
      [[0, 0, 0, 0, 0],   [0, 0, 0, 0, 1],   [0, 0, 0, 0, 0],   [0, 0, 0, 0, 0],   [0, 1, 0, 0, 0]],
      [[0, 0, 0, 0, 0],   [0, 0, 0, 0, 0],   [0, 0, 0, 0, 1],   [0, 0, 0, 0, 0],   [0, 0, 1, 0, 0]],
      [[0, 0, 0, 0, 0],   [0, 0, 0, 0, 0],   [0, 0, 0, 0, 0],   [0, 0, 0, 0, 1],   [0, 0, 0, 1, 0]],
-     [[mtt, 0, 0, 0, 0],   [0, mtt, 0, 0, 0],   [0, 0, mtt, 0, 0],   [0, 0, 0, mtt, 0],   [0, 0, 0, 0, ft]]]]
-kronmatrix = np.array(kronmatrix)
-kron3tracelessmatrix = np.array(kron3tracelessmatrix)
+     [[mtt, 0, 0, 0, 0],   [0, mtt, 0, 0, 0],   [0, 0, mtt, 0, 0],   [0, 0, 0, mtt, 0],   [0, 0, 0, 0, ft]]]])
 
 # === DERIVATIVES OF J^r(r) ===
 # O(J)
@@ -191,6 +222,7 @@ kron3tracelessmatrix = np.array(kron3tracelessmatrix)
 
 @njit
 def J(r, ss, i, j, erfcs):
+    '''Realspace periodic Oseen tensor J^r_ij(r). See PhD thesis section A.2.4.'''
     return (kronmatrix[i][j]*Lap_rerfclr(ss, erfcs[0], erfcs[1], erfcs[2])
             - DD_rerfclr(r[i], r[j], ss, erfcs[0], erfcs[1], erfcs[2], i, j))
 
@@ -199,6 +231,7 @@ def J(r, ss, i, j, erfcs):
 
 @njit
 def R(r, ss, i, j, erfcs):
+    '''Realspace periodic rotlet R^r_ij(r). See PhD thesis section A.2.4.'''
     k = (j+1) % 3
     l = (j+2) % 3
     return -0.5*(D_J(r, ss, k, i, l, erfcs) - D_J(r, ss, l, i, k, erfcs))
@@ -206,11 +239,15 @@ def R(r, ss, i, j, erfcs):
 
 @njit
 def K(r, ss, i, j, k, erfcs):
+    '''Realspace periodic tensor K^r_ijk(r). See PhD thesis section A.2.4.'''
     return 0.5*(D_J(r, ss, k, i, j, erfcs) + D_J(r, ss, j, i, k, erfcs))
 
 
 @njit
 def D_J(r, ss, l, i, j, erfcs):
+    '''Derivative of realspace periodic Oseen tensor, D_l J^r_ij(r).
+    See PhD thesis section A.2.4.'''
+
     return (kronmatrix[i][j]*DLap_rerfclr(r[l], ss,
                                           erfcs[0], erfcs[1],
                                           erfcs[2], erfcs[3])
@@ -223,6 +260,8 @@ def D_J(r, ss, l, i, j, erfcs):
 
 @njit
 def DD_J(r, ss, m, l, i, j, erfcs):
+    '''2nd derivative of realspace periodic Oseen tensor, D_m D_l J^r_ij(r).
+    See PhD thesis section A.2.4.'''   
     rl = r[l]
     rm = r[m]
     ri = r[i]
@@ -237,6 +276,8 @@ def DD_J(r, ss, m, l, i, j, erfcs):
 
 @njit
 def D_R(r, ss, l, i, j, erfcs):
+    '''Derivative of realspace periodic rotlet, D_l R^r_ij(r).
+    See PhD thesis section A.2.4.'''    
     m = (j+1) % 3
     n = (j+2) % 3
     return -0.5 * (DD_J(r, ss, l, m, i, n, erfcs)
@@ -245,11 +286,15 @@ def D_R(r, ss, l, i, j, erfcs):
 
 @njit
 def D_K(r, ss, l, i, j, k, erfcs):
+    '''Derivative of realspace periodic K tensor, D_l K^r_ijk(r).
+    See PhD thesis section A.2.4.'''    
     return 0.5*(DD_J(r, ss, l, k, i, j, erfcs) + DD_J(r, ss, l, j, i, k, erfcs))
 
 
 @njit
 def Lap_J(r, ss, i, j, erfcs):
+    '''Laplacian of realspace periodic Oseen tensor, D^2 J^r_ij(r).
+    See PhD thesis section A.2.4.'''    
     return (kronmatrix[i][j]*LapLap_rerfclr(ss, erfcs[2], erfcs[3], erfcs[4])
             - DDLap_rerfclr(r[i], r[j], ss,
                             erfcs[0], erfcs[1], erfcs[2],
@@ -260,6 +305,8 @@ def Lap_J(r, ss, i, j, erfcs):
 
 @njit
 def DLap_J(r, ss, k, i, j, erfcs):
+    '''Derivative of Laplacian of periodic Oseen tensor, D_k D^2 J^r_ij(r).
+    See PhD thesis section A.2.4.'''    
     rk = r[k]
     return (kronmatrix[i][j]*DLapLap_rerfclr(rk, ss, erfcs[2], erfcs[3],
                                              erfcs[4], erfcs[5])
@@ -270,6 +317,8 @@ def DLap_J(r, ss, k, i, j, erfcs):
 
 @njit
 def Lap_R(r, ss, i, j, erfcs):
+    '''Laplacian of realspace periodic rotlet, D^2 J^r_ij(r).
+    See PhD thesis section A.2.4.'''    
     k = (j+1) % 3
     l = (j+2) % 3
     return -0.5*(DLap_J(r, ss, k, i, l, erfcs) - DLap_J(r, ss, l, i, k, erfcs))
@@ -277,6 +326,8 @@ def Lap_R(r, ss, i, j, erfcs):
 
 @njit
 def Lap_K(r, ss, i, j, k, erfcs):
+    '''Laplacian of realspace periodic K tensor, D^2 K^r_ijk(r).
+    See PhD thesis section A.2.4.'''    
     return 0.5*(DLap_J(r, ss, k, i, j, erfcs) + DLap_J(r, ss, j, i, k, erfcs))
 
 # O(D^4 J)
@@ -284,6 +335,8 @@ def Lap_K(r, ss, i, j, k, erfcs):
 
 @njit
 def DDLap_J(r, ss, l, k, i, j, erfcs):
+    '''2nd derivative of Laplacian of realspace periodic Oseen tensor, 
+    D_l D_k D^2 J^r_ij(r). See PhD thesis section A.2.4.'''    
     rk = r[k]
     rl = r[l]
     return (kronmatrix[i][j]*DDLapLap_rerfclr(rk, rl, ss,
@@ -296,6 +349,8 @@ def DDLap_J(r, ss, l, k, i, j, erfcs):
 
 @njit
 def DLap_K(r, ss, l, i, j, k, erfcs):
+    '''Derivative of Laplacian of realspace periodic K tensor, 
+    D_l D^2 K^r_ijk(r). See PhD thesis section A.2.4.'''      
     return 0.5*(DDLap_J(r, ss, l, k, i, j, erfcs)
                 + DDLap_J(r, ss, l, j, i, k, erfcs))
 
@@ -305,6 +360,10 @@ def DLap_K(r, ss, l, i, j, k, erfcs):
 
 @njit
 def ar(r, s, a1, a2, i, j, erfcs, c, mu):
+    """Element ij of the realspace periodic version of Minfinity submatrix a.
+    
+    Equivalent to non-periodic definition (see PhD thesis table 2.1) with J
+    replaced by realspace form J^r_ij, a.k.a. J in this file. See (2.157)."""    
     if s > 1e-10:
         return c*(J(r, s, i, j, erfcs)
                   + (a1**2 + a2**2)/6. * Lap_J(r, s, i, j, erfcs))
@@ -314,6 +373,8 @@ def ar(r, s, a1, a2, i, j, erfcs, c, mu):
 
 @njit
 def btr(r, s, a1, a2, i, j, erfcs, c, mu):
+    """Element ij of the wavespace periodic version of Minfinity submatrix 
+    b tilde. See docstring for ar."""
     if s > 1e-10:
         return c*(R(r, s, i, j, erfcs) + a1**2/6. * Lap_R(r, s, i, j, erfcs))
     else:
@@ -322,6 +383,8 @@ def btr(r, s, a1, a2, i, j, erfcs, c, mu):
 
 @njit
 def cr(r, s, a1, a2, i, j, erfcs, c, mu):
+    """Element ij of the wavespace periodic version of Minfinity submatrix c.
+    See docstring for ar."""
     if abs(r[0]) + abs(r[1]) + abs(r[2]) <= 1e-10:
         return kronmatrix[i][j]/(8*pi*mu*a1**3)
     k = (i+1) % 3
@@ -331,6 +394,8 @@ def cr(r, s, a1, a2, i, j, erfcs, c, mu):
 
 @njit
 def gtr(r, s, a1, a2, i, j, k, erfcs, c, mu):
+    """Element ijk of the uncontracted wavespace periodic version of Minfinity 
+    submatrix g tilde. See docstring for ar."""    
     if s > 1e-10:
         return -c*(K(r, s, i, j, k, erfcs)
                    + (a1**2/6. + a2**2/10.) * Lap_K(r, s, i, j, k, erfcs))
@@ -340,6 +405,8 @@ def gtr(r, s, a1, a2, i, j, k, erfcs, c, mu):
 
 @njit
 def htr(r, s, a1, a2, i, j, k, erfcs, c, mu):
+    """Element ijk of the uncontracted wavespace periodic version of Minfinity 
+    submatrix h tilde. See docstring for ar."""
     if abs(r[0]) + abs(r[1]) + abs(r[2]) > 1e-10:
         l = (i+1) % 3
         m = (i+2) % 3
@@ -353,6 +420,8 @@ def htr(r, s, a1, a2, i, j, k, erfcs, c, mu):
 
 @njit
 def mr(r, s, a1, a2, i, j, k, l, erfcs, c, mu):
+    """Element ijkl of the uncontracted wavespace periodic version of Minfinity
+    submatrix m. See docstring for ar."""        
     if s > 1e-10:
         return -0.5*c*((D_K(r, s, j, i, k, l, erfcs)
                         + D_K(r, s, i, j, k, l, erfcs))
@@ -367,33 +436,45 @@ def mr(r, s, a1, a2, i, j, k, l, erfcs, c, mu):
 
 @njit
 def Jtilde(ki, kj, ss, i, j, RR):
+    """Fourier transform of wavespace Oseen tensor J^k_ij(k). 
+    See PhD thesis section A.2.7."""
     return -((i == j)*ss**2 + ki*kj)*RR
 
 
 @njit
 def DD_Jtilde(kkm, kkl, kki, kkj, ss, i, j, RR):
+    """Fourier transform of 2nd derivative of wavespace Oseen tensor, 
+    D_m D_l J^k_ij(k). See PhD thesis section A.2.7."""    
     return -kkm*kkl * Jtilde(kki, kkj, ss, i, j, RR)
 
 
 @njit
 def Lap_Jtilde(kki, kkj, ss, i, j, RR):
+    """Fourier transform of Laplacian of wavespace Oseen tensor, D^2 J^k_ij(k). 
+    See PhD thesis section A.2.7."""    
     return -ss**2 * Jtilde(kki, kkj, ss, i, j, RR)
 
 
 @njit
 def D_Ktilde(kkl, kki, kkj, kkk, ss, i, j, k, RR):
+    """Fourier transform of derivative of wavespace K tensor, 
+    D_l K^k_ijk(k). See PhD thesis section A.2.7."""
     return 0.5*(DD_Jtilde(kkl, kkk, kki, kkj, ss, i, j, RR)
                 + DD_Jtilde(kkl, kkj, kki, kkk, ss, i, k, RR))
 
 
 @njit
 def DLap_Ktilde(kkl, kki, kkj, kkk, ss, i, j, k, RR):
+    """Fourier transform of derivative of Laplacian of wavespace K tensor, 
+    D_l D^2 K^k_ijk(k). See PhD thesis section A.2.7."""
     return 0.5 * (kkk*kkl*ss**2 * Jtilde(kki, kkj, ss, i, j, RR)
                   + kkl*kkj*ss**2 * Jtilde(kki, kkk, ss, i, k, RR))
 
 
 @njit
 def D_Rtilde(kk, ss, l, i, j, RR):
+    """Fourier transform of derivative of rotlet, D_l R^k_ij(k).
+    See PhD thesis section A.2.7."""
     kkl = kk[l]
     kki = kk[i]
     m = (j+1) % 3
@@ -408,6 +489,11 @@ def D_Rtilde(kk, ss, l, i, j, RR):
 
 @njit
 def aktilde(kk, ss, a1, a2, i, j, RR, c):
+    """Element ij of the wavespace periodic version of Minfinity submatrix a.
+    
+    Equivalent to non-periodic definition (see PhD thesis table 2.1) with J
+    replaced by Fourier transform of J^k_ij, a.k.a. Jtilde. See (2.158). Name
+    'tilde' here means Fourier transform, not as in e.g. B/Btilde symmetry."""
     kki = kk[i]
     kkj = kk[j]
     return c*(Jtilde(kki, kkj, ss, i, j, RR)
@@ -416,6 +502,9 @@ def aktilde(kk, ss, a1, a2, i, j, RR, c):
 
 @njit
 def cktilde(kk, ss, a1, a2, i, j, RR, c):
+    """Element ij of the wavespace periodic version of Minfinity submatrix c.
+    See docstring for aktilde."""
+
     k = (i+1) % 3
     l = (i+2) % 3
     return c*0.5*(D_Rtilde(kk, ss, k, l, j, RR) - D_Rtilde(kk, ss, l, k, j, RR))
@@ -423,6 +512,8 @@ def cktilde(kk, ss, a1, a2, i, j, RR, c):
 
 @njit
 def htktilde(kk, ss, a1, a2, i, j, k, RR, c):
+    """Element ijk of the uncontracted wavespace periodic version of Minfinity 
+    submatrix h tilde. See docstring for aktilde."""
     kkj = kk[j]
     kkk = kk[k]
     l = (i+1) % 3
@@ -437,6 +528,8 @@ def htktilde(kk, ss, a1, a2, i, j, k, RR, c):
 
 @njit
 def mktilde(kk, ss, a1, a2, i, j, k, l, RR, c):
+    """Element ijkl of the uncontracted wavespace periodic version of Minfinity
+    submatrix m. See docstring for aktilde."""    
     kki = kk[i]
     kkj = kk[j]
     kkk = kk[k]
@@ -453,6 +546,7 @@ def mktilde(kk, ss, a1, a2, i, j, k, l, RR, c):
 def M11(i, j, r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn,
         erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points,
         num_K_points, c, mu, s_lmn, erfcs_lmn):
+    """Element ij of Minfinity submatrix a. See PhD thesis (2.155)-(2.156)."""
     if s > 1e-10:
         # a_ab,rep = SUM_lmn a^r (x + x_lmn) + 1/L^3 SUM'_lmn exp(i k_lmn.x) atilde^k(k_lmn)
         #            --------(2)-------------   ---------------(4)---------------------------
@@ -493,6 +587,8 @@ def M11(i, j, r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn,
 
 @njit
 def M12(i, j, r, s, a1, a2, X_lmn, num_X_points, c, mu, s_lmn, erfcs_lmn):
+    """Element ij of Minfinity submatrix b tilde. Same form as PhD thesis 
+    (2.155)-(2.156), and see note at bottom of page."""
     if s > 1e-10:
         # (2)
         # Return value below is just sum_btr
@@ -509,6 +605,8 @@ def M12(i, j, r, s, a1, a2, X_lmn, num_X_points, c, mu, s_lmn, erfcs_lmn):
 
 @njit
 def M13(i, j, k, r, s, a1, a2, X_lmn, num_X_points, c, mu, s_lmn, erfcs_lmn):
+    """Element ijk of uncontracted Minfinity submatrix g tilde. Same form as
+    PhD thesis (2.155)-(2.156), and see note at bottom of page."""    
     if s > 1e-10:
         # (2)
         # Return value below is just sum_gtr
@@ -526,6 +624,8 @@ def M13(i, j, k, r, s, a1, a2, X_lmn, num_X_points, c, mu, s_lmn, erfcs_lmn):
 def M22(i, j, r, s, a1, a2, erfcs, L, X_lmn, Xdash_lmn, Sdash_lmn,
         erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points,
         num_K_points, c, mu, s_lmn, erfcs_lmn):
+    """Element ij of Minfinity submatrix c. Same form as PhD thesis 
+    (2.155)-(2.156)."""      
     if s > 1e-10:
         # (2)
         sum_cr = sum([
@@ -557,6 +657,8 @@ def M22(i, j, r, s, a1, a2, erfcs, L, X_lmn, Xdash_lmn, Sdash_lmn,
 def M23(i, j, k, r, s, a1, a2, L, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn,
         K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,
         c, mu, s_lmn, erfcs_lmn):
+    """Element ijk of uncontracted Minfinity submatrix h tilde. Same form as
+    PhD thesis (2.155)-(2.156)."""       
     if s > 1e-10:
         # (2)
         sum_htr = sum([
@@ -585,6 +687,8 @@ def M23(i, j, k, r, s, a1, a2, L, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn,
 def M33(i, j, k, l, r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn,
         erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points,
         num_K_points, c, mu, s_lmn, erfcs_lmn):
+    """Element ijkl of uncontracted Minfinity submatrix m. Same form as
+    PhD thesis (2.155)-(2.156)."""       
     if s > 1e-10:
         # (2)
         sum_mr = sum([
@@ -618,6 +722,8 @@ def M33(i, j, k, l, r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn,
 
 @njit
 def con_M13(i, m, args):
+    """Element im of (condensed) Minfinity submatrix g tilde. See docstring
+    for M13, and see section 2.4.4 for condensation details."""
     if m == 0:
         return (0.5*(s3+1)*M13(i, 0, 0, *args) + 0.5*(s3-1)*M13(i, 1, 1, *args))
     elif m == 1:
@@ -632,6 +738,8 @@ def con_M13(i, m, args):
 
 @njit
 def con_M23(i, m, args):
+    """Element im of (condensed) Minfinity submatrix h tilde. See docstring
+    for M23, and see section 2.4.4 for condensation details."""    
     if m == 0:
         return 0.5*(s3+1)*M23(i, 0, 0, *args) + 0.5*(s3-1)*M23(i, 1, 1, *args)
     elif m == 1:
@@ -646,6 +754,8 @@ def con_M23(i, m, args):
 
 @njit
 def con1_M33(n, k, l, args):
+    """Element nkl of partially condensed Minfinity submatrix m. See docstring
+    for M33, and see section 2.4.4 for condensation details."""
     if n == 0:
         return 0.5*(s3+1)*M33(0, 0, k, l, *args) + 0.5*(s3-1)*M33(1, 1, k, l, *args)
     elif n == 1:
@@ -660,6 +770,8 @@ def con1_M33(n, k, l, args):
 
 @njit
 def con_M33(n, m, args):
+    """Element nm of (condensed) Minfinity submatrix m. See docstring for M33,
+    and see section 2.4.4 for condensation details."""
     if m == 0:
         return 0.5*(s3+1)*con1_M33(n, 0, 0, args) + 0.5*(s3-1)*con1_M33(n, 1, 1, args)
     elif m == 1:
@@ -673,12 +785,26 @@ def con_M33(n, m, args):
 
 
 def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
-                                printout=0, frameno=0,
+                                printout=0, frameno=0, mu=1, 
                                 O_infinity=np.array([0, 0, 0]),
                                 E_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]),
                                 timestep=0.1,
                                 centre_of_background_flow=np.array([0, 0, 0]),
-                                mu=1, frequency=1, amplitude=1):
+                                frequency=1, amplitude=1):
+    """Generate Minfinity matrix for periodic domain.
+
+    Args:
+        posdata: Particle position, size and count data
+        box_bottom_left, box_top_right: Periodic box coordinates.
+        printout: (Unused) flag which allows you to put in debug statements
+        frameno: Frame number
+        mu: viscosity
+        O_infinity, ..., amplitude: Periodic/constant shear parameters
+
+    Returns:
+        L*Minfinity*R: Minfinity matrix
+        "Minfinity": Human readable name of the matrix
+    """    
     # NOTE: Centre of background flow currently not implemented - 27/1/2017
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
         dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells,

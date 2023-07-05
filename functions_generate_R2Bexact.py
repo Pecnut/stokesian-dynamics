@@ -7,11 +7,11 @@
 # section 7.2 of Kim & Karrila, 2005. Microhydrodynamics.
 
 import numpy as np
-from functions_shared import (posdata_data, levi, close_particles, s2, s3, 
+from functions_shared import (posdata_data, levi, close_particles, s2, s3,
                               submatrix_coords, is_sphere, is_dumbbell_bead_1,
                               is_dumbbell_bead_2)
 from scipy import sparse
-from inputs import (s_dash_range, lam_range_with_reciprocals, XYZ_raw, 
+from inputs import (s_dash_range, lam_range_with_reciprocals, XYZ_raw,
                     bead_bead_interactions)
 from numba import njit
 
@@ -321,12 +321,22 @@ def generate_R2Bexact(posdata,
 
     R2Bexact_sidelength = 11 * num_spheres + 6 * num_dumbbells
     R2Bexact = sparse.lil_matrix((R2Bexact_sidelength, R2Bexact_sidelength), dtype=float)
-    bead_positions = np.concatenate([sphere_positions, dumbbell_positions - 0.5 * dumbbell_deltax, dumbbell_positions + 0.5 * dumbbell_deltax])
+    bead_positions = np.concatenate([sphere_positions, 
+                                     dumbbell_positions - 0.5*dumbbell_deltax, 
+                                     dumbbell_positions + 0.5*dumbbell_deltax])
     bead_sizes = np.concatenate([sphere_sizes, dumbbell_sizes, dumbbell_sizes])
 
-    closer_than_cutoff_pairs_scaled, displacements_pairs_scaled, distances_pairs_scaled, size_ratios = close_particles(bead_positions, bead_sizes, cutoff_factor, box_bottom_left, box_top_right, O_infinity, E_infinity, frameno, timestep, frequency=frequency, amplitude=amplitude)
+    (closer_than_cutoff_pairs_scaled, displacements_pairs_scaled,
+        distances_pairs_scaled, size_ratios) = close_particles(
+            bead_positions, bead_sizes, cutoff_factor, box_bottom_left,
+            box_top_right, O_infinity, E_infinity, frameno, timestep,
+            frequency=frequency, amplitude=amplitude)
 
-    uv_power = [[1, 2, 2, 1, 1], [2, 3, 3, 2, 2], [2, 3, 3, 2, 2], [1, 2, 2, 1, 1], [1, 2, 2, 1, 1]]
+    uv_power = [[1, 2, 2, 1, 1], 
+                [2, 3, 3, 2, 2], 
+                [2, 3, 3, 2, 2], 
+                [1, 2, 2, 1, 1], 
+                [1, 2, 2, 1, 1]]
 
     ii = 0
     for a1_index, a2_index in closer_than_cutoff_pairs_scaled:

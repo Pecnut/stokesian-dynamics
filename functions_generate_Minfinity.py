@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 # Adam Townsend, adam@adamtownsend.com, 07/06/2017
 
-# Reference: A. K. Townsend, 2017. The mechanics of suspensions. PhD thesis, UCL. Appendix A.
+# Reference: A. K. Townsend, 2017. The mechanics of suspensions. PhD thesis, UCL. 
+# See section 2.5 in particular, and also section 2 generally, and appendix A.
 
 import numpy as np
 from numpy import sqrt, pi
@@ -45,6 +46,13 @@ kronkronmatrix = np.array(kronkronmatrix)
 # O(J)
 @njit
 def J(ri, rj, i, j, ss):
+    """Oseen tensor J_ij. See PhD thesis section A.2.3.
+    
+    Args:
+        ri: ith element of vector r
+        rj: jth element of vector r
+        ss: r ( = |vector r|)
+        i, j: coordinate indices"""
     return kronmatrix[i][j]/ss + ri*rj/ss**3
 
 # O(D J)
@@ -52,6 +60,7 @@ def J(ri, rj, i, j, ss):
 
 @njit
 def R(r, ss, i, j):
+    """Rotlet R_ij. See PhD thesis section A.2.3."""
     return -0.5*sum(
         [levi(j, k, l)*D_J(r, ss, k, i, l) for k in range(3) for l in range(3)
          if k != l and j != k and j != l]
@@ -60,11 +69,13 @@ def R(r, ss, i, j):
 
 @njit
 def K(r, ss, i, j, k):
+    """Tensor K_ijk. See PhD thesis section A.2.3."""
     return 0.5*(D_J(r, ss, k, i, j) + D_J(r, ss, j, i, k))
 
 
 @njit
 def D_J(r, ss, l, i, j):
+    """Derivative of Oseen tensor, D_l J_ij. See PhD thesis section A.2.3."""
     return (-kronmatrix[i][j]*r[l] + kronmatrix[i][l]*r[j]
             + kronmatrix[j][l]*r[i])/ss**3 - 3*r[i]*r[j]*r[l]/ss**5
 
@@ -73,6 +84,7 @@ def D_J(r, ss, l, i, j):
 
 @njit
 def DD_J(r, ss, m, l, i, j):
+    """2nd derivative of Oseen tensor, D_m D_l J_ij. See PhD thesis section A.2.3."""
     # return (-(i==j)*(l==m) + (i==l)*(j==m) + (j==l)*(i==m))/ss**3 - 3*(-(i==j)*r[l]*r[m] + (i==l)*r[j]*r[m] + (j==l)*r[i]*r[m] + (i==m)*r[j]*r[l] + r[i]*(j==m)*r[l] + r[i]*r[j]*(l==m))/ss**5 + 15*r[i]*r[j]*r[l]*r[m]/ss**7
     return ((-kronkronmatrix[i][j][l][m]
              + kronkronmatrix[i][l][j][m]
@@ -88,6 +100,7 @@ def DD_J(r, ss, m, l, i, j):
 
 @njit
 def D_R(r, ss, l, i, j):
+    """Derivative of rotlet, D_l R_ij. See PhD thesis section A.2.3."""
     return -0.5 * sum([
         levi(j, m, n) * DD_J(r, ss, l, m, i, n)
         for m in range(3) for n in range(3) if m != n and m != j and n != j])
@@ -95,11 +108,13 @@ def D_R(r, ss, l, i, j):
 
 @njit
 def D_K(r, ss, l, i, j, k):
+    """Derivative of K tensor, D_l K_ijk. See PhD thesis section A.2.3."""
     return 0.5*(DD_J(r, ss, l, k, i, j) + DD_J(r, ss, l, j, i, k))
 
 
 @njit
 def Lap_J(ri, rj, i, j, ss):
+    """Laplacian of Oseen tensor, D^2 J_ij. See PhD thesis section A.2.3."""
     return 2*kronmatrix[i][j]/ss**3 - 6*ri*rj/ss**5
 
 # O(D^3 J)
@@ -107,12 +122,14 @@ def Lap_J(ri, rj, i, j, ss):
 
 @njit
 def DLap_J(r, ss, k, i, j):
+    """Derivative of Laplacian of Oseen tensor, D_k D^2 J_ij. See PhD thesis section A.2.3."""
     return (-6./ss**5)*(kronmatrix[i][j]*r[k] + kronmatrix[i][k]*r[j]
                         + kronmatrix[j][k]*r[i]) + (30./ss**7)*r[i]*r[j]*r[k]
 
 
 @njit
 def Lap_R(r, ss, i, j):
+    '''Laplacian of rotlet, D^2 R_ij. See PhD thesis section A.2.3.'''
     return -0.5*sum([
         levi(j, k, l) * DLap_J(r, ss, k, i, l)
         for k in range(3) for l in range(3) if k != l and j != k and j != k])
@@ -120,6 +137,7 @@ def Lap_R(r, ss, i, j):
 
 @njit
 def Lap_K(r, ss, i, j, k):
+    '''Laplacian of K tensor, D^2 K_ijk. See PhD thesis section A.2.3.'''
     return DLap_J(r, ss, i, j, k)
 
 # O(D^4 J)
@@ -127,6 +145,7 @@ def Lap_K(r, ss, i, j, k):
 
 @njit
 def DLap_K(r, ss, l, i, j, k):
+    """Derivative of Laplacian of K tensor D_l D^2 K_ijk. See PhD thesis section A.2.3."""
     return ((-6./ss**5)*(kronkronmatrix[i][j][k][l]
                          + kronkronmatrix[i][k][j][l]
                          + kronkronmatrix[j][k][i][l])
@@ -141,6 +160,7 @@ def DLap_K(r, ss, l, i, j, k):
 
 @njit
 def M11(ri, rj, s, a1, a2, i, j, c, mu):
+    """Element ij of Minfinity submatrix a. See PhD thesis table 2.1."""
     if s > 1e-10:
         return c*(J(ri, rj, i, j, s)
                   + (a1**2 + a2**2)/6. * Lap_J(ri, rj, i, j, s))
@@ -150,6 +170,7 @@ def M11(ri, rj, s, a1, a2, i, j, c, mu):
 
 @njit
 def M12(r, s, a1, a2, i, j, c, mu):
+    """Element ij of Minfinity submatrix b tilde. See PhD thesis table 2.1."""
     if s > 1e-10:
         return c*(R(r, s, i, j) + a1**2/6. * Lap_R(r, s, i, j))
     else:
@@ -158,6 +179,7 @@ def M12(r, s, a1, a2, i, j, c, mu):
 
 @njit
 def M13(r, s, a1, a2, i, j, k, c, mu):
+    """Element ijk of uncondensed Minfinity submatrix g tilde. See PhD thesis table 2.1."""
     if s > 1e-10:
         return -c*(K(r, s, i, j, k)
                    + (a1**2/6. + a2**2/10.) * Lap_K(r, s, i, j, k))
@@ -167,6 +189,7 @@ def M13(r, s, a1, a2, i, j, k, c, mu):
 
 @njit
 def M22(r, s, a1, a2, i, j, c, mu):
+    """Element ij of Minfinity submatrix c. See PhD thesis table 2.1."""
     if abs(r[0]) + abs(r[1]) + abs(r[2]) > 1e-10:
         return c*0.5*sum([
             levi(i, k, l)*D_R(r, s, k, l, j)
@@ -177,6 +200,7 @@ def M22(r, s, a1, a2, i, j, c, mu):
 
 @njit
 def M23(r, s, a1, a2, i, j, k, c, mu):
+    """Element ijk of uncondensed Minfinity submatrix h tilde. See PhD thesis table 2.1."""
     if abs(r[0]) + abs(r[1]) + abs(r[2]) > 1e-10:
         return c*-0.5*sum([
             levi(i, l, m) * (D_K(r, s, l, m, j, k)
@@ -188,6 +212,7 @@ def M23(r, s, a1, a2, i, j, k, c, mu):
 
 @njit
 def M33(r, s, a1, a2, i, j, k, l, c, mu):
+    """Element ijkl of uncondensed Minfinity submatrix m. See PhD thesis table 2.1."""
     return -0.5*c*((D_K(r, s, j, i, k, l) + D_K(r, s, i, j, k, l))
                    + (a1**2 + a2**2)/10. * (DLap_K(r, s, j, i, k, l)
                                             + DLap_K(r, s, i, j, k, l)))
@@ -195,6 +220,8 @@ def M33(r, s, a1, a2, i, j, k, l, c, mu):
 
 @njit
 def con_M13(r, s, a1, a2, i, m, c, mu):
+    """Element im of (condensed) Minfinity submatrix g tilde. See PhD thesis 
+    table 2.1, and see section 2.4.4 for condensation details."""    
     if m == 0:
         return (0.5*(s3+1)*M13(r, s, a1, a2, i, 0, 0, c, mu)
                 + 0.5*(s3-1)*M13(r, s, a1, a2, i, 1, 1, c, mu))
@@ -211,6 +238,8 @@ def con_M13(r, s, a1, a2, i, m, c, mu):
 
 @njit
 def con_M23(r, s, a1, a2, i, m, c, mu):
+    """Element im of (condensed) Minfinity submatrix h tilde. See PhD thesis 
+    table 2.1, and see section 2.4.4 for condensation details."""      
     if m == 0:
         return (0.5*(s3+1)*M23(r, s, a1, a2, i, 0, 0, c, mu)
                 + 0.5*(s3-1)*M23(r, s, a1, a2, i, 1, 1, c, mu))
@@ -227,6 +256,8 @@ def con_M23(r, s, a1, a2, i, m, c, mu):
 
 @njit
 def con1_M33(r, s, a1, a2, n, k, l, c, mu):
+    """Element nkl of partially condensed Minfinity submatrix m. See PhD thesis 
+    table 2.1, and see section 2.4.4 for condensation details."""
     if n == 0:
         return (0.5*(s3+1)*M33(r, s, a1, a2, 0, 0, k, l, c, mu)
                 + 0.5*(s3-1)*M33(r, s, a1, a2, 1, 1, k, l, c, mu))
@@ -243,6 +274,8 @@ def con1_M33(r, s, a1, a2, n, k, l, c, mu):
 
 @njit
 def con_M33(r, s, a1, a2, n, m, c, mu):
+    """Element nm of (condensed) Minfinity submatrix m. See PhD thesis 
+    table 2.1, and see section 2.4.4 for condensation details."""    
     if s <= 1e-10:
         return kronmatrix[n][m]/((20./3)*pi*mu*a1**3)
     if m == 0:
@@ -260,6 +293,18 @@ def con_M33(r, s, a1, a2, n, m, c, mu):
 
 
 def generate_Minfinity(posdata, printout=0, frameno=0, mu=1):
+    """Generate Minfinity matrix for nonperiodic periodic domain.
+
+    Args:
+        posdata: Particle position, size and count data
+        printout: (Unused) flag which allows you to put in debug statements
+        frameno: (Unused) frame number which you can use in debug statements
+        mu: viscosity
+
+    Returns:
+        L*Minfinity*R: Minfinity matrix
+        "Minfinity": Human readable name of the matrix
+    """
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
         dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells,
         element_sizes, element_positions, element_deltax,  num_elements,
