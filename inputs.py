@@ -135,7 +135,6 @@ send_email = False
 
 # View graphics? (Note: doesn't save a video. To do that, use plot_particle_positions_video.py after the fact.)
 view_graphics = True
-text_only = 1 - int(view_graphics)
 
 # Bead-bead interactions? (Should really always be true)
 bead_bead_interactions = True

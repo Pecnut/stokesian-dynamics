@@ -5,7 +5,8 @@
 import numpy as np
 import math
 from functions_shared import (posdata_data, norm, s2, s3, submatrix_coords,
-                              is_sphere, is_dumbbell_bead_1, is_dumbbell_bead_2)
+                              is_sphere, is_dumbbell_bead_1, is_dumbbell_bead_2,
+                              shear_basis_vectors)
 from inputs import how_far_to_reproduce_gridpoints, bead_bead_interactions
 from scipy.sparse import coo_matrix
 from math import erfc, pi, exp
@@ -834,20 +835,11 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
                                      how_far_to_reproduce_gridpoints+1)]
     X_lmn_canonical = np.array([[ll, mm, nn] for ll in gridpoints_x for mm in gridpoints_y for nn in gridpoints_z])
 
-    basis_canonical = np.array([[Lx, 0, 0], [0, Ly, 0], [0, 0, Lz]])
-    # NOTE: For CONTINUOUS shear, set the following
-    # time_t = frameno*timestep
-    # sheared_basis_vectors_add_on = (np.cross(np.array(O_infinity)*time_t,basis_canonical).transpose() + np.dot(np.array(E_infinity)*time_t,(basis_canonical).transpose())).transpose()# + basis_canonical
-    # NOTE: For OSCILLATORY shear, set the following (basically there isn't a way to find out shear given E)
-    time_t = frameno*timestep
-    gamma = amplitude*np.sin(time_t*frequency)
-    Ot_infinity = np.array([0, 0.5*gamma, 0])
-    Et_infinity = [[0, 0, 0.5*gamma], [0, 0, 0], [0.5*gamma, 0, 0]]
-    sheared_basis_vectors_add_on = (np.cross(Ot_infinity, basis_canonical).transpose()
-                                    + np.dot(Et_infinity, (basis_canonical).transpose())).transpose()
-
-    sheared_basis_vectors_add_on_mod = np.mod(sheared_basis_vectors_add_on, [Lx, Ly, Lz])
-    sheared_basis_vectors = basis_canonical + sheared_basis_vectors_add_on_mod
+    box_dimensions = box_top_right - box_bottom_left
+    basis_canonical = np.diag(box_dimensions)
+    sheared_basis_vectors = shear_basis_vectors(
+        basis_canonical, box_dimensions, frameno, timestep, amplitude,
+        frequency, O_infinity, E_infinity)
     X_lmn_sheared = np.dot(X_lmn_canonical, sheared_basis_vectors)
     # NOTE: If you change the next line you have to change it in K_lmn as well!
     X_lmn_sheared_inside_radius = X_lmn_sheared[

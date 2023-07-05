@@ -203,6 +203,7 @@ def tock(clock, num):
 
 
 def format_elapsed_time(elapsed_time):
+    """Return string expressing elapsed_time seconds in a nice d:h:m:s way."""
     if elapsed_time >= 86400:
         tr2b_m, tr2b_s = divmod(elapsed_time, 60)
         tr2b_h, tr2b_m = divmod(tr2b_m, 60)
@@ -330,6 +331,25 @@ def feed_particles_from_bottom(posdata, feed_every_n_timesteps, feed_from_file,
             new_dumbbell_sizes, new_dumbbell_positions, new_dumbbell_deltax)
 
 
+def shear_basis_vectors(basis_canonical, box_dimensions, frameno, timestep,
+                        amplitude, frequency, O_infinity, E_infinity):
+    # NOTE: For CONTINUOUS shear, set the following
+    # time_t = frameno*timestep
+    # sheared_basis_vectors_add_on = (np.cross(O_infinity*time_t, basis_canonical).transpose()
+    #                                 + np.dot(E_infinity*time_t, basis_canonical.transpose())).transpose()
+    # NOTE: For OSCILLATORY shear, set the following (basically there isn't a way to find out shear given E)
+    time_t = frameno*timestep
+    gamma = amplitude*np.sin(time_t*frequency)
+    Ot_infinity = np.array([0, 0.5*gamma, 0])
+    Et_infinity = [[0, 0, 0.5*gamma], [0, 0, 0], [0.5*gamma, 0, 0]]
+    sheared_basis_vectors_add_on = (np.cross(Ot_infinity, basis_canonical).transpose()
+                                    + np.dot(Et_infinity, basis_canonical.transpose())).transpose()
+
+    sheared_basis_vectors_add_on_mod = np.mod(sheared_basis_vectors_add_on, box_dimensions)
+    sheared_basis_vectors = basis_canonical + sheared_basis_vectors_add_on_mod
+    return sheared_basis_vectors
+
+
 def close_particles(bead_positions, bead_sizes, cutoff_factor,
                     box_bottom_left=np.array([0, 0, 0]),
                     box_top_right=np.array([0, 0, 0]),
@@ -340,28 +360,18 @@ def close_particles(bead_positions, bead_sizes, cutoff_factor,
 
     from scipy.spatial.distance import pdist, squareform
     cutoff = 2*cutoff_factor
-    middle_of_box = 0.5*(box_bottom_left+box_top_right)-box_bottom_left
     box_dimensions = box_top_right - box_bottom_left
     periodic = not np.array_equal(box_dimensions, np.array([0, 0, 0]))
     if periodic:
-        # unshear box,
-        basis_canonical = np.diag(box_dimensions)  # which equals np.array([[Lx,0,0],[0,Ly,0],[0,0,Lz]])
-
-        # NOTE: For CONTINUOUS shear, set the following
-        #time_t = frameno*timestep
-        # sheared_basis_vectors_add_on = (np.cross(np.array(O_infinity)*time_t,basis_canonical).transpose() + np.dot(np.array(E_infinity)*time_t,(basis_canonical).transpose())).transpose()# + basis_canonical
-        # NOTE: For OSCILLATORY shear, set the following (basically there isn't a way to find out shear given E)
-        time_t = frameno*timestep
-        gamma = amplitude*np.sin(time_t*frequency)
-        Ot_infinity = np.array([0, 0.5*gamma, 0])
-        Et_infinity = [[0, 0, 0.5*gamma], [0, 0, 0], [0.5*gamma, 0, 0]]
-        sheared_basis_vectors_add_on = (np.cross(Ot_infinity, basis_canonical).transpose()
-                                        + np.dot(Et_infinity, (basis_canonical).transpose())).transpose()
-
-        sheared_basis_vectors_add_on_mod = np.mod(sheared_basis_vectors_add_on, box_dimensions)
-        sheared_basis_vectors = basis_canonical + sheared_basis_vectors_add_on_mod
+        # Unshear box
+        basis_canonical = np.diag(box_dimensions)  # = [Lx,0,0],[0,Ly,0],[0,0,Lz]
+        sheared_basis_vectors = shear_basis_vectors(
+            basis_canonical, box_dimensions, frameno, timestep, amplitude,
+            frequency, O_infinity, E_infinity)
         # Hence
-        unsheared_positions = np.dot(np.dot(bead_positions, np.linalg.inv(sheared_basis_vectors)), basis_canonical)
+        unsheared_positions = np.dot(
+            np.dot(bead_positions, np.linalg.inv(sheared_basis_vectors)),
+            basis_canonical)
         closer_than_cutoff_pairs = []
         displacements_pairs = np.empty([0, 3])
         # This lists pairs that are closer than 4 units, regardless of size ratio.
@@ -373,10 +383,12 @@ def close_particles(bead_positions, bead_sizes, cutoff_factor,
                                          sheared_basis_vectors)
             # Shear again
             # Take particles only within a cube of the correct radius:
-            particles_in_cube = np.where(np.max(np.abs(sheared_centred_box), axis=1) <= cutoff)  
+            particles_in_cube = np.where(np.max(np.abs(sheared_centred_box), axis=1) <= cutoff)
             # Take particles only within a sphere of the correct radius:
-            particles_in_radius = np.where(np.linalg.norm(sheared_centred_box[particles_in_cube], axis=1) <= cutoff)
-            particles_in_radius_ids = particles_in_cube[0][particles_in_radius][particles_in_cube[0][particles_in_radius] >= i]
+            particles_in_radius = np.where(
+                np.linalg.norm(sheared_centred_box[particles_in_cube], axis=1) <= cutoff)
+            particles_in_radius_ids = particles_in_cube[0][particles_in_radius][
+                particles_in_cube[0][particles_in_radius] >= i]
             closer_than_cutoff_pairs += [(i, j) for j in particles_in_radius_ids]
             displacements_pairs = np.concatenate((displacements_pairs,
                                                   sheared_centred_box[particles_in_radius_ids]), axis=0)
@@ -390,8 +402,10 @@ def close_particles(bead_positions, bead_sizes, cutoff_factor,
         for (a1_index, a2_index) in closer_than_cutoff_pairs:
             if 2*distances_pairs[jj]/(bead_sizes[a1_index]+bead_sizes[a2_index]) <= cutoff:
                 closer_than_cutoff_pairs_scaled.append((a1_index, a2_index))
-                displacements_pairs_scaled = np.concatenate((displacements_pairs_scaled,
-                                                             np.array([2*displacements_pairs[jj]/(bead_sizes[a1_index]+bead_sizes[a2_index])])), axis=0)
+                displacements_pairs_scaled = np.concatenate((
+                    displacements_pairs_scaled,
+                    np.array([2*displacements_pairs[jj]/(bead_sizes[a1_index]+bead_sizes[a2_index])])
+                ), axis=0)
                 distances_pairs_scaled.append(2*distances_pairs[jj]/(bead_sizes[a1_index]+bead_sizes[a2_index]))
                 size_ratios.append(bead_sizes[a2_index]/bead_sizes[a1_index])
             jj = jj + 1

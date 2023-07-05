@@ -23,7 +23,7 @@ import numba
 from functions_email import send_email
 from functions_shared import (posdata_data, format_elapsed_time, throw_error,
                               throw_warning, feed_particles_from_bottom,
-                              sizeof_fmt)
+                              sizeof_fmt, shear_basis_vectors)
 from functions_timestepping import (
     euler_timestep, ab2_timestep, did_something_go_wrong_with_dumbells, 
     euler_timestep_rotation, ab2_timestep_rotation, do_we_have_all_size_ratios, 
@@ -132,28 +132,23 @@ def initialise_frame():
             dumbbell_trace_lines, previous_step_posdata)
 
 
-def wrap_around(new_sphere_positions, box_bottom_left, box_top_right, frameno=0, timestep=0.1, O_infinity=np.array([0, 0, 0]), E_infinity=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]), frequency=1, amplitude=1):
+def wrap_around(new_sphere_positions, box_bottom_left, box_top_right, 
+                frameno=0, timestep=0.1, O_infinity=np.array([0, 0, 0]), 
+                E_infinity=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]), 
+                frequency=1, amplitude=1):
     # PERIODIC RESET IF THEY LEAVE THE BOX.
     # This ideally should just be
     #   new_sphere_positions = np.mod(new_sphere_positions + np.array([Lx/2.,Ly/2.,Lz/2.]),Lx) - np.array([Lx/2.,Ly/2.,Lz/2.])
-    # but if you have a slanted box /_/ and you go off the top, you actually want to go to the bottom and slightly to the left.
+    # but if you have a slanted box /_/ and you go off the top, you actually 
+    # want to go to the bottom and slightly to the left.
     # This is achieved by instead doing
     #   new_sphere_positions = SHEAR [ np.mod( UNSHEAR [ new_sphere_positions ] + np.array([Lx/2.,Ly/2.,Lz/2.]),Lx) - np.array([Lx/2.,Ly/2.,Lz/2.]) ]
     box_dimensions = box_top_right - box_bottom_left
     # Then shear the basis vectors
     basis_canonical = np.diag(box_dimensions)  # which equals np.array([[Lx,0,0],[0,Ly,0],[0,0,Lz]])
-    # NOTE: For CONTINUOUS shear, set the following
-    #time_t = frameno*timestep
-    # sheared_basis_vectors_add_on = (np.cross(O_infinity*time_t,basis_canonical).transpose() + np.dot(E_infinity*time_t,(basis_canonical).transpose())).transpose()# + basis_canonical
-    # NOTE: For OSCILLATORY shear, set the following (basically there isn't a way to find out shear given E)
-    time_t = frameno * timestep
-    gamma = amplitude * np.sin(time_t * frequency)
-    Ot_infinity = np.array([0, 0.5 * gamma, 0])
-    Et_infinity = [[0, 0, 0.5 * gamma], [0, 0, 0], [0.5 * gamma, 0, 0]]
-    sheared_basis_vectors_add_on = (np.cross(Ot_infinity, basis_canonical).transpose() + np.dot(Et_infinity, (basis_canonical).transpose())).transpose()
-
-    sheared_basis_vectors_add_on_mod = np.mod(sheared_basis_vectors_add_on, box_dimensions)
-    sheared_basis_vectors = basis_canonical + sheared_basis_vectors_add_on_mod
+    sheared_basis_vectors = shear_basis_vectors(
+        basis_canonical, box_dimensions, frameno, timestep, amplitude,
+        frequency, O_infinity, E_infinity)
     # Hence
     new_sphere_positions = np.dot(np.mod(np.dot(new_sphere_positions, np.linalg.inv(sheared_basis_vectors)) + 0.5, [1, 1, 1]) - 0.5, sheared_basis_vectors)
     return new_sphere_positions
