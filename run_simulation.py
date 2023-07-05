@@ -2,29 +2,47 @@
 # -*- coding: utf-8 -*-
 # Adam Townsend, adam@adamtownsend.com
 
-# You can overwrite the inputs:
-#  setup_number, input_number, timestep, num_frames
-# by passing them in as arguments from the command line
-from functions_email import send_email
-from functions_shared import posdata_data, format_elapsed_time, feed_particles_from_bottom, throw_error, throw_warning
-from functions_timestepping import euler_timestep, ab2_timestep, did_something_go_wrong_with_dumbells, euler_timestep_rotation, ab2_timestep_rotation, do_we_have_all_size_ratios, generate_output_FTSUOE, are_some_of_the_particles_too_close
-from input_setups import input_ftsuoe
-from inputs import cutoff_factor, num_frames, text_only, viewbox_bottomleft_topright, printout, setup_number, running_on_legion, \
-    posdata, setup_description, s_dash_range, lam_range, lam_range_with_reciprocals, XYZ_raw, view_labels, fps, viewing_angle, timestep, \
-    trace_paths, two_d_plot, save_positions_every_n_timesteps, save_forces_every_n_timesteps, save_forces_and_positions_to_temp_file_as_well, save_to_temp_file_every_n_timesteps, \
-    use_drag_Minfinity, use_Minfinity_only, input_form, invert_m_every, explosion_protection, input_number, extract_force_on_wall_due_to_dumbbells, \
-    checkpoint_filename, checkpoint_start_from_frame, feed_every_n_timesteps, feed_from_file, timestepping_scheme, bead_bead_interactions, fully_2d_problem, checkpoint_start_from_frame, \
-    start_saving_after_first_n_timesteps, send_email, rk4_generate_minfinity_for_each_stage
+"""Main Stokesian Dynamics simulation script.
+
+Run this Python script to perform a Stokesian Dynamics simulation. 
+See README.md for setup instructions and how to run your first simulation.
+
+You can override the inputs:
+    setup_number, input_number, timestep, num_frames
+by passing them in as arguments from the command line."""
+
 import numpy as np
 import time
 import platform
-import scipy
 import sys
 import os
 import socket
 import datetime
 import resource
 import numba
+from functions_email import send_email
+from functions_shared import (posdata_data, format_elapsed_time, throw_error,
+                              throw_warning, feed_particles_from_bottom,
+                              sizeof_fmt)
+from functions_timestepping import (
+    euler_timestep, ab2_timestep, did_something_go_wrong_with_dumbells, 
+    euler_timestep_rotation, ab2_timestep_rotation, do_we_have_all_size_ratios, 
+    generate_output_FTSUOE, are_some_of_the_particles_too_close)
+from input_setups import input_ftsuoe
+from inputs import (
+    cutoff_factor, num_frames, view_graphics, viewbox_bottomleft_topright, 
+    printout, setup_number, posdata, setup_description, s_dash_range, 
+    lam_range, view_labels, viewing_angle, timestep, trace_paths, two_d_plot, 
+    save_positions_every_n_timesteps, save_forces_every_n_timesteps, 
+    save_forces_and_positions_to_temp_file_as_well, 
+    save_to_temp_file_every_n_timesteps, use_drag_Minfinity, 
+    use_Minfinity_only, input_form, invert_m_every, explosion_protection, 
+    input_number, extract_force_on_wall_due_to_dumbbells, checkpoint_filename, 
+    checkpoint_start_from_frame, feed_every_n_timesteps, feed_from_file, 
+    timestepping_scheme, bead_bead_interactions, fully_2d_problem, 
+    start_saving_after_first_n_timesteps, send_email, 
+    rk4_generate_minfinity_for_each_stage)
+
 
 # Input description of simulation
 args = sys.argv[1:]
@@ -37,7 +55,7 @@ else:
 total_time_start = time.time()
 
 
-if text_only == 0:
+if view_graphics:
     import matplotlib.pyplot as plt
     from matplotlib import animation
     from matplotlib import rcParams
@@ -52,14 +70,15 @@ error = False
 previous_step_posdata = posdata
 previous_timestamp = time.time()
 saved_element_positions = np.array([])
-times = [0 for i in range(num_frames)]
+times = [0 for _ in range(num_frames)]
 output_folder = "output"
 legion_random_id = ""
 
 # Pictures initialise
-if text_only == 0:
+if view_graphics:
     rcParams.update({'font.size': 12})
-    rcParams.update({'figure.dpi': 120, 'figure.figsize': [8, 8], 'savefig.dpi': 140})
+    rcParams.update({'figure.dpi': 120, 'figure.figsize': [8, 8], 
+                     'savefig.dpi': 140})
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.view_init(viewing_angle[0], viewing_angle[1])
@@ -107,18 +126,10 @@ def initialise_frame():
     sphere_trace_lines = list()
     dumbbell_trace_lines = list()
     previous_step_posdata = posdata
-    return spheres, dumbbell_lines, dumbbell_spheres, force_lines, force_text, torque_lines, velocity_lines, velocity_text, sphere_labels, angular_velocity_lines, sphere_lines, sphere_trace_lines, dumbbell_trace_lines, previous_step_posdata
-
-
-def sizeof_fmt(num, suffix='B'):
-    for unit in ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z']:
-        if abs(num) < 1024.0:
-            if num < 999.5:
-                return '{n:.3g} {u}{s}'.format(n=num, u=unit, s=suffix).rjust(7)
-            else:
-                return '{n:.4g} {u}{s}'.format(n=num, u=unit, s=suffix).rjust(7)
-        num /= 1024.0
-    return '{n:.1f}{y}{s}'.format(n=num, y='Y', s=suffix)
+    return (spheres, dumbbell_lines, dumbbell_spheres, force_lines, force_text, 
+            torque_lines, velocity_lines, velocity_text, sphere_labels, 
+            angular_velocity_lines, sphere_lines, sphere_trace_lines, 
+            dumbbell_trace_lines, previous_step_posdata)
 
 
 def wrap_around(new_sphere_positions, box_bottom_left, box_top_right, frameno=0, timestep=0.1, O_infinity=np.array([0, 0, 0]), E_infinity=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]), frequency=1, amplitude=1):
@@ -180,7 +191,7 @@ def add_background_flow_dumbbells(Ub_out_k1, HalfDUb_out_k1, Ea_out_k1, U_infini
 # Computation
 
 
-def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2, viewbox_bottomleft_topright=np.array([]), printout=0, view_labels=1, timestep=0.1, trace_paths=0, input_form='general', filename='', output_folder='output', legion_random_id='', box_bottom_left=np.array([0, 0, 0]), box_top_right=np.array([0, 0, 0])):
+def generate_frame(frameno, grand_mobility_matrix, view_graphics=True, cutoff_factor=2, viewbox_bottomleft_topright=np.array([]), printout=0, view_labels=1, timestep=0.1, trace_paths=0, input_form='general', filename='', output_folder='output', legion_random_id='', box_bottom_left=np.array([0, 0, 0]), box_top_right=np.array([0, 0, 0])):
     global posdata, previous_step_posdata, times
     global spheres, dumbbell_lines, dumbbell_spheres, sphere_lines, sphere_trace_lines, dumbbell_trace_lines
     global force_lines, force_text, torque_lines, velocity_lines, velocity_text, angular_velocity_lines, sphere_labels
@@ -496,7 +507,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
 
         # Pictures
         pic_time_start = time.time()
-        if (text_only == 0):
+        if view_graphics:
             # Remove old spheres
             for q in (spheres + force_lines + torque_lines + velocity_lines + angular_velocity_lines + sphere_lines + dumbbell_lines + dumbbell_spheres):
                 q.remove()
@@ -611,7 +622,7 @@ def generate_frame(frameno, grand_mobility_matrix, text_only=0, cutoff_factor=2,
     if error:
         print("No frame " + str(frameno + 1))
 
-    if text_only == 0:
+    if view_graphics:
         return spheres, dumbbell_lines, dumbbell_spheres, force_lines, force_text, torque_lines, velocity_lines, velocity_text, sphere_labels, angular_velocity_lines, sphere_lines, sphere_trace_lines, dumbbell_trace_lines
 
 
@@ -693,7 +704,7 @@ if error == 0:
            "XXXXXX10": invert_type,
            "XXXXXX11": str(invert_m_every),
            "XXXXXX12": periodic_status,
-           "XXXXXX13": str(bool(1 - text_only)).upper().replace("TRUE", "ON").replace("FALSE", "OFF"),
+           "XXXXXX13": ["OFF", "ON"][view_graphics],
            "XXXXXX14": matrix_size,
            "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX15": socket.gethostname(),
            "XXXX16": str(save_positions_every_n_timesteps),
@@ -732,8 +743,8 @@ if error == 0:
     print("                      " + " " * 2 * len(str(num_frames)) 
           + "[ Minfy  ] [invMinfy] [R2Bex'd'] [ U=R\F  ] [ Saving ] [MaxMemry] [[ Total  ]] [TimeLeft] [ ETA ]")
 
-    if text_only == 0 and num_frames > 1:
-        generate_frame_args = [grand_mobility_matrix, text_only, 
+    if view_graphics and num_frames > 1:
+        generate_frame_args = [grand_mobility_matrix, view_graphics, 
                         cutoff_factor, viewbox_bottomleft_topright, 
                         printout, view_labels, timestep, trace_paths, 
                         input_form, filename, output_folder, 
@@ -746,7 +757,7 @@ if error == 0:
         plt.show()
     else:
         for frameno in range(checkpoint_start_from_frame, num_frames):
-            generate_frame(frameno, grand_mobility_matrix, text_only, 
+            generate_frame(frameno, grand_mobility_matrix, view_graphics, 
                            cutoff_factor, viewbox_bottomleft_topright, 
                            printout, view_labels, timestep, trace_paths, 
                            input_form, filename, output_folder, 
@@ -782,8 +793,8 @@ if error == 0:
                    + format_elapsed_time(total_elapsed_time) + "."))
     print("")
 
-    if sys.platform == "win32" and text_only == 0:
+    if sys.platform == "win32" and view_graphics:
         print("")
         print("Displaying")
-    if text_only == 0:
+    if view_graphics:
         plt.show()

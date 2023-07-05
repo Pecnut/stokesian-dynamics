@@ -64,6 +64,18 @@ def contraction(i, j, k):
                     )[i, j, k]
 
 
+def sizeof_fmt(num, suffix='B'):
+    """Return string formatting number of bytes as KB, MB, GB etc."""
+    for unit in ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z']:
+        if abs(num) < 1024.0:
+            if num < 999.5:
+                return '{n:.3g} {u}{s}'.format(n=num, u=unit, s=suffix).rjust(7)
+            else:
+                return '{n:.4g} {u}{s}'.format(n=num, u=unit, s=suffix).rjust(7)
+        num /= 1024.0
+    return '{n:.1f}{y}{s}'.format(n=num, y='Y', s=suffix)
+
+
 def save_matrix(matrix, heading, filename):
     """Save a matrix to a text file with a given heading as the first line in the file."""
     with open(filename, 'a') as outputfile:
