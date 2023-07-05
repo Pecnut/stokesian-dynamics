@@ -112,7 +112,7 @@ invert_m_every = 1
 cutoff_factor = 2
 
 # Timestepping scheme: Choose explicit timestep from: ['euler', 'ab2', 'rk4']  (ab2=Adams Bashforth)
-timestepping_scheme = 'ab2'
+timestepping_scheme = 'rk4'
 
 # If using RK4, can choose to use the same Minfinity for each of the 4 stages. 
 # In absence of R2Bexact, this makes the timestep equivalent to Euler; but if R2Bexact is present, and invert_m_every>1, this might be an OK approximation.
