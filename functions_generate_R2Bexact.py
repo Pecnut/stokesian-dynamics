@@ -452,7 +452,7 @@ def generate_R2Bexact(posdata,
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
                     d_p = r_p / s_dash_p
-                    A_sum = A_sum + np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j) * largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
+                    A_sum += np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j) * largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
                     pp = pp + 1
                 R2Bexact[R44_coords] = A_sum
             else:
@@ -493,7 +493,7 @@ def generate_R2Bexact(posdata,
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
                     d_p = r_p / s_dash_p
-                    A_sum = A_sum + np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j) * largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
+                    A_sum += np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j) * largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
                     pp = pp + 1
                 R2Bexact[R55_coords] = A_sum
             else:
