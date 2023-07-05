@@ -325,9 +325,7 @@ def generate_Minfinity(posdata, printout=0, frameno=0, mu=1):
               and a2_index >= num_spheres
               and a2_index < num_spheres + num_dumbbells):
             # Dumbbell bead 1 to dumbbell bead 1
-            a1_index_d = a1_index-num_spheres
-            a2_index_d = a2_index-num_spheres
-            if bead_bead_interactions or a1_index_d == a2_index_d:
+            if bead_bead_interactions or a1_index == a2_index:
                 Minfinity[M44_coords] = [[M11(r[i], r[j], s, a1, a2, i, j, c, mu) for j in range(3)] for i in range(3)]
 
         elif (a1_index < num_spheres + num_dumbbells
@@ -338,9 +336,7 @@ def generate_Minfinity(posdata, printout=0, frameno=0, mu=1):
 
         else:
             # Dumbbell bead 2 to dumbbell bead 2
-            a1_index_d2 = a1_index-num_spheres-num_dumbbells
-            a2_index_d2 = a2_index-num_spheres-num_dumbbells
-            if bead_bead_interactions or a1_index_d2 == a2_index_d2:
+            if bead_bead_interactions or a1_index == a2_index:
                 Minfinity[M55_coords] = [[M11(r[i], r[j], s, a1, a2, i, j, c, mu) for j in range(3)] for i in range(3)]
 
     # symmetrise

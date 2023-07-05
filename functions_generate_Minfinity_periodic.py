@@ -4,7 +4,7 @@
 
 import numpy as np
 import math
-from functions_shared import posdata_data, norm, s2, s3
+from functions_shared import posdata_data, norm, s2, s3, submatrix_coords
 from inputs import how_far_to_reproduce_gridpoints, bead_bead_interactions
 from scipy.sparse import coo_matrix
 from math import erfc, pi, exp
@@ -722,8 +722,9 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
     sheared_basis_vectors_add_on_mod = np.mod(sheared_basis_vectors_add_on, [Lx, Ly, Lz])
     sheared_basis_vectors = basis_canonical + sheared_basis_vectors_add_on_mod
     X_lmn_sheared = np.dot(X_lmn_canonical, sheared_basis_vectors)
+    # NOTE: If you change the next line you have to change it in K_lmn as well!
     X_lmn_sheared_inside_radius = X_lmn_sheared[
-        np.linalg.norm(X_lmn_sheared, axis=1) <= 1.4142*how_far_to_reproduce_gridpoints*L]  # NOTE: If you change this you have to change it in K_lmn as well!
+        np.linalg.norm(X_lmn_sheared, axis=1) <= 1.4142*how_far_to_reproduce_gridpoints*L]
 
     X_lmn = X_lmn_sheared_inside_radius
     Xdash_lmn = X_lmn_sheared_inside_radius[np.linalg.norm(X_lmn_sheared_inside_radius, axis=1) > 0]
@@ -759,17 +760,14 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
             r = [r[0]*ss_out/s, r[1]*ss_out/s, r[2]*ss_out/s]
             s = ss_out
 
+        (A_coords, Bt_coords, Bt_coords_21, Gt_coords, Gt_coords_21,
+         C_coords, Ht_coords, Ht_coords_21, M_coords,
+         M14_coords, M24_coords, M34_coords, M44_coords,
+         M15_coords, M25_coords, M35_coords, M45_coords,
+         M55_coords) = submatrix_coords(a1_index, a2_index, num_spheres, num_dumbbells)
+
         if a1_index < num_spheres and a2_index < num_spheres:
             # Sphere to sphere
-            A_coords = np.s_[a1_index*3:(a1_index+1)*3, a2_index*3:(a2_index+1)*3]
-            Bt_coords = np.s_[a1_index*3:(a1_index+1)*3, 3*num_spheres+a2_index*3: 3*num_spheres+(a2_index+1)*3]
-            Bt_coords_21 = np.s_[a2_index*3:(a2_index+1)*3, 3*num_spheres+a1_index*3: 3*num_spheres+(a1_index+1)*3]
-            Gt_coords = np.s_[a1_index*3:(a1_index+1)*3, 6*num_spheres+a2_index*5: 6*num_spheres+(a2_index+1)*5]
-            Gt_coords_21 = np.s_[a2_index*3:(a2_index+1)*3, 6*num_spheres+a1_index*5: 6*num_spheres+(a1_index+1)*5]
-            C_coords = np.s_[3*num_spheres+a1_index*3: 3*num_spheres+(a1_index+1)*3, 3*num_spheres+a2_index*3: 3*num_spheres+(a2_index+1)*3]
-            Ht_coords = np.s_[3*num_spheres+a1_index*3: 3*num_spheres+(a1_index+1)*3, 6*num_spheres+a2_index*5: 6*num_spheres+(a2_index+1)*5]
-            Ht_coords_21 = np.s_[3*num_spheres+a2_index*3: 3*num_spheres+(a2_index+1)*3, 6*num_spheres+a1_index*5: 6*num_spheres+(a1_index+1)*5]
-            M_coords = np.s_[6*num_spheres+a1_index*5: 6*num_spheres+(a1_index+1)*5, 6*num_spheres+a2_index*5: 6*num_spheres+(a2_index+1)*5]
 
             erfcs = generate_erfcs(s, lamb)
 
@@ -822,12 +820,6 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
             # Sphere to dumbbell bead 1
             mr = [-r[0], -r[1], -r[2]]
             a2_index_d = a2_index-num_spheres
-            M14_coords = np.s_[a1_index*3:(a1_index+1)*3,
-                               11*num_spheres+a2_index_d*3:11*num_spheres+(a2_index_d+1)*3]
-            M24_coords = np.s_[3*num_spheres+a1_index*3:3*num_spheres+(a1_index+1)*3,
-                               11*num_spheres+a2_index_d*3:11*num_spheres+(a2_index_d+1)*3]
-            M34_coords = np.s_[6*num_spheres+a1_index*5:6*num_spheres+(a1_index+1)*5,
-                               11*num_spheres+a2_index_d*3:11*num_spheres+(a2_index_d+1)*3]
 
             # Strictly only needed if s > 1e-10 but an 'if' statement here is slower for Numba
             s_lmn = np.linalg.norm(r + X_lmn, axis=1)
@@ -853,12 +845,6 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
             # Sphere to dumbbell bead 2
             mr = [-r[0], -r[1], -r[2]]
             a2_index_d = a2_index-num_spheres-num_dumbbells
-            M15_coords = np.s_[a1_index*3:(a1_index+1)*3,
-                               11*num_spheres+3*num_dumbbells+a2_index_d*3:11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
-            M25_coords = np.s_[3*num_spheres+a1_index*3:3*num_spheres+(a1_index+1)*3,
-                               11*num_spheres+3*num_dumbbells+a2_index_d*3:11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
-            M35_coords = np.s_[6*num_spheres+a1_index*5:6*num_spheres+(a1_index+1)*5,
-                               11*num_spheres+3*num_dumbbells+a2_index_d*3:11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
 
             # Strictly only needed if s > 1e-10 but an 'if' statement here is slower for Numba
             s_lmn = np.linalg.norm(r + X_lmn, axis=1)
@@ -885,8 +871,6 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
             a1_index_d = a1_index-num_spheres
             a2_index_d = a2_index-num_spheres
             if bead_bead_interactions or a1_index_d == a2_index_d:
-                M44_coords = np.s_[11*num_spheres+a1_index_d*3:11*num_spheres+(a1_index_d+1)*3,
-                                   11*num_spheres+a2_index_d*3: 11*num_spheres+(a2_index_d+1)*3]
                 erfcs = generate_erfcs(s, lamb)
 
                 # Strictly only needed if s > 1e-10 but an 'if' statement here is slower for Numba
@@ -904,8 +888,6 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
             a1_index_d = a1_index-num_spheres
             a2_index_d = a2_index-num_spheres-num_dumbbells
             if bead_bead_interactions or a1_index_d == a2_index_d:
-                M45_coords = np.s_[11*num_spheres+a1_index_d*3:11*num_spheres+(a1_index_d+1)*3,
-                                   11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
                 erfcs = generate_erfcs(s, lamb)
 
                 # Strictly only needed if s > 1e-10 but an 'if' statement here is slower for Numba
@@ -923,8 +905,6 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
             a1_index_d = a1_index-num_spheres-num_dumbbells
             a2_index_d = a2_index-num_spheres-num_dumbbells
             if bead_bead_interactions or a1_index_d == a2_index_d:
-                M55_coords = np.s_[11*num_spheres+3*num_dumbbells+a1_index_d*3:11*num_spheres+3*num_dumbbells+(a1_index_d+1)*3,
-                                   11*num_spheres+3*num_dumbbells+a2_index_d*3:11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
                 erfcs = generate_erfcs(s, lamb)
 
                 s_lmn = np.linalg.norm(r + X_lmn, axis=1)

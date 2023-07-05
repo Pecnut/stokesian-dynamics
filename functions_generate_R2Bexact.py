@@ -7,9 +7,11 @@
 # section 7.2 of Kim & Karrila, 2005. Microhydrodynamics.
 
 import numpy as np
-from functions_shared import posdata_data, levi, close_particles, s2, s3
+from functions_shared import (posdata_data, levi, close_particles, s2, s3, 
+                              submatrix_coords)
 from scipy import sparse
-from inputs import s_dash_range, lam_range_with_reciprocals, XYZ_raw, bead_bead_interactions
+from inputs import (s_dash_range, lam_range_with_reciprocals, XYZ_raw, 
+                    bead_bead_interactions)
 from numba import njit
 
 
@@ -335,17 +337,15 @@ def generate_R2Bexact(posdata,
         lam_index = np.where(lam_range_with_reciprocals == lam)[0][0]
         lam_index_recip = np.where(lam_range_with_reciprocals == 1. / lam)[0][0]
         largest_size = max(bead_sizes[a1_index], bead_sizes[a2_index])
+
+        (A_coords, Bt_coords, Bt_coords_21, Gt_coords, Gt_coords_21,
+         C_coords, Ht_coords, Ht_coords_21, M_coords,
+         R14_coords, R24_coords, R34_coords, R44_coords,
+         R15_coords, R25_coords, R35_coords, R45_coords,
+         R55_coords) = submatrix_coords(a1_index, a2_index, num_spheres, num_dumbbells)
+
         if a1_index < num_spheres and a2_index < num_spheres:
             # Sphere to sphere
-            A_coords = np.s_[a1_index*3:(a1_index+1)*3, a2_index*3:(a2_index+1)*3]
-            Bt_coords = np.s_[a1_index*3:(a1_index+1)*3, 3*num_spheres+a2_index*3: 3*num_spheres+(a2_index+1)*3]
-            Bt_coords_21 = np.s_[a2_index*3:(a2_index+1)*3, 3*num_spheres+a1_index*3: 3*num_spheres+(a1_index+1)*3]
-            Gt_coords = np.s_[a1_index*3:(a1_index+1)*3, 6*num_spheres+a2_index*5: 6*num_spheres+(a2_index+1)*5]
-            Gt_coords_21 = np.s_[a2_index*3:(a2_index+1)*3, 6*num_spheres+a1_index*5: 6*num_spheres+(a1_index+1)*5]
-            C_coords = np.s_[3*num_spheres+a1_index*3: 3*num_spheres+(a1_index+1)*3, 3*num_spheres+a2_index*3: 3*num_spheres+(a2_index+1)*3]
-            Ht_coords = np.s_[3*num_spheres+a1_index*3: 3*num_spheres+(a1_index+1)*3, 6*num_spheres+a2_index*5: 6*num_spheres+(a2_index+1)*5]
-            Ht_coords_21 = np.s_[3*num_spheres+a2_index*3: 3*num_spheres+(a2_index+1)*3, 6*num_spheres+a1_index*5: 6*num_spheres+(a1_index+1)*5]
-            M_coords = np.s_[6*num_spheres+a1_index*5: 6*num_spheres+(a1_index+1)*5, 6*num_spheres+a2_index*5: 6*num_spheres+(a2_index+1)*5]
             if a1_index == a2_index:
                 nearby_beads = []
                 nearby_beads_displacements = []
@@ -410,22 +410,12 @@ def generate_R2Bexact(posdata,
 
         elif a1_index < num_spheres and a2_index >= num_spheres and a2_index < num_spheres + num_dumbbells:
             # Sphere to dumbbell bead 1
-            a2_index_d = a2_index - num_spheres
-            R14_coords = np.s_[a1_index*3:(a1_index+1)*3,                             11*num_spheres+a2_index_d*3: 11*num_spheres + (a2_index_d+1)*3]
-            R24_coords = np.s_[3*num_spheres+a1_index*3:3*num_spheres+(a1_index+1)*3, 11*num_spheres+a2_index_d*3: 11*num_spheres + (a2_index_d+1)*3]
-            R34_coords = np.s_[6*num_spheres+a1_index*5:6*num_spheres+(a1_index+1)*5, 11*num_spheres+a2_index_d*3: 11*num_spheres + (a2_index_d+1)*3]
-
             R2Bexact[R14_coords] = [[Af(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
             R2Bexact[R24_coords] = [[Bf(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
             R2Bexact[R34_coords] = [[con_Gf(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][2] for j in range(3)] for i in range(5)]
 
         elif a1_index < num_spheres and a2_index >= num_spheres + num_dumbbells:
             # Sphere to dumbbell bead 2
-            a2_index_d = a2_index-num_spheres-num_dumbbells
-            R15_coords = np.s_[a1_index*3:(a1_index+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
-            R25_coords = np.s_[3*num_spheres+a1_index*3:3*num_spheres+(a1_index+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
-            R35_coords = np.s_[6*num_spheres+a1_index*5:6*num_spheres+(a1_index+1)*5, 11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
-
             R2Bexact[R15_coords] = [[Af(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
             R2Bexact[R25_coords] = [[Bf(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
             R2Bexact[R35_coords] = [[con_Gf(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][2] for j in range(3)] for i in range(5)]
@@ -434,7 +424,6 @@ def generate_R2Bexact(posdata,
             # Dumbbell bead 1 to dumbbell bead 1
             a1_index_d = a1_index - num_spheres
             a2_index_d = a2_index - num_spheres
-            R44_coords = np.s_[11*num_spheres+a1_index_d*3:11*num_spheres+(a1_index_d+1)*3, 11*num_spheres+a2_index_d*3: 11*num_spheres+(a2_index_d+1)*3]
             if a1_index == a2_index:
                 nearby_beads = []
                 nearby_beads_displacements = []
@@ -472,16 +461,10 @@ def generate_R2Bexact(posdata,
         elif a1_index >= num_spheres and a1_index < num_spheres + num_dumbbells and a2_index >= num_spheres + num_dumbbells:
             # Dumbbell bead 1 to dumbbell bead 2
             if bead_bead_interactions:
-                a1_index_d = a1_index - num_spheres
-                a2_index_d = a2_index - num_spheres - num_dumbbells
-                R45_coords = np.s_[11*num_spheres+a1_index_d*3:11*num_spheres+(a1_index_d+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
                 R2Bexact[R45_coords] = [[Af(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
 
         else:
             # Dumbbell bead 2 to dumbbell bead 2
-            a1_index_d = a1_index - num_spheres - num_dumbbells
-            a2_index_d = a2_index - num_spheres - num_dumbbells
-            R55_coords = np.s_[11*num_spheres+3*num_dumbbells+a1_index_d*3:11*num_spheres+3*num_dumbbells+(a1_index_d+1)*3, 11*num_spheres+3*num_dumbbells+a2_index_d*3: 11*num_spheres+3*num_dumbbells+(a2_index_d+1)*3]
             if a1_index == a2_index:
                 nearby_beads = []
                 nearby_beads_displacements = []
