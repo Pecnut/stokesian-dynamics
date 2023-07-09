@@ -10,6 +10,7 @@ import time
 from input_setups import input_ftsuoe
 from position_setups import pos_setup
 from functions_shared import shear_basis_vectors, format_elapsed_time
+from functions_timestepping import format_time_left
 from functions_graphics import *
 from matplotlib import animation, rcParams
 import matplotlib.pyplot as plt
@@ -54,7 +55,7 @@ positions_sphere_rotations = data1['sphere_rotations']
 if num_frames_override_end == 0:
     num_frames = positions_centres.shape[0]/display_every_n_frames
 else:
-    num_frames = (num_frames_override_end - num_frames_override_start)/display_every_n_frames
+    num_frames = (num_frames_override_end-num_frames_override_start)/display_every_n_frames
 num_particles = positions_centres.shape[1]
 num_dumbbells = positions_deltax.shape[1]
 num_spheres = num_particles - num_dumbbells
@@ -64,7 +65,8 @@ max_DFb_out = 1
 
 # Pictures initialise
 rcParams.update({'font.size': 12})
-rcParams.update({'figure.dpi': 120, 'figure.figsize': [11, 11], 'savefig.dpi': 140, 'savefig.jpeg_quality': 140})
+rcParams.update({'figure.dpi': 120, 'figure.figsize': [11, 11],
+                 'savefig.dpi': 140, 'savefig.jpeg_quality': 140})
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.view_init(viewing_angle[0], viewing_angle[1])
@@ -102,7 +104,8 @@ if viewbox_bottomleft_topright.size == 0:
     sphere_positions = positions_centres[0, 0:num_spheres, :]
     dumbbell_positions = positions_centres[0, num_spheres:num_particles, :]
     if num_spheres > 0 and num_dumbbells > 0:
-        m = np.array([abs(sphere_positions).max(), abs(dumbbell_positions).max()]).max()
+        m = np.array([abs(sphere_positions).max(),
+                      abs(dumbbell_positions).max()]).max()
     elif num_spheres > 0 and num_dumbbells == 0:
         m = abs(sphere_positions).max()
     elif num_dumbbells > 0 and num_spheres == 0:
@@ -113,19 +116,27 @@ if viewbox_bottomleft_topright.size == 0:
     viewbox_bottomleft_topright = np.array([[-m, -m, -m], [m, m, m]])
 
 
-def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]), view_labels=1, timestep=0.1, trace_paths=0, num_frames_override_start=0):
+def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]),
+                   view_labels=1, timestep=0.1, trace_paths=0,
+                   num_frames_override_start=0):
     global posdata, previous_step_posdata, sphere_sizes, dumbbell_sizes
-    global spheres, dumbbell_lines, sphere_lines, sphere_trace_lines, dumbbell_trace_lines, dumbbell_spheres
+    global spheres, dumbbell_lines, sphere_lines, sphere_trace_lines
+    global dumbbell_trace_lines, dumbbell_spheres
     global force_lines, force_text, torque_lines
     global velocity_lines, velocity_text, angular_velocity_lines, sphere_labels
-    global error, previous_timestamp, saved_element_positions, saved_deltax, saved_Fa_out, saved_Fb_out, saved_DFb_out
+    global error, previous_timestamp, saved_element_positions, saved_deltax
+    global saved_Fa_out, saved_Fb_out, saved_DFb_out
     global fig, ax
     global linec1, linec2, linec3, linec4
 
     frame_start_time = time.time()
     real_frameno = frameno*display_every_n_frames + num_frames_override_start
 
-    print("Generating frame " + ("{:" + str(len(str(num_frames))) + ".0f}").format(real_frameno) + " (" + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno) + "/" + str(num_frames) + ")...", end=" ")
+    print("Generating frame "
+          + ("{:" + str(len(str(num_frames))) + ".0f}").format(real_frameno)
+          + " ("
+          + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno)
+          + "/" + str(num_frames) + ")...", end=" ")
 
     sphere_positions = positions_centres[real_frameno, 0:num_spheres, :]
     sphere_rotations = positions_sphere_rotations[real_frameno, 0:num_spheres, :]
@@ -143,26 +154,29 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]), view_label
         DFbX = DFb_out[frameno]
 
     # FOR PERIODIC, let's get it to repeat itself left and right
-    (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, 
-     Ea_c_in, Ub_in, HalfDUb_in, desc, U_infinity, O_infinity, 
-     centre_of_background_flow, Ot_infinity, Et_infinity, 
+    (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in,
+     Ea_c_in, Ub_in, HalfDUb_in, desc, U_infinity, O_infinity,
+     centre_of_background_flow, Ot_infinity, Et_infinity,
      box_bottom_left, box_top_right, mu) = input_ftsuoe(
-        input_number, posdata, real_frameno, timestep, [[], [], [], []], 
+        input_number, posdata, real_frameno, timestep, [[], [], [], []],
         skip_computation=True)
     if np.linalg.norm(box_top_right - box_bottom_left) > 0:  # Periodic
-        E_infinity = Ea_in[0]
-
         Lx = box_top_right[0] - box_bottom_left[0]
         Ly = box_top_right[1] - box_bottom_left[1]
         Lz = box_top_right[2] - box_bottom_left[2]
         L = (Lx*Ly*Lz)**(1./3.)
-
-        lamb = math.sqrt(math.pi)/L
-        how_far_to_reproduce_gridpoints = 1  # 1 corresponds to [-Lx, 0, Lx]. 2 corresponds to [-2Lx, -Lx, 0, Lx, 2Lx] etc.
-        gridpoints_x = [i for i in range(-how_far_to_reproduce_gridpoints, how_far_to_reproduce_gridpoints+1)]
+        # How to interpret `how_far_to_reproduce_gridpoints`:
+        #   1 corresponds to [-Lx, 0, Lx].
+        #   2 corresponds to [-2Lx, -Lx, 0, Lx, 2Lx] etc.
+        how_far_to_reproduce_gridpoints = 1
+        gridpoints_x = [i for i in range(-how_far_to_reproduce_gridpoints,
+                                         how_far_to_reproduce_gridpoints+1)]
         gridpoints_y = [0]
-        gridpoints_z = [i for i in range(-how_far_to_reproduce_gridpoints, how_far_to_reproduce_gridpoints+1)]
-        X_lmn_canonical = np.array([[ll, mm, nn] for ll in gridpoints_x for mm in gridpoints_y for nn in gridpoints_z])
+        gridpoints_z = [i for i in range(-how_far_to_reproduce_gridpoints,
+                                         how_far_to_reproduce_gridpoints+1)]
+        X_lmn_canonical = np.array([[ll, mm, nn] for ll in gridpoints_x
+                                    for mm in gridpoints_y
+                                    for nn in gridpoints_z])
 
         # Then shear the basis vectors
         box_dimensions = box_top_right - box_bottom_left
@@ -190,75 +204,93 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]), view_label
         linec3 = plt.plot((cor3[0], cor4[0]), (cor3[1], cor4[1]), (cor3[2], cor4[2]), color='r', linewidth=1)[0]
         linec4 = plt.plot((cor4[0], cor1[0]), (cor4[1], cor1[1]), (cor4[2], cor1[2]), color='r', linewidth=1)[0]
 
-        X_lmn_sheared_inside_radius = X_lmn_sheared[np.linalg.norm(X_lmn_sheared, axis=1) <= 1.4142*how_far_to_reproduce_gridpoints*L]  # NOTE: If you change this you have to change it in K_lmn as well!
+        # NOTE: If you change the next line you have to change it in K_lmn too!
+        X_lmn_sheared_inside_radius = X_lmn_sheared[
+            np.linalg.norm(X_lmn_sheared, axis=1) <= 1.4142*how_far_to_reproduce_gridpoints*L]
         X_lmn = X_lmn_sheared_inside_radius
         if num_spheres > 0:
-            sphere_positions = np.concatenate(np.array([sphere_positions + X for X in X_lmn]), axis=0)
-            sphere_rotations = np.concatenate(np.array([sphere_rotations + X for X in X_lmn]), axis=0)
-            sphere_sizes_periodic = np.concatenate(np.array([sphere_sizes for X in X_lmn]), axis=0)
+            sphere_positions = np.concatenate(
+                np.array([sphere_positions + X for X in X_lmn]), axis=0)
+            sphere_rotations = np.concatenate(
+                np.array([sphere_rotations + X for X in X_lmn]), axis=0)
+            sphere_sizes_periodic = np.concatenate(
+                np.array([sphere_sizes for _ in X_lmn]), axis=0)
         else:
             sphere_sizes_periodic = sphere_sizes
         if num_dumbbells > 0:
-            dumbbell_sizes_periodic = np.concatenate(np.array([dumbbell_sizes for X in X_lmn]), axis=0)
-            dumbbell_positions = np.concatenate(np.array([dumbbell_positions + X for X in X_lmn]), axis=0)
-            dumbbell_deltax = np.concatenate(np.array([dumbbell_deltax for X in X_lmn]), axis=0)
-            FbX = np.concatenate([FbX for X in X_lmn], axis=0)
-            DFbX = np.concatenate([DFbX for X in X_lmn], axis=0)
+            dumbbell_sizes_periodic = np.concatenate(
+                np.array([dumbbell_sizes for _ in X_lmn]), axis=0)
+            dumbbell_positions = np.concatenate(
+                np.array([dumbbell_positions + X for X in X_lmn]), axis=0)
+            dumbbell_deltax = np.concatenate(
+                np.array([dumbbell_deltax for _ in X_lmn]), axis=0)
+            FbX = np.concatenate([FbX for _ in X_lmn], axis=0)
+            DFbX = np.concatenate([DFbX for _ in X_lmn], axis=0)
         else:
             dumbbell_sizes_periodic = dumbbell_sizes
-        FaX = np.concatenate([FaX for X in X_lmn], axis=0)
-        posdata = [sphere_sizes_periodic, sphere_positions, sphere_rotations, dumbbell_sizes_periodic, dumbbell_positions, dumbbell_deltax]
+        FaX = np.concatenate([FaX for _ in X_lmn], axis=0)
+        posdata = [sphere_sizes_periodic, sphere_positions, sphere_rotations,
+                   dumbbell_sizes_periodic, dumbbell_positions, dumbbell_deltax]
         previous_step_posdata = posdata
     else:
-        posdata = [sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax]
+        posdata = [sphere_sizes, sphere_positions, sphere_rotations,
+                   dumbbell_sizes, dumbbell_positions, dumbbell_deltax]
         previous_step_posdata = posdata
 
     Ta_out = [[0, 0, 0] for i in range(num_spheres)]
     Oa_out = [[0, 0, 0] for i in range(num_spheres)]
     Ua_out = [[0, 0, 0] for i in range(num_spheres)]
 
-    for q in (spheres + force_lines + torque_lines + velocity_lines + angular_velocity_lines + sphere_lines + dumbbell_lines + dumbbell_spheres):
+    for q in (spheres + force_lines + torque_lines + velocity_lines
+              + angular_velocity_lines + sphere_lines + dumbbell_lines
+              + dumbbell_spheres):
         q.remove()
 
-    (spheres, sphere_lines, sphere_trace_lines) = plot_all_spheres(ax, real_frameno, viewbox_bottomleft_topright, posdata, previous_step_posdata, trace_paths, spheres, sphere_lines, sphere_trace_lines, FaX)
-    (dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines) = plot_all_dumbbells(ax, real_frameno, viewbox_bottomleft_topright, posdata, previous_step_posdata, trace_paths, dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines, FbX, DFbX, max_DFb_out=max_DFb_out, no_line=no_line)
+    (spheres, sphere_lines, sphere_trace_lines) = plot_all_spheres(
+        ax, real_frameno, viewbox_bottomleft_topright, posdata,
+        previous_step_posdata, trace_paths, spheres, sphere_lines,
+        sphere_trace_lines, FaX)
+    (dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines) = plot_all_dumbbells(
+        ax, real_frameno, viewbox_bottomleft_topright, posdata,
+        previous_step_posdata, trace_paths, dumbbell_spheres, dumbbell_lines,
+        dumbbell_trace_lines, FbX, DFbX, max_DFb_out=max_DFb_out,
+        no_line=no_line)
 
     if view_labels == 1:
-        (force_lines, force_text) = plot_all_force_lines(ax, viewbox_bottomleft_topright, posdata, Fa_out, force_lines)
-        torque_lines = plot_all_torque_lines(ax, viewbox_bottomleft_topright, posdata, Ta_out, torque_lines)
-        (velocity_lines, velocity_text, sphere_labels) = plot_all_velocity_lines(ax, viewbox_bottomleft_topright, posdata, Ua_out, velocity_lines)   # Velocity in green
-        angular_velocity_lines = plot_all_angular_velocity_lines(ax, viewbox_bottomleft_topright, posdata, Oa_out, angular_velocity_lines)  # Ang vel in white with green edging
+        (force_lines, force_text) = plot_all_force_lines(
+            ax, viewbox_bottomleft_topright, posdata, Fa_out, force_lines)
+        torque_lines = plot_all_torque_lines(
+            ax, viewbox_bottomleft_topright, posdata, Ta_out, torque_lines)
+        (velocity_lines, velocity_text, sphere_labels) = plot_all_velocity_lines(
+            ax, viewbox_bottomleft_topright, posdata, Ua_out,
+            velocity_lines)   # Velocity in green
+        angular_velocity_lines = plot_all_angular_velocity_lines(
+            ax, viewbox_bottomleft_topright, posdata, Oa_out,
+            angular_velocity_lines)  # Ang vel in white with green edging
 
-    ax.set_title("  frame " + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno+1) + "/" + str(num_frames), loc='left', y=0.97)
+    ax.set_title("  frame "
+                 + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno + 1)
+                 + "/" + str(num_frames),
+                 loc='left', y=0.97)
     ax.set_title(filename, loc='center', y=1.05)
 
     pic_elapsed_time = time.time() - frame_start_time
-    print("[[" + "\033[1m" + format_elapsed_time(pic_elapsed_time) + "\033[0m" + "]]", end=" ")
+    print("[[" + "\033[1m" + format_elapsed_time(pic_elapsed_time)
+          + "\033[0m" + "]]", end=" ")
 
     times[frameno] = pic_elapsed_time
     timeaverage = sum(times) / (frameno+1)
     numberoftimesleft = num_frames - frameno - 1
-
-    if (numberoftimesleft * timeaverage) * 1.05 > 86400:  # 24 hours
-        start_color = "\033[94m"
-    elif (numberoftimesleft * timeaverage) * 1.05 > 18000:  # 5 hours
-        start_color = "\033[95m"
-    elif (numberoftimesleft * timeaverage) * 1.05 > 3600:  # 1 hour
-        start_color = "\033[91m"
-    elif (numberoftimesleft * timeaverage) * 1.05 > 600:  # 10 mins
-        start_color = "\033[93m"
-    else:
-        start_color = "\033[92m"
-    end_color = "\033[0m"
-
-    elapsed_time_formatted = start_color + format_elapsed_time((numberoftimesleft * timeaverage) * 1.05) + end_color
-
-    print("[" + elapsed_time_formatted + "]")
+    timeleft = (numberoftimesleft * timeaverage) * 1.05
+    print("[" + format_time_left(timeleft, "") + "]")
 
 
 total_time_start = time.time()
-generate_frame_args = [viewbox_bottomleft_topright, view_labels, timestep, trace_paths, num_frames_override_start]
-ani = animation.FuncAnimation(fig, generate_frame, frames=num_frames, fargs=generate_frame_args, repeat=False, interval=200, save_count=num_frames)
+generate_frame_args = [viewbox_bottomleft_topright, view_labels, timestep,
+                       trace_paths, num_frames_override_start]
+ani = animation.FuncAnimation(fig, generate_frame, frames=num_frames,
+                              fargs=generate_frame_args, repeat=False,
+                              interval=200, save_count=num_frames)
 mywriter = animation.FFMpegWriter(fps=8)
 ani.save('output_videos/' + filename + '.mp4', writer=mywriter)
 total_elapsed_time = time.time() - total_time_start

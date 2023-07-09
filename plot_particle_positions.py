@@ -39,17 +39,20 @@ dumbbell_deltax = positions_deltax[frameno, :, :]
 
 sphere_sizes = np.array([1 for i in range(num_spheres)])
 dumbbell_sizes = np.array([0.1 for i in range(num_dumbbells)])
-sphere_rotations = add_sphere_rotations_to_positions(sphere_positions, sphere_sizes, np.array([[1, 0, 0], [0, 0, 1]]))
+sphere_rotations = add_sphere_rotations_to_positions(
+    sphere_positions, sphere_sizes, np.array([[1, 0, 0], [0, 0, 1]]))
 Ta_out = [[0, 0, 0] for i in range(num_spheres)]
 Oa_out = [[0, 0, 0] for i in range(num_spheres)]
 Ua_out = [[0, 0, 0] for i in range(num_spheres)]
 
-posdata = [sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax]
+posdata = [sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
+           dumbbell_positions, dumbbell_deltax]
 previous_step_posdata = posdata
 
 # Pictures initialise
 rcParams.update({'font.size': 12})
-rcParams.update({'figure.dpi': 120, 'figure.figsize': [11, 11], 'savefig.dpi': 140, 'savefig.jpeg_quality': 140})
+rcParams.update({'figure.dpi': 120, 'figure.figsize': [11, 11],
+                 'savefig.dpi': 140, 'savefig.jpeg_quality': 140})
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.view_init(viewing_angle[0], viewing_angle[1])
@@ -84,7 +87,8 @@ fig.tight_layout()
 # Pictures
 if viewbox_bottomleft_topright.size == 0:
     if num_spheres > 0 and num_dumbbells > 0:
-        m = np.array([abs(sphere_positions).max(), abs(dumbbell_positions).max()]).max()
+        m = np.array([abs(sphere_positions).max(), 
+                      abs(dumbbell_positions).max()]).max()
     elif num_spheres > 0 and num_dumbbells == 0:
         m = abs(sphere_positions).max()
     elif num_dumbbells > 0 and num_spheres == 0:
@@ -94,17 +98,29 @@ if viewbox_bottomleft_topright.size == 0:
         m = 3
     viewbox_bottomleft_topright = np.array([[-m, -m, -m], [m, m, m]])
 
-(spheres, sphere_lines, sphere_trace_lines) = plot_all_spheres(ax, frameno, viewbox_bottomleft_topright, posdata, previous_step_posdata, trace_paths, spheres, sphere_lines, sphere_trace_lines, Fa_out[frameno])
-(dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines) = plot_all_dumbbells(ax, frameno, viewbox_bottomleft_topright, posdata, previous_step_posdata, trace_paths, dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines, Fb_out[frameno], DFb_out[frameno])
+(spheres, sphere_lines, sphere_trace_lines) = plot_all_spheres(
+    ax, frameno, viewbox_bottomleft_topright, posdata, previous_step_posdata,
+    trace_paths, spheres, sphere_lines, sphere_trace_lines, Fa_out[frameno])
+(dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines) = plot_all_dumbbells(
+    ax, frameno, viewbox_bottomleft_topright, posdata, previous_step_posdata,
+    trace_paths, dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines,
+    Fb_out[frameno], DFb_out[frameno])
 if view_labels == 1:
-    torque_lines = plot_all_torque_lines(ax, viewbox_bottomleft_topright, posdata, Ta_out, torque_lines)
-    (velocity_lines, velocity_text, sphere_labels) = plot_all_velocity_lines(ax, viewbox_bottomleft_topright, posdata, Ua_out, velocity_lines)   # Velocity in green
-    angular_velocity_lines = plot_all_angular_velocity_lines(ax, viewbox_bottomleft_topright, posdata, Oa_out, angular_velocity_lines)  # Ang vel in white with green edging
+    torque_lines = plot_all_torque_lines(ax, viewbox_bottomleft_topright,
+                                         posdata, Ta_out, torque_lines)
+    (velocity_lines, velocity_text, sphere_labels) = plot_all_velocity_lines(
+        ax, viewbox_bottomleft_topright, posdata, Ua_out,
+        velocity_lines)   # Velocity in green
+    angular_velocity_lines = plot_all_angular_velocity_lines(
+        ax, viewbox_bottomleft_topright, posdata, Oa_out,
+        angular_velocity_lines)  # Ang vel in white with green edging
 
 for q in (dumbbell_lines):
     q.remove()
 
-ax.set_title("  frame " + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno+1) + "/" + str(num_frames), loc='left', y=0.97)
+ax.set_title("  frame " 
+             + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno+1) 
+             + "/" + str(num_frames), loc='left', y=0.97)
 ax.set_title(filename, loc='center', y=1.05)
 
 plt.show()
