@@ -3,6 +3,9 @@
 # Adam Townsend, adam@adamtownsend.com, 07/06/2017
 
 import numpy as np
+import numba
+import time
+import datetime
 from numpy import linalg
 from functions_generate_grand_resistance_matrix import (
     generate_grand_resistance_matrix, generate_grand_resistance_matrix_periodic)
@@ -12,7 +15,6 @@ from functions_simulation_tools import (
     fts_to_fte_matrix, fte_to_ufte_matrix, ufte_to_ufteu_matrix,
     fts_to_duf_matrix)
 from input_setups import input_ftsuoe
-import time
 
 
 def euler_timestep(x, u, timestep):
@@ -78,7 +80,7 @@ def euler_timestep_rotation(sphere_positions, sphere_rotations,
         where X_x means the x-component of X.
         Our Z is Omega = o_spheres[i], so we need to make it into a complete
         basis. To do that we pick a unit vector different to Omega (either zhat
-        or xhat depending on Omega) and use 
+        or xhat depending on Omega) and use
         (Omega x zhat, Omega x (Omega x zhat), zhat) as our basis (X,Y,Z).
         That's it! [Only took me three days...]
         '''
@@ -92,12 +94,12 @@ def euler_timestep_rotation(sphere_positions, sphere_rotations,
 
         for j in range(2):
             ''' rb0 is the position ("r") of the endpoint of the pointy
-            rotation vector in the external (x,y,z) frame ("b") at the 
+            rotation vector in the external (x,y,z) frame ("b") at the
             beginning of this process ("0") '''
             rb0 = sphere_rotations[i, j]
 
             ''' rbdashdash0_xyz is the position of the same endpoint in the
-            frame of the rotating sphere ("b''"), which we set to have the 
+            frame of the rotating sphere ("b''"), which we set to have the
             z-axis=Omega axis. It's in Cartesian coordinates. '''
             rbdashdash0_xyz = np.dot(linalg.inv(rot_matrix), (rb0 - R0))
             x0 = rbdashdash0_xyz[0]
@@ -214,16 +216,16 @@ def generate_output_FTSUOE(
         extract_force_on_wall_due_to_dumbbells, last_velocities,
         last_velocity_vector, checkpoint_start_from_frame,
         box_bottom_left, box_top_right, feed_every_n_timesteps=0):
-    """Solve the grand mobility problem: for given force/velocity inputs, 
+    """Solve the grand mobility problem: for given force/velocity inputs,
     return all computed velocities/forces.
 
     Args (selected):
         posdata: Contains position, size and count data for all particles.
-        input_number: Index of the force/velocity inputs, listed in 
+        input_number: Index of the force/velocity inputs, listed in
             `input_setups.py`.
 
     Returns:
-        All force and velocity data, including both that given as inputs and 
+        All force and velocity data, including both that given as inputs and
         that computed by solving the grand mobility problem.
     """
 
@@ -479,3 +481,99 @@ def generate_output_FTSUOE(
             last_generated_Minfinity_inverse, gen_times,
             U_infinity, O_infinity, centre_of_background_flow,
             force_on_wall_due_to_dumbbells, last_velocity_vector)
+
+
+def calculate_time_left(times, frameno, num_frames, invert_m_every,
+                        checkpoint_start_from_frame):
+    """Calculate time left in simulation, in seconds.
+
+    Args:
+        times: List of times for each timestep so far.
+        frameno: Current timestep/frame number.
+        num_frames: Total number of timesteps/frames.
+        invert_m_every: How often M^infinity is being inverted (every n frames).
+        checkpoint_start_from_frame: Frame no. at start of simulation.
+
+    Returns:
+        timeleft: Estimated remaining time, in seconds.
+        flags (str): A string with characters suggesting missing information.
+    """
+
+    longtimes = [times[i] for i in range(checkpoint_start_from_frame, frameno + 1)
+                 if i % invert_m_every == 0 or i == checkpoint_start_from_frame]
+
+    # If Numba is on, first timestep is extra long because of compilation,
+    # so should be ignored ASAP
+    numba_compilation_time_not_discounted_flag = ""
+    if not numba.config.DISABLE_JIT:
+        if len(longtimes) >= 2:
+            longtimeaverage = sum(longtimes[1:]) / len(longtimes[1:])
+        elif len(longtimes) == 1:
+            numba_compilation_time_not_discounted_flag = "<"
+            longtimeaverage = longtimes[0]
+        else:
+            longtimeaverage = 0
+    else:
+        if len(longtimes) > 0:
+            longtimeaverage = sum(longtimes) / len(longtimes)
+        else:
+            longtimeaverage = 0
+
+    shorttimes = [times[i] for i in range(checkpoint_start_from_frame, frameno + 1)
+                  if i % invert_m_every != 0 and i != checkpoint_start_from_frame]
+    if len(shorttimes) != 0:
+        shorttimeaverage = sum(shorttimes) / len(shorttimes)
+    else:
+        shorttimeaverage = longtimeaverage
+    numberoflongtimesleft = len([i for i in range(frameno + 1, num_frames)
+                                 if i % invert_m_every == 0])
+    numberofshorttimesleft = len([i for i in range(frameno + 1, num_frames)
+                                  if i % invert_m_every != 0])
+
+    timeleft = (numberofshorttimesleft * shorttimeaverage
+                + numberoflongtimesleft * longtimeaverage) * 1.03
+
+    # The 1.03 is to sort of allow for the things this isn't counting.
+    # On average it appears to be a good guess.
+
+    if frameno - checkpoint_start_from_frame == 0 and numberofshorttimesleft > 0:
+        no_short_times_yet_flag = "<"
+    else:
+        no_short_times_yet_flag = ""
+
+    flags = (numba_compilation_time_not_discounted_flag
+             + no_short_times_yet_flag)
+
+    return (timeleft, flags)
+
+
+def format_time_left(timeleft, flags):
+    """Return string containing formatted time remaining."""
+    if timeleft > 86400:  # 24 hours
+        start_color = "\033[94m"
+    elif timeleft > 18000:  # 5 hours
+        start_color = "\033[95m"
+    elif timeleft > 3600:  # 1 hour
+        start_color = "\033[91m"
+    elif timeleft > 600:  # 10 mins
+        start_color = "\033[93m"
+    else:
+        start_color = "\033[92m"
+    end_color = "\033[0m"
+
+    return (start_color
+            + flags
+            + format_elapsed_time(timeleft)
+            + end_color)
+
+
+def format_finish_time(timeleft, flags):
+    """Return string containing formatted finish time of simulation."""
+    now = datetime.datetime.now()
+    finishtime = now + datetime.timedelta(0, timeleft)
+    if finishtime.date() == now.date():
+        return flags + finishtime.strftime("%H:%M")
+    elif (finishtime.date() - now.date()).days < 7:
+        return flags + finishtime.strftime("%a %H:%M")
+    else:
+        return flags +finishtime.strftime("%d/%m/%y %H:%M")

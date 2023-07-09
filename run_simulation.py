@@ -27,7 +27,8 @@ from functions_shared import (posdata_data, format_elapsed_time, throw_error,
 from functions_timestepping import (
     euler_timestep, ab2_timestep, did_something_go_wrong_with_dumbells,
     euler_timestep_rotation, ab2_timestep_rotation, do_we_have_all_size_ratios,
-    generate_output_FTSUOE, are_some_of_the_particles_too_close)
+    generate_output_FTSUOE, are_some_of_the_particles_too_close,
+    calculate_time_left, format_time_left, format_finish_time)
 from input_setups import input_ftsuoe
 from inputs import (
     cutoff_factor, num_frames, view_graphics, viewbox_bottomleft_topright,
@@ -150,7 +151,7 @@ def wrap_around(new_sphere_positions, box_bottom_left, box_top_right,
         basis_canonical, box_dimensions, frameno, timestep, amplitude,
         frequency, O_infinity, E_infinity)
     # Hence
-    new_sphere_positions = np.dot(np.mod(np.dot(new_sphere_positions, 
+    new_sphere_positions = np.dot(np.mod(np.dot(new_sphere_positions,
                                                 np.linalg.inv(sheared_basis_vectors)) + 0.5,
                                          [1, 1, 1]) - 0.5, sheared_basis_vectors)
     return new_sphere_positions
@@ -158,17 +159,17 @@ def wrap_around(new_sphere_positions, box_bottom_left, box_top_right,
 
 def add_background_flow_spheres(Ua_out_k1, Oa_out_k1, Ea_out_k1, U_infinity_k1, O_infinity_k1,
                                 sphere_positions, centre_of_background_flow):
-    O_infinity_cross_x_k1 = np.cross(O_infinity_k1, 
+    O_infinity_cross_x_k1 = np.cross(O_infinity_k1,
                                      sphere_positions - centre_of_background_flow)
-    E_infinity_dot_x_k1 = np.empty([sphere_positions.shape[0], 
+    E_infinity_dot_x_k1 = np.empty([sphere_positions.shape[0],
                                     sphere_positions.shape[1]])
     for i in range(num_spheres):
-        E_infinity_dot_x_k1[i] = np.dot(Ea_out_k1[i], 
+        E_infinity_dot_x_k1[i] = np.dot(Ea_out_k1[i],
                                         sphere_positions[i] - centre_of_background_flow)
 
-    Ua_out_plus_infinities_k1 = (Ua_out_k1 
-                                 + U_infinity_k1 
-                                 + O_infinity_cross_x_k1 
+    Ua_out_plus_infinities_k1 = (Ua_out_k1
+                                 + U_infinity_k1
+                                 + O_infinity_cross_x_k1
                                  + E_infinity_dot_x_k1)
     Oa_out_plus_infinities_k1 = Oa_out_k1 + O_infinity_k1
 
@@ -177,23 +178,23 @@ def add_background_flow_spheres(Ua_out_k1, Oa_out_k1, Ea_out_k1, U_infinity_k1, 
 
 def add_background_flow_dumbbells(Ub_out_k1, HalfDUb_out_k1, Ea_out_k1, U_infinity_k1, O_infinity_k1,
                                   dumbbell_positions, centre_of_background_flow):
-    O_infinity_cross_xbar_k1 = np.cross(O_infinity_k1, 
+    O_infinity_cross_xbar_k1 = np.cross(O_infinity_k1,
                                         dumbbell_positions - centre_of_background_flow)
     O_infinity_cross_deltax_k1 = np.cross(O_infinity_k1, dumbbell_deltax)
-    E_infinity_dot_xbar_k1 = np.empty([dumbbell_positions.shape[0], 
+    E_infinity_dot_xbar_k1 = np.empty([dumbbell_positions.shape[0],
                                        dumbbell_positions.shape[1]])
-    E_infinity_dot_deltax_k1 = np.empty([dumbbell_positions.shape[0], 
+    E_infinity_dot_deltax_k1 = np.empty([dumbbell_positions.shape[0],
                                          dumbbell_positions.shape[1]])
     for i in range(num_dumbbells):
-        E_infinity_dot_xbar_k1[i] = np.dot(Ea_out_k1[0], 
+        E_infinity_dot_xbar_k1[i] = np.dot(Ea_out_k1[0],
                                            dumbbell_positions[i] - centre_of_background_flow)
         E_infinity_dot_deltax_k1[i] = np.dot(Ea_out_k1[0], dumbbell_deltax[i])
 
-    Ub_out_plus_infinities_k1 = (Ub_out_k1 + U_infinity_k1 
-                                 + O_infinity_cross_xbar_k1 
+    Ub_out_plus_infinities_k1 = (Ub_out_k1 + U_infinity_k1
+                                 + O_infinity_cross_xbar_k1
                                  + E_infinity_dot_xbar_k1)
-    HalfDUb_out_plus_infinities_k1 = (HalfDUb_out_k1 
-                                      + 0.5*(O_infinity_cross_deltax_k1 
+    HalfDUb_out_plus_infinities_k1 = (HalfDUb_out_k1
+                                      + 0.5*(O_infinity_cross_deltax_k1
                                              + E_infinity_dot_deltax_k1))
 
     return Ub_out_plus_infinities_k1, HalfDUb_out_plus_infinities_k1
@@ -332,14 +333,14 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                     new_sphere_positions = ab2_timestep(
                         sphere_positions, Ua_out_plus_infinities_k1, last_velocities[0], timestep)
                     new_sphere_rotations = ab2_timestep_rotation(
-                        sphere_positions, sphere_rotations, 
+                        sphere_positions, sphere_rotations,
                         new_sphere_positions, new_sphere_rotations,
-                        Oa_out_plus_infinities_k1, last_velocities[3], 
+                        Oa_out_plus_infinities_k1, last_velocities[3],
                         timestep)
                 if periodic:
                     new_sphere_positions = wrap_around(
-                        new_sphere_positions, box_bottom_left, box_top_right, 
-                        frameno + 1, timestep, O_infinity_k1, Ea_out_k1[0], 
+                        new_sphere_positions, box_bottom_left, box_top_right,
+                        frameno + 1, timestep, O_infinity_k1, Ea_out_k1[0],
                         frequency=frequency, amplitude=amplitude)
 
             if (num_dumbbells > 0):
@@ -360,8 +361,8 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                     error, dumbbell_deltax, new_dumbbell_deltax, explosion_protection)
                 if periodic:
                     new_dumbbell_positions = wrap_around(
-                        new_dumbbell_positions, box_bottom_left, box_top_right, 
-                        frameno + 1, timestep, O_infinity_k1, Ea_out_k1[0], 
+                        new_dumbbell_positions, box_bottom_left, box_top_right,
+                        frameno + 1, timestep, O_infinity_k1, Ea_out_k1[0],
                         frequency=frequency, amplitude=amplitude)
 
             if num_spheres > 0 and num_dumbbells == 0:
@@ -369,9 +370,9 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
             if num_spheres == 0 and num_dumbbells > 0:
                 last_velocities = [0, Ub_out_plus_infinities_k1, HalfDUb_out_plus_infinities_k1, 0]
             if num_spheres > 0 and num_dumbbells > 0:
-                last_velocities = [Ua_out_plus_infinities_k1, 
-                                   Ub_out_plus_infinities_k1, 
-                                   HalfDUb_out_plus_infinities_k1, 
+                last_velocities = [Ua_out_plus_infinities_k1,
+                                   Ub_out_plus_infinities_k1,
+                                   HalfDUb_out_plus_infinities_k1,
                                    Oa_out_plus_infinities_k1]
 
             Fa_out = np.asarray(Fa_out_k1)
@@ -382,30 +383,22 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
 
         elif timestepping_scheme == "rk4":
             # RK4
-            new_sphere_rotations = (np.copy(sphere_rotations)).astype('float')
-            (sphere_rotations_k1,
-             sphere_rotations_k2,
-             sphere_rotations_k3) = ((np.copy(sphere_rotations)).astype('float'),
-                                     (np.copy(sphere_rotations)).astype('float'),
-                                     (np.copy(sphere_rotations)).astype('float'))
+            new_sphere_rotations = np.copy(sphere_rotations).astype('float')
+            sphere_rotations_k1 = np.copy(sphere_rotations).astype('float')
+            sphere_rotations_k2 = np.copy(sphere_rotations).astype('float')
+            sphere_rotations_k3 = np.copy(sphere_rotations).astype('float')
             # Below lines are required for posdata calls if there are no spheres or dumbbells
             if num_spheres == 0:
-                (sphere_positions_k1,
-                 sphere_positions_k2,
-                 sphere_positions_k3) = (np.copy(sphere_positions),
-                                         np.copy(sphere_positions),
-                                         np.copy(sphere_positions))
+                sphere_positions_k1 = np.copy(sphere_positions)
+                sphere_positions_k2 = np.copy(sphere_positions)
+                sphere_positions_k3 = np.copy(sphere_positions)
             if num_dumbbells == 0:
-                (dumbbell_positions_k1,
-                 dumbbell_positions_k2,
-                 dumbbell_positions_k3) = (np.copy(dumbbell_positions),
-                                           np.copy(dumbbell_positions),
-                                           np.copy(dumbbell_positions))
-                (dumbbell_deltax_k1,
-                 dumbbell_deltax_k2,
-                 dumbbell_deltax_k3) = (np.copy(dumbbell_deltax),
-                                        np.copy(dumbbell_deltax),
-                                        np.copy(dumbbell_deltax))
+                dumbbell_positions_k1 = np.copy(dumbbell_positions)
+                dumbbell_positions_k2 = np.copy(dumbbell_positions)
+                dumbbell_positions_k3 = np.copy(dumbbell_positions)
+                dumbbell_deltax_k1 = np.copy(dumbbell_deltax)
+                dumbbell_deltax_k2 = np.copy(dumbbell_deltax)
+                dumbbell_deltax_k3 = np.copy(dumbbell_deltax)
 
             # K1
             (Fa_out_k1, Ta_out_k1, Sa_out_k1, Fb_out_k1, DFb_out_k1,
@@ -534,7 +527,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 sphere_positions_k3 = euler_timestep(
                     sphere_positions, Ua_out_plus_infinities_k3, timestep)
                 sphere_rotations_k3 = euler_timestep_rotation(
-                    sphere_positions, sphere_rotations, sphere_positions_k3, 
+                    sphere_positions, sphere_rotations, sphere_positions_k3,
                     sphere_rotations_k3, Oa_out_plus_infinities_k3, timestep)
                 if periodic:
                     sphere_positions_k3 = wrap_around(
@@ -685,8 +678,8 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
         # `save_to_temp_file_every_n_timesteps` timesteps.
         save_time_start = time.time()
         if (save_positions_every_n_timesteps > 0
-                and frameno % save_positions_every_n_timesteps == 0
-                and frameno >= start_saving_after_first_n_timesteps
+            and frameno % save_positions_every_n_timesteps == 0
+            and frameno >= start_saving_after_first_n_timesteps
             ):
             if frameno == start_saving_after_first_n_timesteps:  # usually 0
                 saved_element_positions = np.array([element_positions])
@@ -709,8 +702,8 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 saved_deltax = np.append(np.copy(saved_deltax),
                                          np.array([new_dumbbell_deltax]), 0)
         if (save_forces_every_n_timesteps > 0
-                and frameno % save_forces_every_n_timesteps == 0
-                and frameno >= start_saving_after_first_n_timesteps
+            and frameno % save_forces_every_n_timesteps == 0
+            and frameno >= start_saving_after_first_n_timesteps
             ):
             if frameno == start_saving_after_first_n_timesteps:  # usually 0
                 saved_Fa_out = np.array([Fa_out])
@@ -719,13 +712,13 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 saved_Sa_out = np.array([Sa_out])
                 saved_force_on_wall_due_to_dumbbells = np.array([force_on_wall_due_to_dumbbells])
             elif frameno != checkpoint_start_from_frame:
-                saved_Fa_out = np.append(np.copy(saved_Fa_out), 
+                saved_Fa_out = np.append(np.copy(saved_Fa_out),
                                          np.array([Fa_out]), 0)
-                saved_Fb_out = np.append(np.copy(saved_Fb_out), 
+                saved_Fb_out = np.append(np.copy(saved_Fb_out),
                                          np.array([Fb_out]), 0)
-                saved_DFb_out = np.append(np.copy(saved_DFb_out), 
+                saved_DFb_out = np.append(np.copy(saved_DFb_out),
                                           np.array([DFb_out]), 0)
-                saved_Sa_out = np.append(np.copy(saved_Sa_out), 
+                saved_Sa_out = np.append(np.copy(saved_Sa_out),
                                          np.array([Sa_out]), 0)
                 saved_force_on_wall_due_to_dumbbells = np.append(np.copy(saved_force_on_wall_due_to_dumbbells),
                                                                  np.array([force_on_wall_due_to_dumbbells]), 0)
@@ -824,78 +817,12 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
         # Work out how long left
         times[frameno] = elapsed_time
 
-        longtimes = [times[i] for i in range(checkpoint_start_from_frame, frameno + 1)
-                     if i % invert_m_every == 0 or i == checkpoint_start_from_frame]
+        time_left, flags = calculate_time_left(times, frameno, num_frames,
+                                              invert_m_every,
+                                              checkpoint_start_from_frame)
 
-        # If Numba is on, first timestep is extra long because of compilation,
-        # so should be ignored ASAP
-        numba_compilation_time_not_discounted_flag = ""
-        if not numba.config.DISABLE_JIT:
-            compile_timestep_index = frameno - checkpoint_start_from_frame
-            if len(longtimes) >= 2:
-                longtimeaverage = sum(longtimes[1:]) / len(longtimes[1:])
-            elif len(longtimes) == 1:
-                numba_compilation_time_not_discounted_flag = "<"
-                longtimeaverage = longtimes[0]
-            else:
-                longtimeaverage = 0
-        else:
-            if len(longtimes) > 0:
-                longtimeaverage = sum(longtimes) / len(longtimes)
-            else:
-                longtimeaverage = 0
-
-        shorttimes = [times[i] for i in range(checkpoint_start_from_frame, frameno + 1)
-                      if i % invert_m_every != 0 and i != checkpoint_start_from_frame]
-        if len(shorttimes) != 0:
-            shorttimeaverage = sum(shorttimes) / len(shorttimes)
-        else:
-            shorttimeaverage = longtimeaverage
-        numberoflongtimesleft = len([i for i in range(frameno + 1, num_frames)
-                                     if i % invert_m_every == 0])
-        numberofshorttimesleft = len([i for i in range(frameno + 1, num_frames)
-                                      if i % invert_m_every != 0])
-
-        timeleft = (numberofshorttimesleft * shorttimeaverage
-                    + numberoflongtimesleft * longtimeaverage) * 1.03
-        # The 1.03 is to sort of allow for the things this isn't counting.
-        # On average it appears to be a good guess.
-
-        if timeleft > 86400:  # 24 hours
-            start_color = "\033[94m"
-        elif timeleft > 18000:  # 5 hours
-            start_color = "\033[95m"
-        elif timeleft > 3600:  # 1 hour
-            start_color = "\033[91m"
-        elif timeleft > 600:  # 10 mins
-            start_color = "\033[93m"
-        else:
-            start_color = "\033[92m"
-        end_color = "\033[0m"
-
-        if frameno - checkpoint_start_from_frame == 0 and numberofshorttimesleft > 0:
-            no_short_times_yet_flag = "<"
-        else:
-            no_short_times_yet_flag = ""
-
-        elapsed_time_formatted = (start_color
-                                  + numba_compilation_time_not_discounted_flag
-                                  + no_short_times_yet_flag
-                                  + format_elapsed_time(timeleft)
-                                  + end_color)
-
-        print("[" + elapsed_time_formatted + "]", end=" ")
-
-        now = datetime.datetime.now()
-        finishtime = now + datetime.timedelta(0, timeleft)
-        if finishtime.date() == now.date():
-            finishtime_formatted = finishtime.strftime("%H:%M")
-        elif (finishtime.date() - now.date()).days < 7:
-            finishtime_formatted = finishtime.strftime("%a %H:%M")
-        else:
-            finishtime_formatted = finishtime.strftime("%d/%m/%y %H:%M")
-        print("[" + numba_compilation_time_not_discounted_flag
-              + no_short_times_yet_flag + finishtime_formatted + "]")
+        print("[" + format_time_left(time_left, flags) + "]", end=" ")
+        print("[" + format_finish_time(time_left, flags) + "]")
 
     if error:
         print("No frame " + str(frameno + 1))
