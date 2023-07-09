@@ -225,23 +225,7 @@ The method is from:
 * [Townsend, 2018](https://arxiv.org/abs/1802.08226). Generating, from scratch, the near-field asymptotic forms of scalar resistance functions for two unequal rigid spheres in low-Reynolds-number flow, *arXiv:1802.08226 [physics.flu-dyn]*
 * [Wilson, 2013](http://www.ucl.ac.uk/~ucahhwi/publist/papers/2013-W.pdf). Stokes flow past three spheres, *Journal of Computational Physics* **245**, 302–316.
 
-## 11. Idiosyncratic usage notes <a name="s11"></a> ##
-### (a) Switching between continuous shear and oscillatory shear in periodic mode
-If switching between continuous shear and oscillatory shear in periodic mode, you have to hard-code switch the following three places. You can find them by searching for the phrase "For CONTINUOUS shear" in 'files in folder'. Yes, I know, awkward, isn't it. I'm working on it.
-
-The files you need to switch are:
-
-* **functions_generate_Minfinity_periodic.py**, line 411
-* **functions_shared.py**, line 208
-* **plot_particle_positions_video.py**, line 167
-* **run_simulation.py**, line 125
-
-
-### (b) Memory usage estimates
-Line 552 in **run_simulation.py**: On Linux systems, you have to multiply by 1024 because `RUSAGE_SELF` is in KB on these systems. On MacOS, you do not want to do this, because `RUSAGE_SELF` is in bytes. This is hopefully handled automatically, but you never know.
-
-
-## 12. Known issues <a name="s12"></a> ##
+## 11. Known issues <a name="s12"></a> ##
 
 ### (a) "RuntimeError: Invalid DISPLAY variable" error
 

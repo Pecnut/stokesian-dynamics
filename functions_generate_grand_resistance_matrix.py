@@ -118,7 +118,8 @@ def generate_grand_resistance_matrix_periodic(
         O_infinity=np.array([0, 0, 0]),
         E_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]),
         timestep=0.1, centre_of_background_flow=np.array([0, 0, 0]),
-        amplitude=1, frequency=1):
+        Ot_infinity=np.array([0, 0, 0]),
+        Et_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])):
     """Return the grand resistance matrix for a periodic domain.
 
     Args:
@@ -126,16 +127,19 @@ def generate_grand_resistance_matrix_periodic(
         last_generated_Minfinity_inverse: Precomputed Minfinity_inverse matrix
             from a previous timestep or timestep stage which may want to be 
             used here.
-        box_bottom_left, box_top_right: Coordinates of the periodic box
+        box_bottom_left, box_top_right: Coordinates of the periodic box.
         regenerate_Minfinity (bool): Instruction to either use the precomputed
-            Minfinity_inverse (False) or to generate a new one (True)
-        cutoff_factor: Cutoff factor for separation when R2Bexact applies
-        printout: Flag you can use to toggle debug information
-        use_drag_Minfinity (bool): Use a drag-based approximation to Minfinity
-        use_Minfinity_only (bool): Don't use R2Bexact, just use Minfinity
-        frameno (int): Frame number
-        mu: Viscosity
-        O_infinity, ..., frequency: Periodic/constant shear parameters
+            Minfinity_inverse (False) or to generate a new one (True).
+        cutoff_factor: Cutoff factor for separation when R2Bexact applies.
+        printout: Flag you can use to toggle debug information.
+        use_drag_Minfinity (bool): Use a drag-based approximation to Minfinity.
+        use_Minfinity_only (bool): Don't use R2Bexact, just use Minfinity.
+        frameno (int): Frame number.
+        mu: Viscosity.
+        O_infinity, E_infinity: Background flow.
+        timestep: Timestep size.
+        centre_of_background_flow: Centre of any applied shear.
+        Ot_infinity, Et_infinity: Integrals of O_infinity and E_infinity dt.
 
     Returns:
         grand_resistance_matrix: Grand resistance matrix
@@ -150,10 +154,7 @@ def generate_grand_resistance_matrix_periodic(
             (Minfinity, headingM) = generate_Minfinity_periodic(
                 posdata, box_bottom_left, box_top_right, printout,
                 frameno=frameno, mu=mu,
-                O_infinity=O_infinity, E_infinity=E_infinity,
-                timestep=timestep,
-                centre_of_background_flow=centre_of_background_flow,
-                frequency=frequency, amplitude=amplitude)
+                Ot_infinity=Ot_infinity, Et_infinity=Et_infinity)
             Minfinity_elapsed_time = time.time() - Minfinity_start_time
             Minfinity_inverse_start_time = time.time()
             Minfinity_inverse = np.linalg.inv(Minfinity)
@@ -180,19 +181,10 @@ def generate_grand_resistance_matrix_periodic(
     if not use_Minfinity_only:
         R2Bexact_start_time = time.time()
         (R2Bexact, heading) = generate_R2Bexact(
-            posdata,
-            printout=printout,
-            cutoff_factor=cutoff_factor,
-            frameno=frameno,
-            mu=mu,
-            box_bottom_left=box_bottom_left,
-            box_top_right=box_top_right,
-            O_infinity=O_infinity,
-            E_infinity=E_infinity,
-            timestep=timestep,
-            centre_of_background_flow=centre_of_background_flow,
-            frequency=frequency,
-            amplitude=amplitude)
+            posdata, printout=printout, cutoff_factor=cutoff_factor,
+            frameno=frameno, mu=mu,
+            box_bottom_left=box_bottom_left, box_top_right=box_top_right,
+            Ot_infinity=Ot_infinity, Et_infinity=Et_infinity)
         R2Bexact_elapsed_time = time.time() - R2Bexact_start_time
         grand_resistance_matrix = Minfinity_inverse + R2Bexact.toarray()
     else:

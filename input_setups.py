@@ -46,7 +46,7 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
         HalfDUb_in: HALF the velocity difference of the dumbbells ((U2-U1)/2)
         desc: Human-readable description to be added to filename.
         U_infinity, O_infinity, centre_of_background_flow: Background flow.
-        amplitude, frequency: Periodic shear parameters.
+        Ot_infinity, Et_infinity: Integral of U_infinity and O_infinity dt.
         box_bottom_left, box_top_right: Coordinates of periodic box if desired.
             Simulation is assumed non-periodic if these are equal.
         mu: Newtonian background fluid viscosity.
@@ -62,7 +62,7 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
         num_elements_array, element_type, uv_start, uv_size,
         element_start_count) = posdata_data(posdata)
 
-    # Give values. You must give at least half the total number of U/O/E/F/T/S 
+    # Give values. You must give at least half the total number of U/O/E/F/T/S
     #   values.
     # If you are giving a mix of F and U values for spheres, you must label the
     #   spheres s.t. the fixed velocity spheres are numbered first.
@@ -74,11 +74,11 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
     desc = ""
     box_bottom_left = np.array([0, 0, 0])
     box_top_right = np.array([0, 0, 0])
-    # Background velocity is given by 
+    # Background velocity is given by
     #   u^infinity = U^infinity + Omega^infinity cross x + E^infinity dot x.
     # U^infinity and O^infinity are reset here and are changed for each case if
     #   required.
-    # E^infinity is input for each case as Ea_in, and is also reset here if 
+    # E^infinity is input for each case as Ea_in, and is also reset here if
     #   you're using FTE form.
     U_infinity = np.array([0, 0, 0])
     O_infinity = np.array([0, 0, 0])
@@ -100,8 +100,8 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
         Fb_in[:] = [[0, 0, 0] for i in range(num_dumbbells)]
         DFb_in[:] = [[0, 0, 0] for i in range(num_dumbbells)]
     centre_of_background_flow = np.array([0, 0, 0])
-    amplitude = 0
-    frequency = 0
+    Ot_infinity = np.array([0, 0, 0])
+    Et_infinity = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
     num_sphere_in_each_lid = 0
 
     if n == 1:
@@ -113,7 +113,7 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
         # Gravity in periodic domain
         Fa_in[:] = [[0, 0, -1] for i in range(num_spheres)]
         sphere_positions, box_bottom_left, box_top_right = simple_cubic_8(8)
-        # sphere_positions is ignored inside input_ftsuoe, but to activate 
+        # sphere_positions is ignored inside input_ftsuoe, but to activate
         #   periodicity, you have to set box_bottom_left and box_top_right.
         desc = "gravity-periodic"
 
@@ -123,13 +123,12 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
         spring_constant = -1
         DFb_in[:] = [list(spring_constant*(dumbbell_deltax[i]-natural_deltax*dumbbell_deltax[i]/np.linalg.norm(dumbbell_deltax[i]))) for i in range(num_dumbbells)]
         # Simple shear with speed gammadot
-        startfromframe = 0
         # amplitude is amplitude at z = 1
-        (Ea_in, U_infinity, O_infinity, centre_of_background_flow, amplitude,
-         frequency) = oscillatory_shear(
-            amplitude=1./3., period=1, start_from_frame=0,
-            centre_of_background_flow=np.array([2.25, 0, 2.25]),
-            frameno=frameno, timestep=timestep, num_spheres=num_spheres)
+        (Ea_in, U_infinity, O_infinity, centre_of_background_flow,
+         Ot_infinity, Et_infinity) = oscillatory_shear(
+            amplitude=1/3, period=1, frameno=frameno, timestep=timestep,
+            phase=0, centre_of_background_flow=np.array([2.25, 0, 2.25]),
+            num_spheres=num_spheres)
         desc = "oscillatory-background-flow"
 
     elif n == 4:
@@ -141,19 +140,18 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
         desc = "repulsion"
 
     elif n == 5:
-        # Force half the spheres to move to the left with a given velocity, 
+        # Force half the spheres to move to the left with a given velocity,
         #   and force the rest to move to the right.
         Ua_in[:] = ([[-1, 0, 0] for i in range(num_spheres/2)]
                     + [[1, 0, 0] for i in range(num_spheres/2, num_spheres)])
 
     elif n == 6:
-        # Continuous shear
-        gammadot = 1
-        O_infinity = np.array([0, 0.5*gammadot, 0])
-        Ea_in = [[[0, 0, 0.5*gammadot],
-                  [0, 0, 0],
-                  [0.5*gammadot, 0, 0]] for i in range(max(1, num_spheres))]
-        desc = "continuous-shear"
+        # Constant shear
+        (Ea_in, U_infinity, O_infinity, centre_of_background_flow,
+         Ot_infinity, Et_infinity) = constant_shear(
+            gammadot=1, frameno=frameno, timestep=timestep, 
+            num_spheres=num_spheres)
+        desc = "constant-shear"
 
     elif n == 7:
         # Gravity
@@ -162,12 +160,12 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
 
     else:
         # Just something to flag up on the other side that there's a problem
-        Fa_in = np.array([[99999, -31415, 21718]]) 
+        Fa_in = np.array([[99999, -31415, 21718]])
 
     return (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in,
             Ea_c_in, Ub_in, HalfDUb_in, desc, U_infinity, O_infinity,
-            centre_of_background_flow, amplitude, frequency, box_bottom_left,
-            box_top_right, mu)
+            centre_of_background_flow, Ot_infinity, Et_infinity, 
+            box_bottom_left, box_top_right, mu)
 
 
 def repulsion_forces(strength, tau, num_spheres, num_dumbbells,
@@ -232,19 +230,19 @@ def repulsion_forces(strength, tau, num_spheres, num_dumbbells,
     return Fa_in, Fb_in, DFb_in
 
 
-def oscillatory_shear(amplitude, period, start_from_frame, frameno, timestep,
+def oscillatory_shear(amplitude, period, frameno, timestep, phase=0,
                       centre_of_background_flow=np.array([0, 0, 0]),
                       num_spheres=1, unused_axis=1, transpose_shear=False,
                       opposite_direction=False):
-    """Define background flow for an oscillatory shear at a given time, "aw cos(wt)".
+    """Define background flow for an oscillatory shear at a given time, 
+    "a omega cos(omega t + phi)".
 
     Args:
         amplitude: Amplitude of oscillation. Directly returned.
         period: Period of oscillation. 
-        start_from_frame: Frame number the simulation started at (might be 
-            nonzero if simulation has been started from a checkpoint).
         frameno: Frame number.
         timestep: Timestep size.
+        phase: Phase offset in the oscillation, phi in cos(omega t + phi).
         centre_of_background_flow: Coordinates of background flow centre point.
         num_spheres: Number of spheres in the simulation (used for size of Ea_in).
         unused_axis: 1 means shear /_/ looking side-on.
@@ -253,13 +251,17 @@ def oscillatory_shear(amplitude, period, start_from_frame, frameno, timestep,
                                                |/                     /_/
 
     Returns: 
-        Ea_in, U_infinity, O_infinity, centre_of_background_flow, amplitude, 
-        angular_frequency.
+        Ea_in: E^infinity for each spherical particle (at least 1).
+        U_infinity, O_infinity: Background flow.
+        centre_of_background_flow: As input.
+        Ot_infinity, Et_infinity: Integral of O_infinity and E_infinity dt.
     """
 
-    angular_frequency = 2*np.pi/(period)  # Angular frequency is omega = 2pi/T,  frequency is f = 1/T
-    t = ((frameno+start_from_frame)*timestep)
-    gammadot = (amplitude*angular_frequency)*np.cos(t*angular_frequency)
+    # Angular frequency is omega = 2pi/T,  frequency is f = 1/T
+    angular_frequency = 2*np.pi/(period)
+    t = frameno*timestep
+    gamma = amplitude*np.sin(t*angular_frequency + phase)
+    gammadot = (amplitude*angular_frequency)*np.cos(t*angular_frequency + phase)
     U_infinity = np.array([0, 0, 0])
     if transpose_shear:
         transpose_minus = -1
@@ -271,13 +273,56 @@ def oscillatory_shear(amplitude, period, start_from_frame, frameno, timestep,
         opposite_minus = 1
     if unused_axis == 1:
         O_infinity = np.array([0, transpose_minus*0.5*gammadot, 0])
-        Ea_in = [[[0, 0, 0.5*gammadot],
-                  [0, 0, 0],
-                  [0.5*gammadot, 0, 0]] for i in range(max(1, num_spheres))]
+        Ot_infinity = np.array([0, transpose_minus*0.5*gamma, 0])
+        E_infinity = [[0, 0, 0.5*gammadot],
+                      [0, 0, 0],
+                      [0.5*gammadot, 0, 0]]
+        Et_infinity = [[0, 0, 0.5*gamma],
+                       [0, 0, 0],
+                       [0.5*gamma, 0, 0]]
+        Ea_in = [E_infinity for _ in range(max(1, num_spheres))]
     elif unused_axis == 2:
         O_infinity = np.array([0, 0, opposite_minus*transpose_minus*-0.5*gammadot])
-        Ea_in = [[[0, opposite_minus*0.5*gammadot, 0],
-                  [opposite_minus*0.5*gammadot, 0, 0],
-                  [0, 0, 0]] for i in range(max(1, num_spheres))]
+        Ot_infinity = np.array([0, 0, opposite_minus*transpose_minus*-0.5*gamma])
+        E_infinity = [[0, opposite_minus*0.5*gammadot, 0],
+                      [opposite_minus*0.5*gammadot, 0, 0],
+                      [0, 0, 0]]
+        Et_infinity = [[0, opposite_minus*0.5*gamma, 0],
+                       [opposite_minus*0.5*gamma, 0, 0],
+                       [0, 0, 0]]
+        Ea_in = [E_infinity for _ in range(max(1, num_spheres))]
     return (Ea_in, U_infinity, O_infinity, centre_of_background_flow,
-            amplitude, angular_frequency)
+            Ot_infinity, Et_infinity)
+
+
+def constant_shear(gammadot, frameno, timestep, 
+                   centre_of_background_flow=np.array([0, 0, 0]),
+                   num_spheres=1):
+    """Define background flow for an constant shear at a given time.
+
+    Args:
+        gammadot: Constant shear rate.
+        frameno: Frame number.
+        timestep: Timestep size.
+        centre_of_background_flow: Coordinates of background flow centre point.
+        num_spheres: Number of spheres in the simulation (used for size of Ea_in).
+
+    Returns: 
+        Ea_in: E^infinity for each spherical particle (at least 1).
+        U_infinity, O_infinity: Background flow.
+        centre_of_background_flow: As input.
+        Ot_infinity, Et_infinity: Integral of O_infinity and E_infinity dt.
+    """
+    t = frameno*timestep
+    U_infinity = np.array([0, 0, 0])
+    O_infinity = np.array([0, 0.5*gammadot, 0])
+    Ot_infinity = np.array([0, 0.5*gammadot*t, 0])
+    E_infinity = [[0, 0, 0.5*gammadot],
+                  [0, 0, 0],
+                  [0.5*gammadot, 0, 0]]
+    Et_infinity = [[0, 0, 0.5*gammadot*t],
+                  [0, 0, 0],
+                  [0.5*gammadot*t, 0, 0]]
+    Ea_in = [E_infinity for _ in range(max(1, num_spheres))]
+    return (Ea_in, U_infinity, O_infinity, centre_of_background_flow,
+            Ot_infinity, Et_infinity)

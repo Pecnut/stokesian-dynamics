@@ -170,12 +170,13 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
         '''
         # If we're feeding particles in from the bottom as it falls, 
         # this is the function that does that. Otherwise it just passes through.
-        posdata = feed_particles_from_bottom(posdata, feed_every_n_timesteps, feed_from_file, frameno)
+        posdata = feed_particles_from_bottom(posdata, feed_every_n_timesteps, 
+                                             feed_from_file, frameno)
         if feed_every_n_timesteps > 0 and printout>0:
             print("num of dumbbells",posdata[3].shape)
         '''
 
-        if not np.array_equal(box_bottom_left - box_top_right, np.array([0, 0, 0])):
+        if not np.array_equal(box_bottom_left-box_top_right, np.array([0, 0, 0])):
             periodic = True
         else:
             periodic = False
@@ -217,9 +218,9 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 previous_step_posdata = posdata
 
         if frameno == 0 or frameno == checkpoint_start_from_frame:
-            Ua_blank = np.array([[0, 0, 0] for i in range(num_spheres)])
-            Ub_blank = np.array([[0, 0, 0] for i in range(num_dumbbells)])
-            DUb_blank = np.array([[0, 0, 0] for i in range(num_dumbbells)])
+            Ua_blank = np.array([[0, 0, 0] for _ in range(num_spheres)])
+            Ub_blank = np.array([[0, 0, 0] for _ in range(num_dumbbells)])
+            DUb_blank = np.array([[0, 0, 0] for _ in range(num_dumbbells)])
             last_velocities = [Ua_blank, Ub_blank, DUb_blank, Ua_blank]  # Oa_blank at the end there
             last_velocity_vector = [0 for i in range(11*num_spheres + 6*num_dumbbells)]
 
@@ -238,15 +239,15 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
              Ua_out_k1, Oa_out_k1, Ea_out_k1, Ub_out_k1, HalfDUb_out_k1,
              last_generated_Minfinity_inverse, gen_times,
              U_infinity_k1, O_infinity_k1, centre_of_background_flow,
+             Ot_infinity_k1, Et_infinity_k1,
              force_on_wall_due_to_dumbbells_k1,
              last_velocity_vector) = generate_output_FTSUOE(
                 posdata, frameno, timestep, input_number,
                 last_generated_Minfinity_inverse, regenerate_Minfinity,
                 input_form, cutoff_factor, printout, use_drag_Minfinity,
                 use_Minfinity_only, extract_force_on_wall_due_to_dumbbells,
-                last_velocities, last_velocity_vector,
-                checkpoint_start_from_frame, box_bottom_left, box_top_right,
-                feed_every_n_timesteps=feed_every_n_timesteps)
+                last_velocities, last_velocity_vector, box_bottom_left, 
+                box_top_right, feed_every_n_timesteps=feed_every_n_timesteps)
             # Euler/AB2 timestepping k1
             if (num_spheres > 0):
                 Ua_out_plus_infinities_k1, Oa_out_plus_infinities_k1 = add_background_flow_spheres(
@@ -272,8 +273,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 if periodic:
                     new_sphere_positions = wrap_around(
                         new_sphere_positions, box_bottom_left, box_top_right,
-                        frameno + 1, timestep, O_infinity_k1, Ea_out_k1[0],
-                        frequency=frequency, amplitude=amplitude)
+                        Ot_infinity_k1, Et_infinity_k1)
 
             if (num_dumbbells > 0):
                 Ub_out_plus_infinities_k1, HalfDUb_out_plus_infinities_k1 = add_background_flow_dumbbells(
@@ -294,8 +294,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 if periodic:
                     new_dumbbell_positions = wrap_around(
                         new_dumbbell_positions, box_bottom_left, box_top_right,
-                        frameno + 1, timestep, O_infinity_k1, Ea_out_k1[0],
-                        frequency=frequency, amplitude=amplitude)
+                        Ot_infinity_k1, Et_infinity_k1)
 
             if num_spheres > 0 and num_dumbbells == 0:
                 last_velocities = [Ua_out_plus_infinities_k1, 0, 0, Oa_out_plus_infinities_k1]
@@ -337,14 +336,14 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
              Ua_out_k1, Oa_out_k1, Ea_out_k1, Ub_out_k1, HalfDUb_out_k1,
              last_generated_Minfinity_inverse, gen_times,
              U_infinity_k1, O_infinity_k1, centre_of_background_flow,
+             Ot_infinity_k1, Et_infinity_k1,
              force_on_wall_due_to_dumbbells_k1,
              last_velocity_vector) = generate_output_FTSUOE(
                 posdata, frameno, timestep, input_number,
                 last_generated_Minfinity_inverse, regenerate_Minfinity,
                 input_form, cutoff_factor, printout, use_drag_Minfinity,
                 use_Minfinity_only, extract_force_on_wall_due_to_dumbbells,
-                last_velocities, last_velocity_vector,
-                checkpoint_start_from_frame, box_bottom_left,
+                last_velocities, last_velocity_vector, box_bottom_left,
                 box_top_right, feed_every_n_timesteps=feed_every_n_timesteps)
             # Euler timestepping k1
             if (num_spheres > 0):
@@ -359,8 +358,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 if periodic:
                     sphere_positions_k1 = wrap_around(
                         sphere_positions_k1, box_bottom_left, box_top_right,
-                        frameno + 0, timestep, O_infinity_k1, Ea_out_k1[0],
-                        frequency=frequency, amplitude=amplitude)
+                        Ot_infinity_k1, Et_infinity_k1)
 
             if (num_dumbbells > 0):
                 Ub_out_plus_infinities_k1, HalfDUb_out_plus_infinities_k1 = add_background_flow_dumbbells(
@@ -375,13 +373,14 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 if periodic:
                     dumbbell_positions_k1 = wrap_around(
                         dumbbell_positions_k1, box_bottom_left, box_top_right,
-                        frameno + 0, timestep, O_infinity_k1, Ea_out_k1[0],
-                        frequency=frequency, amplitude=amplitude)
+                        Ot_infinity_k1, Et_infinity_k1)
 
             posdata_k1 = (sphere_sizes, sphere_positions_k1,
                           sphere_rotations_k1, dumbbell_sizes,
                           dumbbell_positions_k1, dumbbell_deltax_k1)
-            # See note in inputs, but essentially, might not want to regenerate M_infinity_inverse for frame 1's K2, K3, K4, when if invert_m_every>1, we use frame 1's K1 for everything.
+            # See note in inputs, but essentially, might not want to 
+            # regenerate M_infinity_inverse for frame 1's K2, K3, K4, 
+            # when if invert_m_every>1, we use frame 1's K1 for everything.
             if not rk4_generate_minfinity_for_each_stage:
                 regenerate_Minfinity = False
 
@@ -390,14 +389,14 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
              Ua_out_k2, Oa_out_k2, Ea_out_k2, Ub_out_k2, HalfDUb_out_k2,
              last_generated_Minfinity_inverse_ignore, gen_times_2,
              U_infinity_k2, O_infinity_k2, centre_of_background_flow,
+             Ot_infinity_k2, Et_infinity_k2,
              force_on_wall_due_to_dumbbells_k2,
              last_velocity_vector) = generate_output_FTSUOE(
                 posdata_k1, frameno + 0.5, timestep, input_number,
                 last_generated_Minfinity_inverse, regenerate_Minfinity,
                 input_form, cutoff_factor, printout, use_drag_Minfinity,
                 use_Minfinity_only, extract_force_on_wall_due_to_dumbbells,
-                last_velocities, last_velocity_vector,
-                checkpoint_start_from_frame, box_bottom_left,
+                last_velocities, last_velocity_vector, box_bottom_left,
                 box_top_right, feed_every_n_timesteps=feed_every_n_timesteps)
             # Euler timestepping k2
             if (num_spheres > 0):
@@ -412,8 +411,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 if periodic:
                     sphere_positions_k2 = wrap_around(
                         sphere_positions_k2, box_bottom_left, box_top_right,
-                        frameno + 0.5, timestep, O_infinity_k2, Ea_out_k2[0],
-                        frequency=frequency, amplitude=amplitude)
+                        Ot_infinity_k2, Et_infinity_k2)
 
             if (num_dumbbells > 0):
                 Ub_out_plus_infinities_k2, HalfDUb_out_plus_infinities_k2 = add_background_flow_dumbbells(
@@ -428,8 +426,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 if periodic:
                     dumbbell_positions_k2 = wrap_around(
                         dumbbell_positions_k2, box_bottom_left, box_top_right,
-                        frameno + 0.5, timestep, O_infinity_k2, Ea_out_k2[0],
-                        frequency=frequency, amplitude=amplitude)
+                        Ot_infinity_k2, Et_infinity_k2)
 
             posdata_k2 = (sphere_sizes, sphere_positions_k2,
                           sphere_rotations_k2, dumbbell_sizes,
@@ -442,14 +439,14 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
              Ua_out_k3, Oa_out_k3, Ea_out_k3, Ub_out_k3, HalfDUb_out_k3,
              last_generated_Minfinity_inverse_ignore, gen_times_2,
              U_infinity_k3, O_infinity_k3, centre_of_background_flow,
+             Ot_infinity_k3, Et_infinity_k3,
              force_on_wall_due_to_dumbbells_k3,
              last_velocity_vector) = generate_output_FTSUOE(
                 posdata_k2, frameno + 0.5, timestep, input_number,
                 last_generated_Minfinity_inverse, regenerate_Minfinity,
                 input_form, cutoff_factor, printout, use_drag_Minfinity,
                 use_Minfinity_only, extract_force_on_wall_due_to_dumbbells,
-                last_velocities, last_velocity_vector,
-                checkpoint_start_from_frame, box_bottom_left,
+                last_velocities, last_velocity_vector, box_bottom_left,
                 box_top_right, feed_every_n_timesteps=feed_every_n_timesteps)
             # Euler timestepping k3
             if (num_spheres > 0):
@@ -464,8 +461,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 if periodic:
                     sphere_positions_k3 = wrap_around(
                         sphere_positions_k3, box_bottom_left, box_top_right,
-                        frameno + 0.5, timestep, O_infinity_k3, Ea_out_k3[0],
-                        frequency=frequency, amplitude=amplitude)
+                        Ot_infinity_k3, Et_infinity_k3)
 
             if (num_dumbbells > 0):
                 Ub_out_plus_infinities_k3, HalfDUb_out_plus_infinities_k3 = add_background_flow_dumbbells(
@@ -480,8 +476,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 if periodic:
                     dumbbell_positions_k3 = wrap_around(
                         dumbbell_positions_k3, box_bottom_left, box_top_right,
-                        frameno + 0.5, timestep, O_infinity_k3, Ea_out_k3[0],
-                        frequency=frequency, amplitude=amplitude)
+                        Ot_infinity_k3, Et_infinity_k3)
 
             posdata_k3 = (sphere_sizes, sphere_positions_k3,
                           sphere_rotations_k3, dumbbell_sizes,
@@ -494,14 +489,14 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
              Ua_out_k4, Oa_out_k4, Ea_out_k4, Ub_out_k4, HalfDUb_out_k4,
              last_generated_Minfinity_inverse_ignore, gen_times_2,
              U_infinity_k4, O_infinity_k4, centre_of_background_flow,
+             Ot_infinity_k4, Et_infinity_k4,
              force_on_wall_due_to_dumbbells_k4,
              last_velocity_vector) = generate_output_FTSUOE(
                 posdata_k3, frameno + 1, timestep, input_number,
                 last_generated_Minfinity_inverse, regenerate_Minfinity,
                 input_form, cutoff_factor, printout, use_drag_Minfinity,
                 use_Minfinity_only, extract_force_on_wall_due_to_dumbbells,
-                last_velocities, last_velocity_vector,
-                checkpoint_start_from_frame, box_bottom_left,
+                last_velocities, last_velocity_vector, box_bottom_left,
                 box_top_right, feed_every_n_timesteps=feed_every_n_timesteps)
             if (num_spheres > 0):
                 Ua_out_plus_infinities_k4, Oa_out_plus_infinities_k4 = add_background_flow_spheres(
@@ -536,8 +531,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 if periodic:
                     new_sphere_positions = wrap_around(
                         new_sphere_positions, box_bottom_left, box_top_right,
-                        frameno+1, timestep, O_infinity_k1, Ea_out_blended[0],
-                        frequency=frequency, amplitude=amplitude)
+                        Ot_infinity_k1, Et_infinity_k1)
                 new_sphere_rotations = euler_timestep_rotation(
                     sphere_positions, sphere_rotations, new_sphere_positions,
                     new_sphere_rotations, Oa_out_blended, timestep)
@@ -560,8 +554,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 if periodic:
                     new_dumbbell_positions = wrap_around(
                         new_dumbbell_positions, box_bottom_left, box_top_right,
-                        frameno + 1, timestep, O_infinity_k1, Ea_out_k1[0],
-                        frequency=frequency, amplitude=amplitude)
+                        Ot_infinity_k1, Et_infinity_k1)
 
             if num_spheres > 0 and num_dumbbells == 0:
                 last_velocities = [Ua_out_blended, 0, 0, Oa_out_blended]
@@ -784,7 +777,7 @@ if num_spheres > 0 and input_form in ["fts"]:
 
 (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in,
  Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in, input_description,
- U_infinity, O_infinity, centre_of_background_flow, amplitude, frequency,
+ U_infinity, O_infinity, centre_of_background_flow, Ot_infinity, Et_infinity,
  box_bottom_left, box_top_right, mu) = input_ftsuoe(
      input_number, posdata, 0, 0.1, [[], [], [], []],
      skip_computation=True, input_form=input_form)

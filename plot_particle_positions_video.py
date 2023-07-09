@@ -9,9 +9,8 @@ import math
 import time
 from input_setups import input_ftsuoe
 from position_setups import pos_setup
-from functions_shared import add_sphere_rotations_to_positions, format_elapsed_time
+from functions_shared import shear_basis_vectors, format_elapsed_time
 from functions_graphics import *
-from mpl_toolkits.mplot3d import proj3d
 from matplotlib import animation, rcParams
 import matplotlib.pyplot as plt
 import numpy as np
@@ -144,7 +143,12 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]), view_label
         DFbX = DFb_out[frameno]
 
     # FOR PERIODIC, let's get it to repeat itself left and right
-    Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in, desc, U_infinity, O_infinity, centre_of_background_flow, amplitude, frequency, box_bottom_left, box_top_right, mu = input_ftsuoe(input_number, posdata, real_frameno, timestep, [[], [], [], []], skip_computation=True)
+    (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, 
+     Ea_c_in, Ub_in, HalfDUb_in, desc, U_infinity, O_infinity, 
+     centre_of_background_flow, Ot_infinity, Et_infinity, 
+     box_bottom_left, box_top_right, mu) = input_ftsuoe(
+        input_number, posdata, real_frameno, timestep, [[], [], [], []], 
+        skip_computation=True)
     if np.linalg.norm(box_top_right - box_bottom_left) > 0:  # Periodic
         E_infinity = Ea_in[0]
 
@@ -161,20 +165,10 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]), view_label
         X_lmn_canonical = np.array([[ll, mm, nn] for ll in gridpoints_x for mm in gridpoints_y for nn in gridpoints_z])
 
         # Then shear the basis vectors
-        basis_canonical = np.array([[Lx, 0, 0], [0, Ly, 0], [0, 0, Lz]])
-
-        # NOTE: For CONTINUOUS shear, set the following
-        #time_t = (frameno*display_every_n_frames+num_frames_override_start)*timestep
-        # sheared_basis_vectors_add_on = (np.cross(np.array(O_infinity)*time_t,basis_canonical).transpose() + np.dot(np.array(E_infinity)*time_t,(basis_canonical).transpose())).transpose()# + basis_canonical
-        # NOTE: For OSCILLATORY shear, set the following (basically there isn't a way to find out shear given E)
-        time_t = (frameno*display_every_n_frames+num_frames_override_start)*timestep
-        gamma = amplitude*np.sin(time_t*frequency)
-        Ot_infinity = np.array([0, 0.5*gamma, 0])
-        Et_infinity = [[0, 0, 0.5*gamma], [0, 0, 0], [0.5*gamma, 0, 0]]
-        sheared_basis_vectors_add_on = (np.cross(Ot_infinity, basis_canonical).transpose() + np.dot(Et_infinity, (basis_canonical).transpose())).transpose()
-
-        sheared_basis_vectors_add_on_mod = np.mod(sheared_basis_vectors_add_on, [Lx, Ly, Lz])
-        sheared_basis_vectors = basis_canonical + sheared_basis_vectors_add_on_mod
+        box_dimensions = box_top_right - box_bottom_left
+        basis_canonical = np.diag(box_dimensions)
+        sheared_basis_vectors = shear_basis_vectors(
+            basis_canonical, box_dimensions, Ot_infinity, Et_infinity)
         X_lmn_sheared = np.dot(X_lmn_canonical, sheared_basis_vectors)
 
         corners = np.array([[box_bottom_left[0], 0, box_bottom_left[2]],

@@ -331,17 +331,9 @@ def feed_particles_from_bottom(posdata, feed_every_n_timesteps, feed_from_file,
             new_dumbbell_sizes, new_dumbbell_positions, new_dumbbell_deltax)
 
 
-def shear_basis_vectors(basis_canonical, box_dimensions, frameno, timestep,
-                        amplitude, frequency, O_infinity, E_infinity):
-    # NOTE: For CONTINUOUS shear, set the following
-    # time_t = frameno*timestep
-    # sheared_basis_vectors_add_on = (np.cross(O_infinity*time_t, basis_canonical).transpose()
-    #                                 + np.dot(E_infinity*time_t, basis_canonical.transpose())).transpose()
-    # NOTE: For OSCILLATORY shear, set the following (basically there isn't a way to find out shear given E)
-    time_t = frameno*timestep
-    gamma = amplitude*np.sin(time_t*frequency)
-    Ot_infinity = np.array([0, 0.5*gamma, 0])
-    Et_infinity = [[0, 0, 0.5*gamma], [0, 0, 0], [0.5*gamma, 0, 0]]
+def shear_basis_vectors(basis_canonical, box_dimensions,
+                        Ot_infinity, Et_infinity):
+    """Shear the basis vectors representing the periodic box."""
     sheared_basis_vectors_add_on = (np.cross(Ot_infinity, basis_canonical).transpose()
                                     + np.dot(Et_infinity, basis_canonical.transpose())).transpose()
 
@@ -353,9 +345,8 @@ def shear_basis_vectors(basis_canonical, box_dimensions, frameno, timestep,
 def close_particles(bead_positions, bead_sizes, cutoff_factor,
                     box_bottom_left=np.array([0, 0, 0]),
                     box_top_right=np.array([0, 0, 0]),
-                    O_infinity=np.array([0, 0, 0]),
-                    E_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]),
-                    frameno=0, timestep=0.1, amplitude=1, frequency=1):
+                    Ot_infinity=np.array([0, 0, 0]),
+                    Et_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])):
     """Find particles that are closer than a given cutoff."""
 
     from scipy.spatial.distance import pdist, squareform
@@ -366,8 +357,7 @@ def close_particles(bead_positions, bead_sizes, cutoff_factor,
         # Unshear box
         basis_canonical = np.diag(box_dimensions)  # = [Lx,0,0],[0,Ly,0],[0,0,Lz]
         sheared_basis_vectors = shear_basis_vectors(
-            basis_canonical, box_dimensions, frameno, timestep, amplitude,
-            frequency, O_infinity, E_infinity)
+            basis_canonical, box_dimensions, Ot_infinity, Et_infinity)
         # Hence
         unsheared_positions = np.dot(
             np.dot(bead_positions, np.linalg.inv(sheared_basis_vectors)),

@@ -787,11 +787,8 @@ def con_M33(n, m, args):
 
 def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
                                 printout=0, frameno=0, mu=1, 
-                                O_infinity=np.array([0, 0, 0]),
-                                E_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]),
-                                timestep=0.1,
-                                centre_of_background_flow=np.array([0, 0, 0]),
-                                frequency=1, amplitude=1):
+                                Ot_infinity=np.array([0, 0, 0]), 
+                                Et_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])):
     """Generate Minfinity matrix for periodic domain.
 
     Args:
@@ -800,7 +797,7 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
         printout: (Unused) flag which allows you to put in debug statements
         frameno: Frame number
         mu: viscosity
-        O_infinity, ..., amplitude: Periodic/constant shear parameters
+        O_infinity, ..., Et_infinity: Background flow
 
     Returns:
         L*Minfinity*R: Minfinity matrix
@@ -838,8 +835,7 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
     box_dimensions = box_top_right - box_bottom_left
     basis_canonical = np.diag(box_dimensions)
     sheared_basis_vectors = shear_basis_vectors(
-        basis_canonical, box_dimensions, frameno, timestep, amplitude,
-        frequency, O_infinity, E_infinity)
+        basis_canonical, box_dimensions, Ot_infinity, Et_infinity)
     X_lmn_sheared = np.dot(X_lmn_canonical, sheared_basis_vectors)
     # NOTE: If you change the next line you have to change it in K_lmn as well!
     X_lmn_sheared_inside_radius = X_lmn_sheared[

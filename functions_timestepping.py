@@ -132,22 +132,14 @@ def ab2_timestep_rotation(sphere_positions, sphere_rotations,
 
     AB2 = Euler (x_n + u_n * dt) but with u_n replaced by (1.5 u_n - 0.5 u_{n-1})
     """
-    combined_Oa_for_ab2 = 1.5 * Oa_out - 0.5 * Oa_out_previous
+    combined_Oa_for_ab2 = 1.5*Oa_out - 0.5*Oa_out_previous
     return euler_timestep_rotation(sphere_positions, sphere_rotations,
                                    new_sphere_positions, new_sphere_rotations,
                                    combined_Oa_for_ab2, timestep)
 
 
-def orthogonal_proj(zfront, zback):
-    a = (zfront + zback) / (zfront - zback)
-    b = -2 * (zfront * zback) / (zfront - zback)
-    return np.array([[1, 0, 0, 0],
-                     [0, 1, 0, 0],
-                     [0, 0, a, b],
-                     [0, 0, -0.0001, zback]])
-
-
 def do_we_have_all_size_ratios(error, element_sizes, lam_range, num_spheres):
+    """Check whether we have all particle size ratios in the R2Bexact lookup."""
 
     lambda_matrix = element_sizes / element_sizes[:, None]
     lam_range_including_reciprocals = np.concatenate([lam_range, 1 / lam_range])
@@ -215,8 +207,8 @@ def generate_output_FTSUOE(
         last_generated_Minfinity_inverse, regenerate_Minfinity, input_form,
         cutoff_factor, printout, use_drag_Minfinity, use_Minfinity_only,
         extract_force_on_wall_due_to_dumbbells, last_velocities,
-        last_velocity_vector, checkpoint_start_from_frame,
-        box_bottom_left, box_top_right, feed_every_n_timesteps=0):
+        last_velocity_vector, box_bottom_left, box_top_right, 
+        feed_every_n_timesteps=0):
     """Solve the grand mobility problem: for given force/velocity inputs,
     return all computed velocities/forces.
 
@@ -240,8 +232,8 @@ def generate_output_FTSUOE(
     # box_bottom_left and box_top_right.
     (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in,
      Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in, input_description,
-     U_infinity, O_infinity, centre_of_background_flow, amplitude, frequency,
-     box_bottom_left, box_top_right, mu) = input_ftsuoe(
+     U_infinity, O_infinity, centre_of_background_flow, Ot_infinity, 
+     Et_infinity, box_bottom_left, box_top_right, mu) = input_ftsuoe(
         input_number, posdata, frameno, timestep, last_velocities,
         input_form=input_form, skip_computation=True)
 
@@ -277,7 +269,7 @@ def generate_output_FTSUOE(
                 O_infinity=O_infinity, E_infinity=Ea_in[0],
                 timestep=timestep,
                 centre_of_background_flow=centre_of_background_flow,
-                amplitude=amplitude, frequency=frequency)
+                Ot_infinity=Ot_infinity, Et_infinity=Et_infinity)
         else:
             # non-periodic
             (grand_resistance_matrix, heading, last_generated_Minfinity_inverse,
@@ -314,8 +306,8 @@ def generate_output_FTSUOE(
             (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in,
              Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in,
              input_description, U_infinity, O_infinity,
-             centre_of_background_flow, amplitude, frequency, box_bottom_left,
-             box_top_right, mu) = input_ftsuoe(
+             centre_of_background_flow, Ot_infinity, Et_infinity, 
+             box_bottom_left, box_top_right, mu) = input_ftsuoe(
                 input_number, posdata, frameno, timestep, last_velocities,
                 input_form=input_form,
                 grand_resistance_matrix_fte=grand_resistance_matrix)
@@ -481,6 +473,7 @@ def generate_output_FTSUOE(
             Ua_out, Oa_out, Ea_out, Ub_out, HalfDUb_out,
             last_generated_Minfinity_inverse, gen_times,
             U_infinity, O_infinity, centre_of_background_flow,
+            Ot_infinity, Et_infinity,
             force_on_wall_due_to_dumbbells, last_velocity_vector)
 
 
@@ -581,9 +574,8 @@ def format_finish_time(timeleft, flags):
 
 
 def wrap_around(new_sphere_positions, box_bottom_left, box_top_right,
-                frameno=0, timestep=0.1, O_infinity=np.array([0, 0, 0]),
-                E_infinity=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
-                frequency=1, amplitude=1):
+                Ot_infinity=np.array([0, 0, 0]),
+                Et_infinity=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])):
     """Return sphere positions modulo the periodic box.
     
     This ideally should just be
@@ -601,8 +593,7 @@ def wrap_around(new_sphere_positions, box_bottom_left, box_top_right,
     # Then shear the basis vectors
     basis_canonical = np.diag(box_dimensions)  # which equals np.array([[Lx,0,0],[0,Ly,0],[0,0,Lz]])
     sheared_basis_vectors = shear_basis_vectors(
-        basis_canonical, box_dimensions, frameno, timestep, amplitude,
-        frequency, O_infinity, E_infinity)
+        basis_canonical, box_dimensions, Ot_infinity, Et_infinity)
     # Hence
     new_sphere_positions = np.dot(np.mod(np.dot(new_sphere_positions,
                                                 np.linalg.inv(sheared_basis_vectors)) + 0.5,

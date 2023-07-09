@@ -288,29 +288,26 @@ def generate_R2Bexact(posdata,
                       printout=0, cutoff_factor=2, frameno=0, mu=1,
                       box_bottom_left=np.array([0, 0, 0]),
                       box_top_right=np.array([0, 0, 0]),
-                      O_infinity=np.array([0, 0, 0]),
-                      E_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]]),
-                      timestep=0.1,
-                      centre_of_background_flow=np.array([0, 0, 0]),
-                      frequency=1, amplitude=1):
+                      Ot_infinity=np.array([0, 0, 0]),
+                      Et_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])):
     """Generate R2Bexact matrix, for either nonperiodic or periodic domain.
 
     Args:
-        posdata: Particle position, size and count data
-        printout: (Unused) flag which allows you to put in debug statements
+        posdata: Particle position, size and count data.
+        printout: (Unused) flag which allows you to put in debug statements.
         cutoff_factor: Separation distance, multiple of (a1+a2) below which 
-            R2Bexact applies
-        frameno: Frame number
-        mu: viscosity
+            R2Bexact applies.
+        frameno: (Unused) frame number you can put in debug statements.
+        mu: Viscosity.
         [All arguments below should be ignored for non-periodic domains]
         box_bottom_left, box_top_right: Periodic box coordinates. If equal, 
             domain is assumed to be non-periodic and all remaining args are 
             ignored. 
-        O_infinity, ..., amplitude: Periodic/constant shear parameters
+        Ot_infinity, Et_infinity: Integral of O_infinity and E_infinity dt.
 
     Returns:
-        mu*(L*R2Bexact*R): R2Bexact matrix
-        "R2Bexact": Human readable name of the matrix
+        mu*(L*R2Bexact*R): R2Bexact matrix.
+        "R2Bexact": Human readable name of the matrix.
     """
     global average_size_matrix, upper_triangle
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
@@ -329,8 +326,7 @@ def generate_R2Bexact(posdata,
     (closer_than_cutoff_pairs_scaled, displacements_pairs_scaled,
         distances_pairs_scaled, size_ratios) = close_particles(
             bead_positions, bead_sizes, cutoff_factor, box_bottom_left,
-            box_top_right, O_infinity, E_infinity, frameno, timestep,
-            frequency=frequency, amplitude=amplitude)
+            box_top_right, Ot_infinity=Ot_infinity, Et_infinity=Et_infinity)
 
     uv_power = [[1, 2, 2, 1, 1], 
                 [2, 3, 3, 2, 2], 
