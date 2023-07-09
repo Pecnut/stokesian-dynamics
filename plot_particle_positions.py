@@ -124,4 +124,3 @@ ax.set_title("  frame "
 ax.set_title(filename, loc='center', y=1.05)
 
 plt.show()
-#savefig('foo.png', bbox_inches='tight')

@@ -23,8 +23,8 @@ filename = newest[len("output/"):-len(".npz")]
 # Overwrite filename here if you want a specific file
 
 timestep = float(filename.split('-')[4][1:].replace('p', '.'))
-input_number = np.int(filename.split('-')[2][1:])
-setup_number = np.int(filename.split('-')[1][1:])
+input_number = int(filename.split('-')[2][1:])
+setup_number = int(filename.split('-')[1][1:])
 
 # Find out info from input_number
 posdata, setup_description = pos_setup(setup_number)
@@ -33,7 +33,7 @@ print("Generating video [" + filename + ".mp4]")
 print("[Timestep " + str(timestep) + " | ]")
 
 num_frames_override_start = 0
-num_frames_override_end = 5
+num_frames_override_end = 0 # Set to 0 to not override number of frames
 display_every_n_frames = 1
 
 viewing_angle = (0, -90)
@@ -53,9 +53,9 @@ DFb_out = data1['DFb']
 positions_sphere_rotations = data1['sphere_rotations']
 
 if num_frames_override_end == 0:
-    num_frames = positions_centres.shape[0]/display_every_n_frames
+    num_frames = positions_centres.shape[0]//display_every_n_frames
 else:
-    num_frames = (num_frames_override_end-num_frames_override_start)/display_every_n_frames
+    num_frames = (num_frames_override_end-num_frames_override_start)//display_every_n_frames
 num_particles = positions_centres.shape[1]
 num_dumbbells = positions_deltax.shape[1]
 num_spheres = num_particles - num_dumbbells
@@ -66,7 +66,7 @@ max_DFb_out = 1
 # Pictures initialise
 rcParams.update({'font.size': 12})
 rcParams.update({'figure.dpi': 120, 'figure.figsize': [11, 11],
-                 'savefig.dpi': 140, 'savefig.jpeg_quality': 140})
+                 'savefig.dpi': 140})
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.view_init(viewing_angle[0], viewing_angle[1])
@@ -97,7 +97,7 @@ else:
 ax.set_xlabel("$x$")
 ax.set_zlabel("$z$")
 fig.tight_layout()
-times = [0 for i in range(num_frames)]
+times = [0 for _ in range(num_frames)]
 
 # Pictures
 if viewbox_bottomleft_topright.size == 0:
@@ -199,6 +199,10 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]),
             linec2.remove()
             linec3.remove()
             linec4.remove()
+        # linec1 = plt.plot(*np.transpose([cor1,cor2]), color='r', linewidth=1)[0]
+        # linec2 = plt.plot(*np.transpose([cor2,cor3]), color='r', linewidth=1)[0]
+        # linec3 = plt.plot(*np.transpose([cor3,cor4]), color='r', linewidth=1)[0]
+        # linec4 = plt.plot(*np.transpose([cor4,cor1]), color='r', linewidth=1)[0]
         linec1 = plt.plot((cor1[0], cor2[0]), (cor1[1], cor2[1]), (cor1[2], cor2[2]), color='r', linewidth=1)[0]
         linec2 = plt.plot((cor2[0], cor3[0]), (cor2[1], cor3[1]), (cor2[2], cor3[2]), color='r', linewidth=1)[0]
         linec3 = plt.plot((cor3[0], cor4[0]), (cor3[1], cor4[1]), (cor3[2], cor4[2]), color='r', linewidth=1)[0]
@@ -246,15 +250,17 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]),
               + dumbbell_spheres):
         q.remove()
 
-    (spheres, sphere_lines, sphere_trace_lines) = plot_all_spheres(
-        ax, real_frameno, viewbox_bottomleft_topright, posdata,
-        previous_step_posdata, trace_paths, spheres, sphere_lines,
-        sphere_trace_lines, FaX)
-    (dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines) = plot_all_dumbbells(
-        ax, real_frameno, viewbox_bottomleft_topright, posdata,
-        previous_step_posdata, trace_paths, dumbbell_spheres, dumbbell_lines,
-        dumbbell_trace_lines, FbX, DFbX, max_DFb_out=max_DFb_out,
-        no_line=no_line)
+    if num_spheres > 0:
+        (spheres, sphere_lines, sphere_trace_lines) = plot_all_spheres(
+            ax, real_frameno, viewbox_bottomleft_topright, posdata,
+            previous_step_posdata, trace_paths, spheres, sphere_lines,
+            sphere_trace_lines, FaX)
+    if num_dumbbells > 0:
+        (dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines) = plot_all_dumbbells(
+            ax, real_frameno, viewbox_bottomleft_topright, posdata,
+            previous_step_posdata, trace_paths, dumbbell_spheres, dumbbell_lines,
+            dumbbell_trace_lines, FbX, DFbX, max_DFb_out=max_DFb_out,
+            no_line=no_line)
 
     if view_labels == 1:
         (force_lines, force_text) = plot_all_force_lines(
@@ -291,8 +297,8 @@ generate_frame_args = [viewbox_bottomleft_topright, view_labels, timestep,
 ani = animation.FuncAnimation(fig, generate_frame, frames=num_frames,
                               fargs=generate_frame_args, repeat=False,
                               interval=200, save_count=num_frames)
-mywriter = animation.FFMpegWriter(fps=8)
-ani.save('output_videos/' + filename + '.mp4', writer=mywriter)
+# mywriter = animation.FFMpegWriter(fps=8)
+ani.save('output_videos/' + filename + '.mp4')#, writer=mywriter)
 total_elapsed_time = time.time() - total_time_start
 print("[Total time to run " + format_elapsed_time(total_elapsed_time) + "]")
 print("Completed [" + filename + ".mp4]")
