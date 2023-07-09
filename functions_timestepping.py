@@ -9,7 +9,8 @@ import datetime
 from numpy import linalg
 from functions_generate_grand_resistance_matrix import (
     generate_grand_resistance_matrix, generate_grand_resistance_matrix_periodic)
-from functions_shared import posdata_data, format_elapsed_time, throw_error
+from functions_shared import (posdata_data, format_elapsed_time, throw_error,
+                              shear_basis_vectors)
 from functions_simulation_tools import (
     construct_force_vector_from_fts, deconstruct_velocity_vector_for_fts,
     fts_to_fte_matrix, fte_to_ufte_matrix, ufte_to_ufteu_matrix,
@@ -577,3 +578,80 @@ def format_finish_time(timeleft, flags):
         return flags + finishtime.strftime("%a %H:%M")
     else:
         return flags +finishtime.strftime("%d/%m/%y %H:%M")
+
+
+def wrap_around(new_sphere_positions, box_bottom_left, box_top_right,
+                frameno=0, timestep=0.1, O_infinity=np.array([0, 0, 0]),
+                E_infinity=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
+                frequency=1, amplitude=1):
+    """Return sphere positions modulo the periodic box.
+    
+    This ideally should just be
+        new_sphere_positions = 
+            np.mod(new_sphere_positions + np.array([Lx/2.,Ly/2.,Lz/2.]),Lx)
+                - np.array([Lx/2.,Ly/2.,Lz/2.])
+    but if you have a slanted box /_/ and you go off the top, you actually
+    want to go to the bottom and slightly to the left.
+    This is achieved by instead doing
+        new_sphere_positions = 
+            SHEAR [ np.mod( UNSHEAR [ new_sphere_positions ] + np.array([Lx/2.,Ly/2.,Lz/2.]),Lx) 
+                   - np.array([Lx/2.,Ly/2.,Lz/2.]) ]
+    """
+    box_dimensions = box_top_right - box_bottom_left
+    # Then shear the basis vectors
+    basis_canonical = np.diag(box_dimensions)  # which equals np.array([[Lx,0,0],[0,Ly,0],[0,0,Lz]])
+    sheared_basis_vectors = shear_basis_vectors(
+        basis_canonical, box_dimensions, frameno, timestep, amplitude,
+        frequency, O_infinity, E_infinity)
+    # Hence
+    new_sphere_positions = np.dot(np.mod(np.dot(new_sphere_positions,
+                                                np.linalg.inv(sheared_basis_vectors)) + 0.5,
+                                         [1, 1, 1]) - 0.5, sheared_basis_vectors)
+    return new_sphere_positions
+
+
+def add_background_flow_spheres(Ua_out_k1, Oa_out_k1, Ea_out_k1, 
+                                U_infinity_k1, O_infinity_k1,
+                                sphere_positions, centre_of_background_flow):
+    """Return Ua_out and Oa_out + the background flow."""
+    num_spheres = sphere_positions.shape[0]
+    O_infinity_cross_x_k1 = np.cross(O_infinity_k1,
+                                     sphere_positions - centre_of_background_flow)
+    E_infinity_dot_x_k1 = np.empty([num_spheres, 3])
+    for i in range(num_spheres):
+        E_infinity_dot_x_k1[i] = np.dot(Ea_out_k1[i],
+                                        sphere_positions[i] - centre_of_background_flow)
+
+    Ua_out_plus_infinities_k1 = (Ua_out_k1
+                                 + U_infinity_k1
+                                 + O_infinity_cross_x_k1
+                                 + E_infinity_dot_x_k1)
+    Oa_out_plus_infinities_k1 = Oa_out_k1 + O_infinity_k1
+
+    return Ua_out_plus_infinities_k1, Oa_out_plus_infinities_k1
+
+
+def add_background_flow_dumbbells(Ub_out_k1, HalfDUb_out_k1, Ea_out_k1, 
+                                  U_infinity_k1, O_infinity_k1,
+                                  dumbbell_positions, dumbbell_deltax,
+                                  centre_of_background_flow):
+    """Return Ub_out and HalfDUb_out + the background flow."""
+    num_dumbbells = dumbbell_positions.shape[0]
+    O_infinity_cross_xbar_k1 = np.cross(O_infinity_k1,
+                                        dumbbell_positions - centre_of_background_flow)
+    O_infinity_cross_deltax_k1 = np.cross(O_infinity_k1, dumbbell_deltax)
+    E_infinity_dot_xbar_k1 = np.empty([num_dumbbells, 3])
+    E_infinity_dot_deltax_k1 = np.empty([num_dumbbells, 3])
+    for i in range(num_dumbbells):
+        E_infinity_dot_xbar_k1[i] = np.dot(Ea_out_k1[0],
+                                           dumbbell_positions[i] - centre_of_background_flow)
+        E_infinity_dot_deltax_k1[i] = np.dot(Ea_out_k1[0], dumbbell_deltax[i])
+
+    Ub_out_plus_infinities_k1 = (Ub_out_k1 + U_infinity_k1
+                                 + O_infinity_cross_xbar_k1
+                                 + E_infinity_dot_xbar_k1)
+    HalfDUb_out_plus_infinities_k1 = (HalfDUb_out_k1
+                                      + 0.5*(O_infinity_cross_deltax_k1
+                                             + E_infinity_dot_deltax_k1))
+
+    return Ub_out_plus_infinities_k1, HalfDUb_out_plus_infinities_k1

@@ -23,12 +23,13 @@ import numba
 from functions_email import send_email
 from functions_shared import (posdata_data, format_elapsed_time, throw_error,
                               throw_warning, feed_particles_from_bottom,
-                              sizeof_fmt, shear_basis_vectors)
+                              sizeof_fmt)
 from functions_timestepping import (
     euler_timestep, ab2_timestep, did_something_go_wrong_with_dumbells,
     euler_timestep_rotation, ab2_timestep_rotation, do_we_have_all_size_ratios,
     generate_output_FTSUOE, are_some_of_the_particles_too_close,
-    calculate_time_left, format_time_left, format_finish_time)
+    calculate_time_left, format_time_left, format_finish_time,
+    wrap_around, add_background_flow_spheres, add_background_flow_dumbbells)
 from input_setups import input_ftsuoe
 from inputs import (
     cutoff_factor, num_frames, view_graphics, viewbox_bottomleft_topright,
@@ -133,82 +134,13 @@ def initialise_frame():
             dumbbell_trace_lines, previous_step_posdata)
 
 
-def wrap_around(new_sphere_positions, box_bottom_left, box_top_right,
-                frameno=0, timestep=0.1, O_infinity=np.array([0, 0, 0]),
-                E_infinity=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
-                frequency=1, amplitude=1):
-    # PERIODIC RESET IF THEY LEAVE THE BOX.
-    # This ideally should just be
-    #   new_sphere_positions = np.mod(new_sphere_positions + np.array([Lx/2.,Ly/2.,Lz/2.]),Lx) - np.array([Lx/2.,Ly/2.,Lz/2.])
-    # but if you have a slanted box /_/ and you go off the top, you actually
-    # want to go to the bottom and slightly to the left.
-    # This is achieved by instead doing
-    #   new_sphere_positions = SHEAR [ np.mod( UNSHEAR [ new_sphere_positions ] + np.array([Lx/2.,Ly/2.,Lz/2.]),Lx) - np.array([Lx/2.,Ly/2.,Lz/2.]) ]
-    box_dimensions = box_top_right - box_bottom_left
-    # Then shear the basis vectors
-    basis_canonical = np.diag(box_dimensions)  # which equals np.array([[Lx,0,0],[0,Ly,0],[0,0,Lz]])
-    sheared_basis_vectors = shear_basis_vectors(
-        basis_canonical, box_dimensions, frameno, timestep, amplitude,
-        frequency, O_infinity, E_infinity)
-    # Hence
-    new_sphere_positions = np.dot(np.mod(np.dot(new_sphere_positions,
-                                                np.linalg.inv(sheared_basis_vectors)) + 0.5,
-                                         [1, 1, 1]) - 0.5, sheared_basis_vectors)
-    return new_sphere_positions
-
-
-def add_background_flow_spheres(Ua_out_k1, Oa_out_k1, Ea_out_k1, U_infinity_k1, O_infinity_k1,
-                                sphere_positions, centre_of_background_flow):
-    O_infinity_cross_x_k1 = np.cross(O_infinity_k1,
-                                     sphere_positions - centre_of_background_flow)
-    E_infinity_dot_x_k1 = np.empty([sphere_positions.shape[0],
-                                    sphere_positions.shape[1]])
-    for i in range(num_spheres):
-        E_infinity_dot_x_k1[i] = np.dot(Ea_out_k1[i],
-                                        sphere_positions[i] - centre_of_background_flow)
-
-    Ua_out_plus_infinities_k1 = (Ua_out_k1
-                                 + U_infinity_k1
-                                 + O_infinity_cross_x_k1
-                                 + E_infinity_dot_x_k1)
-    Oa_out_plus_infinities_k1 = Oa_out_k1 + O_infinity_k1
-
-    return Ua_out_plus_infinities_k1, Oa_out_plus_infinities_k1
-
-
-def add_background_flow_dumbbells(Ub_out_k1, HalfDUb_out_k1, Ea_out_k1, U_infinity_k1, O_infinity_k1,
-                                  dumbbell_positions, centre_of_background_flow):
-    O_infinity_cross_xbar_k1 = np.cross(O_infinity_k1,
-                                        dumbbell_positions - centre_of_background_flow)
-    O_infinity_cross_deltax_k1 = np.cross(O_infinity_k1, dumbbell_deltax)
-    E_infinity_dot_xbar_k1 = np.empty([dumbbell_positions.shape[0],
-                                       dumbbell_positions.shape[1]])
-    E_infinity_dot_deltax_k1 = np.empty([dumbbell_positions.shape[0],
-                                         dumbbell_positions.shape[1]])
-    for i in range(num_dumbbells):
-        E_infinity_dot_xbar_k1[i] = np.dot(Ea_out_k1[0],
-                                           dumbbell_positions[i] - centre_of_background_flow)
-        E_infinity_dot_deltax_k1[i] = np.dot(Ea_out_k1[0], dumbbell_deltax[i])
-
-    Ub_out_plus_infinities_k1 = (Ub_out_k1 + U_infinity_k1
-                                 + O_infinity_cross_xbar_k1
-                                 + E_infinity_dot_xbar_k1)
-    HalfDUb_out_plus_infinities_k1 = (HalfDUb_out_k1
-                                      + 0.5*(O_infinity_cross_deltax_k1
-                                             + E_infinity_dot_deltax_k1))
-
-    return Ub_out_plus_infinities_k1, HalfDUb_out_plus_infinities_k1
-
-
-# Computation
-
-
 def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                    cutoff_factor=2, viewbox_bottomleft_topright=np.array([]),
                    printout=0, view_labels=1, timestep=0.1, trace_paths=0,
                    input_form='general', filename='', output_folder='output',
                    legion_random_id='', box_bottom_left=np.array([0, 0, 0]),
                    box_top_right=np.array([0, 0, 0])):
+    """Perform one timestep of the Stokesian Dynamics simulation."""
     global posdata, previous_step_posdata, times
     global spheres, dumbbell_lines, dumbbell_spheres, sphere_lines
     global sphere_trace_lines, dumbbell_trace_lines
@@ -346,7 +278,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
             if (num_dumbbells > 0):
                 Ub_out_plus_infinities_k1, HalfDUb_out_plus_infinities_k1 = add_background_flow_dumbbells(
                     Ub_out_k1, HalfDUb_out_k1, Ea_out_k1, U_infinity_k1, O_infinity_k1,
-                    dumbbell_positions, centre_of_background_flow)
+                    dumbbell_positions, dumbbell_deltax, centre_of_background_flow)
                 if timestepping_scheme == "euler" or frameno - checkpoint_filename == 0:
                     new_dumbbell_positions = euler_timestep(
                         dumbbell_positions, Ub_out_plus_infinities_k1, timestep)
@@ -433,7 +365,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
             if (num_dumbbells > 0):
                 Ub_out_plus_infinities_k1, HalfDUb_out_plus_infinities_k1 = add_background_flow_dumbbells(
                     Ub_out_k1, HalfDUb_out_k1, Ea_out_k1, U_infinity_k1, O_infinity_k1,
-                    dumbbell_positions, centre_of_background_flow)
+                    dumbbell_positions, dumbbell_deltax, centre_of_background_flow)
                 dumbbell_positions_k1 = euler_timestep(
                     dumbbell_positions, Ub_out_plus_infinities_k1, timestep/2)
                 dumbbell_deltax_k1 = euler_timestep(
@@ -486,7 +418,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
             if (num_dumbbells > 0):
                 Ub_out_plus_infinities_k2, HalfDUb_out_plus_infinities_k2 = add_background_flow_dumbbells(
                     Ub_out_k2, HalfDUb_out_k2, Ea_out_k1, U_infinity_k2, O_infinity_k2,
-                    dumbbell_positions, centre_of_background_flow)
+                    dumbbell_positions, dumbbell_deltax, centre_of_background_flow)
                 dumbbell_positions_k2 = euler_timestep(
                     dumbbell_positions, Ub_out_plus_infinities_k2, timestep/2)
                 dumbbell_deltax_k2 = euler_timestep(
@@ -538,7 +470,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
             if (num_dumbbells > 0):
                 Ub_out_plus_infinities_k3, HalfDUb_out_plus_infinities_k3 = add_background_flow_dumbbells(
                     Ub_out_k3, HalfDUb_out_k3, Ea_out_k3, U_infinity_k3, O_infinity_k3,
-                    dumbbell_positions, centre_of_background_flow)
+                    dumbbell_positions, dumbbell_deltax, centre_of_background_flow)
                 dumbbell_positions_k3 = euler_timestep(
                     dumbbell_positions, Ub_out_plus_infinities_k3, timestep)
                 dumbbell_deltax_k3 = euler_timestep(
@@ -578,7 +510,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
             if (num_dumbbells > 0):
                 Ub_out_plus_infinities_k4, HalfDUb_out_plus_infinities_k4 = add_background_flow_dumbbells(
                     Ub_out_k4, HalfDUb_out_k4, Ea_out_k4, U_infinity_k4, O_infinity_k4,
-                    dumbbell_positions, centre_of_background_flow)
+                    dumbbell_positions, dumbbell_deltax, centre_of_background_flow)
             for i in range(len(gen_times)):
                 gen_times[i] = gen_times[i] + gen_times_2[i]
 
@@ -900,9 +832,9 @@ if error == 0:
     periodic_status = ["ON", "OFF"][np.array_equal(box_bottom_left - box_top_right, np.array([0, 0, 0]))]
     if timestepping_scheme == "euler":
         timestep_method = "Euler"
-    if timestepping_scheme == "ab2":
+    elif timestepping_scheme == "ab2":
         timestep_method = "AB2"
-    if timestepping_scheme == "rk4":
+    elif timestepping_scheme == "rk4":
         timestep_method = "RK4"
 
     matrix_size = sizeof_fmt(48 * (11 * num_spheres + 6 * num_dumbbells)**2)
