@@ -2,12 +2,15 @@
 # -*- coding: utf-8 -*-
 # Adam Townsend, adam@adamtownsend.com, 28/12/2014
 
-# convert_resistance_scalars_to_d_form.py
-#   Reads in resistance scalars from scalars_general_resistance_blob.txt and converts them to their
-#   'd' form, i.e. with the R2binfinity term already subtracted away from it. Then it saves it to
-#   scalars_general_resistance_blob_d.txt.
-#   It's in the main folder because otherwise it's a pain to import generate_Minfinity and then use
-#   the scripts which it call which expect to be called from this folder.
+"""Reads in resistance scalars from scalars_general_resistance_blob.txt and 
+converts them to their 'd' form, i.e. with the R2binfinity term already 
+subtracted away from it. Then it saves it to
+scalars_general_resistance_blob_d.txt.
+
+It's in the main folder because otherwise it's a pain to import 
+generate_Minfinity and then use the scripts which it call which expect to be 
+called from this folder.
+"""
 
 import numpy as np
 from functions_generate_Minfinity import generate_Minfinity
@@ -23,8 +26,9 @@ s_dash_range = np.loadtxt('find_resistance_scalars/values_of_s_dash.txt')
 lam_range = np.loadtxt('find_resistance_scalars/values_of_lambda.txt')
 lam_range_with_reciprocals = np.copy(lam_range)
 for lam in lam_range:
-    if (1./lam) not in lam_range_with_reciprocals:
-        lam_range_with_reciprocals = np.append(lam_range_with_reciprocals, (1./lam))
+    if 1/lam not in lam_range_with_reciprocals:
+        lam_range_with_reciprocals = np.append(lam_range_with_reciprocals,
+                                               1/lam)
 lam_range_with_reciprocals.sort()
 
 for lam in lam_range_with_reciprocals:
@@ -34,13 +38,17 @@ for lam in lam_range_with_reciprocals:
         if lam <= 1:
             sphere_sizes = np.array([1, lam])
         else:
-            sphere_sizes = np.array([1./lam, 1])
-        sphere_positions = np.array([[0, 0, 0], [s_dash*(sphere_sizes[0]+sphere_sizes[1])*0.5, 0, 0]])  # s = (a1+a2)/2 * s'
-        sphere_rotations = add_sphere_rotations_to_positions(sphere_positions, sphere_sizes, np.array([[1, 0, 0], [0, 0, 1]]))
+            sphere_sizes = np.array([1/lam, 1])
+        # s = (a1+a2)/2 * s'
+        sphere_positions = np.array([
+            [0, 0, 0], [s_dash*(sphere_sizes[0]+sphere_sizes[1])*0.5, 0, 0]])
+        sphere_rotations = add_sphere_rotations_to_positions(
+            sphere_positions, sphere_sizes, np.array([[1, 0, 0], [0, 0, 1]]))
         dumbbell_sizes = np.array([])
         dumbbell_positions = np.empty([0, 3])
         dumbbell_deltax = np.empty([0, 3])
-        posdata = (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax)
+        posdata = (sphere_sizes, sphere_positions, sphere_rotations,
+                   dumbbell_sizes, dumbbell_positions, dumbbell_deltax)
         (Minfinity, heading) = generate_Minfinity(posdata)
         Rinfinity = np.linalg.inv(Minfinity*6*np.pi)
 
@@ -98,23 +106,31 @@ with open('find_resistance_scalars/scalars_general_resistance_blob_d.txt', 'wb+'
     np.save(outputfile, XYZd_raw)
 
 # human readable
-general_resistance_scalars_names = np.array(["XA", "YA", "YB", "XC", "YC", "XG", "YG", "YH", "XM", "YM", "ZM"])
+general_resistance_scalars_names = np.array(["XA", "YA", "YB", "XC", "YC",
+                                             "XG", "YG", "YH", "XM", "YM",
+                                             "ZM"])
 s_dash_length = s_dash_range.shape[0]
 lam_length = lam_range.shape[0]
 lam_wr_length = lam_range_with_reciprocals.shape[0]
 general_scalars_length = general_resistance_scalars_names.shape[0]
-XYZ_general_human = np.zeros((s_dash_length*lam_wr_length*2, general_scalars_length + 3))
+XYZ_general_human = np.zeros((s_dash_length*lam_wr_length*2, 
+                              general_scalars_length + 3))
 for s_dash in s_dash_range:
     s_dash_index = np.argwhere(s_dash_range == s_dash)[0, 0]
     for lam in lam_range_with_reciprocals:
         lam_wr_index = np.argwhere(lam_range_with_reciprocals == lam)[0, 0]
         for gam in range(2):
-            XYZ_outputline = np.append([s_dash, lam, gam], XYZd_raw[:, gam, s_dash_index, lam_wr_index])
+            XYZ_outputline = np.append([s_dash, lam, gam],
+                                       XYZd_raw[:, gam, s_dash_index, lam_wr_index])
             XYZ_general_human[(lam_wr_index*s_dash_length + s_dash_index)*2 + gam, :] = XYZ_outputline
 with open('find_resistance_scalars/scalars_general_resistance_text_d.txt', 'a') as outputfile:
-    heading = "'D'-form resistance scalars, generated " + time.strftime("%d/%m/%Y %H:%M:%S")
+    heading = ("'D'-form resistance scalars, generated "
+               + time.strftime("%d/%m/%Y %H:%M:%S"))
     np.savetxt(outputfile, np.array([heading]), fmt="%s")
-    np.savetxt(outputfile, np.append(["s'", "lambda", "gamma"], general_resistance_scalars_names), newline=" ", fmt="%15s")
+    np.savetxt(outputfile,
+               np.append(["s'", "lambda", "gamma"], 
+                         general_resistance_scalars_names),
+               newline=" ", fmt="%15s")
     outputfile.write("\n")
     np.savetxt(outputfile, XYZ_general_human, newline="\n", fmt="% .8e")
 
