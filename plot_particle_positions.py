@@ -2,13 +2,17 @@
 # -*- coding: utf-8 -*-
 # Adam Townsend, adam@adamtownsend.com, 07/06/2017
 
+"""Plot particles at a given frame number for an NPZ file specified in the 
+script. 
+
+Does not plot any periodic copies. If you want to do this, see the code in
+plot_particle_positions_video.py.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import animation
-from pylab import rcParams, savefig
-from mpl_toolkits.mplot3d import proj3d
+from pylab import rcParams
 from functions_graphics import *
-import sys
 from functions_shared import add_sphere_rotations_to_positions
 
 rcParams['figure.figsize'] = 5, 5
@@ -52,7 +56,7 @@ previous_step_posdata = posdata
 # Pictures initialise
 rcParams.update({'font.size': 12})
 rcParams.update({'figure.dpi': 120, 'figure.figsize': [11, 11],
-                 'savefig.dpi': 140, 'savefig.jpeg_quality': 140})
+                 'savefig.dpi': 140})
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.view_init(viewing_angle[0], viewing_angle[1])
@@ -98,13 +102,15 @@ if viewbox_bottomleft_topright.size == 0:
         m = 3
     viewbox_bottomleft_topright = np.array([[-m, -m, -m], [m, m, m]])
 
-(spheres, sphere_lines, sphere_trace_lines) = plot_all_spheres(
-    ax, frameno, viewbox_bottomleft_topright, posdata, previous_step_posdata,
-    trace_paths, spheres, sphere_lines, sphere_trace_lines, Fa_out[frameno])
-(dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines) = plot_all_dumbbells(
-    ax, frameno, viewbox_bottomleft_topright, posdata, previous_step_posdata,
-    trace_paths, dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines,
-    Fb_out[frameno], DFb_out[frameno])
+if num_spheres > 0:
+    (spheres, sphere_lines, sphere_trace_lines) = plot_all_spheres(
+        ax, frameno, viewbox_bottomleft_topright, posdata, previous_step_posdata,
+        trace_paths, spheres, sphere_lines, sphere_trace_lines, Fa_out[frameno])
+if num_dumbbells > 0:
+    (dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines) = plot_all_dumbbells(
+        ax, frameno, viewbox_bottomleft_topright, posdata, previous_step_posdata,
+        trace_paths, dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines,
+        Fb_out[frameno], DFb_out[frameno])
 if view_labels == 1:
     torque_lines = plot_all_torque_lines(ax, viewbox_bottomleft_topright,
                                          posdata, Ta_out, torque_lines)

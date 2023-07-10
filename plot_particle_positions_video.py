@@ -2,10 +2,15 @@
 # -*- coding: utf-8 -*-
 # Adam Townsend, adam@adamtownsend.com, 07/06/2017
 
+"""Create MP4 video of either the most recently created NPZ file in the
+output folder or an NPZ file specified in the script. 
+
+Video is created in the output_videos folder.
+"""
+
 import glob
 import os
 import sys
-import math
 import time
 from input_setups import input_ftsuoe
 from position_setups import pos_setup
@@ -33,7 +38,7 @@ print("Generating video [" + filename + ".mp4]")
 print("[Timestep " + str(timestep) + " | ]")
 
 num_frames_override_start = 0
-num_frames_override_end = 0 # Set to 0 to not override number of frames
+num_frames_override_end = 0  # Set to 0 to not override number of frames
 display_every_n_frames = 1
 
 viewing_angle = (0, -90)
@@ -185,11 +190,17 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]),
             basis_canonical, box_dimensions, Ot_infinity, Et_infinity)
         X_lmn_sheared = np.dot(X_lmn_canonical, sheared_basis_vectors)
 
+        # Draw the periodic box in red.
         corners = np.array([[box_bottom_left[0], 0, box_bottom_left[2]],
                             [box_bottom_left[0], 0, box_top_right[2]],
                             [box_top_right[0], 0, box_top_right[2]],
-                            [box_top_right[0], 0, box_bottom_left[2]]])/4.
-        corners_sheared = np.dot(corners, sheared_basis_vectors)
+                            [box_top_right[0], 0, box_bottom_left[2]]])
+        # box corners, sheared:
+        #  (i) Transformed into the canonical basis (box length = 1 unit)
+        # (ii) Transformed into the sheared basis
+        corners_sheared = np.dot(sheared_basis_vectors, 
+                                 np.linalg.solve(basis_canonical,
+                                                 corners.T)).T
         cor1 = corners_sheared[0]
         cor2 = corners_sheared[1]
         cor3 = corners_sheared[2]
@@ -199,14 +210,10 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]),
             linec2.remove()
             linec3.remove()
             linec4.remove()
-        # linec1 = plt.plot(*np.transpose([cor1,cor2]), color='r', linewidth=1)[0]
-        # linec2 = plt.plot(*np.transpose([cor2,cor3]), color='r', linewidth=1)[0]
-        # linec3 = plt.plot(*np.transpose([cor3,cor4]), color='r', linewidth=1)[0]
-        # linec4 = plt.plot(*np.transpose([cor4,cor1]), color='r', linewidth=1)[0]
-        linec1 = plt.plot((cor1[0], cor2[0]), (cor1[1], cor2[1]), (cor1[2], cor2[2]), color='r', linewidth=1)[0]
-        linec2 = plt.plot((cor2[0], cor3[0]), (cor2[1], cor3[1]), (cor2[2], cor3[2]), color='r', linewidth=1)[0]
-        linec3 = plt.plot((cor3[0], cor4[0]), (cor3[1], cor4[1]), (cor3[2], cor4[2]), color='r', linewidth=1)[0]
-        linec4 = plt.plot((cor4[0], cor1[0]), (cor4[1], cor1[1]), (cor4[2], cor1[2]), color='r', linewidth=1)[0]
+        linec1 = plt.plot(*np.transpose([cor1,cor2]), color='r', linewidth=1)[0]
+        linec2 = plt.plot(*np.transpose([cor2,cor3]), color='r', linewidth=1)[0]
+        linec3 = plt.plot(*np.transpose([cor3,cor4]), color='r', linewidth=1)[0]
+        linec4 = plt.plot(*np.transpose([cor4,cor1]), color='r', linewidth=1)[0]
 
         # NOTE: If you change the next line you have to change it in K_lmn too!
         X_lmn_sheared_inside_radius = X_lmn_sheared[
@@ -241,9 +248,9 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]),
                    dumbbell_sizes, dumbbell_positions, dumbbell_deltax]
         previous_step_posdata = posdata
 
-    Ta_out = [[0, 0, 0] for i in range(num_spheres)]
-    Oa_out = [[0, 0, 0] for i in range(num_spheres)]
-    Ua_out = [[0, 0, 0] for i in range(num_spheres)]
+    Ta_out = [[0, 0, 0] for _ in range(num_spheres)]
+    Oa_out = [[0, 0, 0] for _ in range(num_spheres)]
+    Ua_out = [[0, 0, 0] for _ in range(num_spheres)]
 
     for q in (spheres + force_lines + torque_lines + velocity_lines
               + angular_velocity_lines + sphere_lines + dumbbell_lines
@@ -297,8 +304,14 @@ generate_frame_args = [viewbox_bottomleft_topright, view_labels, timestep,
 ani = animation.FuncAnimation(fig, generate_frame, frames=num_frames,
                               fargs=generate_frame_args, repeat=False,
                               interval=200, save_count=num_frames)
-# mywriter = animation.FFMpegWriter(fps=8)
-ani.save('output_videos/' + filename + '.mp4')#, writer=mywriter)
+mywriter = animation.FFMpegWriter(fps=8)
+try:
+    ani.save('output_videos/' + filename + '.mp4', writer=mywriter)
+except FileNotFoundError as e:
+    print(e)
+    print("ERROR: You need to install FFMPEG.")
+    print("If your Python distribution is Anaconda, see https://anaconda.org/conda-forge/ffmpeg")
+    sys.exit()
 total_elapsed_time = time.time() - total_time_start
 print("[Total time to run " + format_elapsed_time(total_elapsed_time) + "]")
 print("Completed [" + filename + ".mp4]")
