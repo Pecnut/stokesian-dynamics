@@ -4,17 +4,18 @@
 Standalone script to find resistance scalars for (s,lambda) as read in from a
 text file.
 
-Inputs:
-    None directly, but inputs values of s and lambda from
-    values_of_s_midfield.txt  and  values_of_lambda.txt.
+Calls find_resistance_scalars(s,lam), which returns mobility scalars and
+resistance scalars in an array.
 
-Outputs:
-    Calls find_resistance_scalars(s,lam), which returns mobility scalars and
-    resistance scalars in an array. So this takes this info and writes it to
-        scalars_pairs_resistance_midfield.npy  and  .txt,
-        scalars_pairs_mobility_midfield.npy  and  .txt,
-        scalars_general_resistance_midfield.npy  and  .txt,
-        scalars_general_mobility_midfield.npy  and .txt.
+Reads:
+    values_of_s_midfield.txt: List of midfield distances s'.
+    values_of_lambda.txt: List of size ratios lambda.
+
+Writes:
+    scalars_pairs_resistance_midfield.npy  and  .txt.
+    scalars_pairs_mobility_midfield.npy  and  .txt.
+    scalars_general_resistance_midfield.npy  and  .txt.
+    scalars_general_mobility_midfield.npy  and .txt.
 """
 import subprocess
 import numpy as np
