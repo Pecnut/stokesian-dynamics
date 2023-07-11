@@ -48,17 +48,17 @@ For values of *s*' between 2.001 and 2.01, in the Stokesian Dynamics code, we ge
 
 (Some highlights of the outputs only)
 
-* **scalars_general_resistance_text.txt**: Resistance scalars for different values of *s'* and *λ*. Scalars commonly labelled '11' are in the row where `gamma` = 0; scalars commonly labelled '12' are in the row where `gamma` = 1. Scalars corresponding to '21' and '22' can be found as '12' and '11' respectively for the reciprocal value of *λ*.
+* **scalars_general_resistance.txt**: Resistance scalars for different values of *s'* and *λ*. Scalars commonly labelled '11' are in the row where `gamma` = 0; scalars commonly labelled '12' are in the row where `gamma` = 1. Scalars corresponding to '21' and '22' can be found as '12' and '11' respectively for the reciprocal value of *λ*.
 
-* **scalars_general_resistance_blob.txt**: Numpy NPZ data file of the above table.
+* **scalars_general_resistance.npy**: Numpy NPY data file of the above table.
 
-* **scalars_general_resistance_text_d.txt**: Resistance scalars with the two-body long-range mobility interaction subtracted off.
+* **scalars_general_resistance_d.txt**: Resistance scalars with the two-body long-range mobility interaction subtracted off.
 
-* **scalars_general_resistance_blob_d.txt**: Numpy NPZ data file of the above table: this is the data file used by the Stokesian Dynamics code by default.
+* **scalars_general_resistance_d.npy**: Numpy NPY data file of the above table: this is the data file used by the Stokesian Dynamics code by default.
 
-* **scalars_pairs_resistance_text_midfield.txt**: More verbose version of **scalars_general_resistance_text.txt** for midfield values of *s*' only.
+* **scalars_pairs_resistance_midfield.txt**: More verbose version of **scalars_general_resistance.txt** for midfield values of *s*' only.
 
-* **scalars_pairs_mobility_text_midfield.txt**: Verbose list of the mobility scalars x11a, x12a etc. for midfield values of *s*' only.
+* **scalars_pairs_mobility_midfield.txt**: Verbose list of the mobility scalars x11a, x12a etc. for midfield values of *s*' only.
 
 ## 3. Method ##
 

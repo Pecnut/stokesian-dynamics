@@ -208,9 +208,9 @@ lam_range_with_reciprocals.sort()
 
 # Decide here whether we are going to use the d values or not
 if not use_drag_Minfinity or (use_drag_Minfinity and use_full_Minfinity_scalars_with_drag_Minfinity):
-    filename = f'{resistance_scalars_folder}/scalars_general_resistance_blob_d.txt'
+    filename = f'{resistance_scalars_folder}/scalars_general_resistance_d.npy'
 else:
-    filename = f'{resistance_scalars_folder}/scalars_general_resistance_blob_dnominf.txt'
+    filename = f'{resistance_scalars_folder}/scalars_general_resistance_dnominf.npy'
 
 try:
     with open(filename, 'rb') as inputfile:
@@ -218,7 +218,7 @@ try:
 except IOError:
     XYZ_raw = []  # Only likely to be in this position when generating the resistance scalars.
 
-filename = f'{resistance_scalars_folder}/scalars_general_resistance_blob.txt'
+filename = f'{resistance_scalars_folder}/scalars_general_resistance.npy'
 with open(filename, 'rb') as inputfile:
     XYZ_raw_no_d = np.load(inputfile)
 s_dash_range = np.loadtxt(f'{resistance_scalars_folder}/values_of_s_dash.txt')

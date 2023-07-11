@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 # Adam Townsend, adam@adamtownsend.com, 24/08/2016
 
-"""Reads in resistance scalars from scalars_general_resistance_blob.txt and 
+"""Reads in resistance scalars from scalars_general_resistance.npy and 
 converts them to their 'd' form, i.e. with the R2binfinity term already 
 subtracted away from it. Then it saves it to
-scalars_general_resistance_blob_dnominf.txt.
+scalars_general_resistance_dnominf.npy.
 
 Note that the 'dnominf' form means R2binfinity is just the inverse of Minfinity
 with diagonal entries only. This is good for when you want to "turn Minfinity
@@ -21,7 +21,7 @@ from functions_shared import *
 
 looper_start_time = time.time()
 
-with open('find_resistance_scalars/scalars_general_resistance_blob.txt', 'rb') as inputfile:
+with open('find_resistance_scalars/scalars_general_resistance.npy', 'rb') as inputfile:
     XYZ_raw = np.load(inputfile)
 XYZd_raw = np.copy(XYZ_raw)
 
@@ -110,7 +110,7 @@ for lam in lam_range_with_reciprocals:
         XYZd_raw[10, 1, s_dash_index, lam_index] = XYZ_raw[10, 1, s_dash_index, lam_index] - ZM1
 
 # computer readable
-with open('find_resistance_scalars/scalars_general_resistance_blob_dnominf.txt', 'wb') as outputfile:
+with open('find_resistance_scalars/scalars_general_resistance_dnominf.npy', 'wb') as outputfile:
     np.save(outputfile, XYZd_raw)
 
 # human readable
@@ -131,7 +131,7 @@ for s_dash in s_dash_range:
             XYZ_outputline = np.append(
                 [s_dash, lam, gam], XYZd_raw[:, gam, s_dash_index, lam_wr_index])
             XYZ_general_human[(lam_wr_index*s_dash_length + s_dash_index)*2 + gam, :] = XYZ_outputline
-with open('find_resistance_scalars/scalars_general_resistance_text_dnominf.txt', 'a') as outputfile:
+with open('find_resistance_scalars/scalars_general_resistance_dnominf.txt', 'a') as outputfile:
     heading = ("'D'-form resistance scalars, generated " 
                + time.strftime("%d/%m/%Y %H:%M:%S"))
     np.savetxt(outputfile, np.array([heading]), fmt="%s")
