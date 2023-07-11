@@ -1,6 +1,6 @@
 # Code for generating lubrication resistance functions: Readme #
 
-This code forms part of a [Python 2 implementation of Stokesian Dynamics](http://github.com/Pecnut/stokesian-dynamics) for spherical particles of different sizes, but can be run on its own. To run it alone, it requires Fortran and Mathematica. To use it as part of the Python implementation, you also need Python.
+This code forms part of a [Python 3 implementation of Stokesian Dynamics](http://github.com/Pecnut/stokesian-dynamics) for spherical particles of different sizes, but can be run on its own. To run it alone, it requires **Fortran** and **Mathematica**. To use it as part of the Python implementation, you also need Python.
 
 **If you are here from the Python Stokesian Dynamics implementation,** you do not need to run these scripts if you are happy with particle ratios of 1, 0.1 and 0.01. Data files for these ratios are already computed. If, however, you wish to change or augment these ratios, please proceed.
 
@@ -8,9 +8,11 @@ This code generates lubrication resistance functions for two unequal rigid parti
 
  The near-field resistance functions were first given analytically in [Jeffrey & Onishi (1984)](https://doi.org/10.1017/S0022112084000355) and [Jeffrey (1992)](https://doi.org/10.1063/1.858494). The expressions in these articles have been completely corrected in [Townsend (2018)](https://arxiv.org/abs/1802.08226), and these corrected expressions are used here. The mid-field resistance functions are computed using a version of Lamb's method described in [Wilson (2013)](http://www.ucl.ac.uk/~ucahhwi/publist/papers/2013-W.pdf).
 
-## 0. Whom do I talk to? ##
+## 0. Contact details and how to contribute <a name="s0"></a> ##
 
-* Adam Townsend ([adamtownsend.com](http://adamtownsend.com/), [@Pecnut](https://twitter.com/pecnut))
+* The code is written by Adam Townsend ([adamtownsend.com](http://adamtownsend.com/), [@Pecnut](https://twitter.com/pecnut)). The Fortran files in `helen_fortran` are by Helen Wilson ([ucl.ac.uk/~ucahhwi](https://www.ucl.ac.uk/~ucahhwi/), [@profhelenwilson](https://twitter.com/profhelenwilson)).
+* Feel free to [post in the discussion forum of the main repository](https://github.com/Pecnut/stokesian-dynamics/discussions) with questions or ideas if you are happy to comment publicly.
+* You can also [create a new issue in the main repository](https://github.com/Pecnut/stokesian-dynamics/issues) in the GitHub repository if you want to report a bug.
 
 ## 1. Notes ##
 
@@ -60,7 +62,7 @@ For values of *s*' between 2.001 and 2.01, in the Stokesian Dynamics code, we ge
 
 ## 3. Method ##
 
-1.  Compile the Fortran code in **/helen_fortran/** into an executable called **/helen_fortran/output-mac.exe**. To do this, enter the **/helen_fortran/** folder and run `gfortran 2sphere.f base.f reflect.f -o output-mac.exe`, where `gfortran` is the name of your version of Fortran. Another common alternative is `g95`. *You can safely ignore warnings of the form 'Array reference at (1) out of bounds (0 < 1) in loop beginning at (2)'.*
+1.  Compile the Fortran code in **/helen_fortran/** into an executable called **/helen_fortran/lamb.exe**. To do this, enter the **/helen_fortran/** folder and run `gfortran 2sphere.f base.f reflect.f -o lamb.exe`, where `gfortran` is the name of your version of Fortran. Another common alternative is `g95`. *You can safely ignore warnings of the form 'Array reference at (1) out of bounds (0 < 1) in loop beginning at (2)'.*
 
 2.  Run **find_resistance_scalars_KimH.py** to generate scalars in the mid-field (*s*' from **values_of_s_dash.txt**) using code from Wilson (2013). This code will work for *s*’ as low as about 2.01386 but no less. Running this takes about an hour on my laptop. This generates all the files ending in **\_midfield**.
 

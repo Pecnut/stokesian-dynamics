@@ -19,10 +19,10 @@ if s_dash_range.shape == tuple():
 else:
     s_dash_length = s_dash_range.shape[0]
 
-with open('scalars_general_resistance_blob_midfield.txt', 'rb') as inputfile:
+with open('scalars_general_resistance_midfield.npy', 'rb') as inputfile:
     XYZ_mid_raw = np.load(inputfile)
 
-with open('scalars_general_resistance_text_nearfield_mathematica_for_python.txt', 'rb') as inputfile:
+with open('scalars_general_resistance_nearfield_mathematica_for_python.txt', 'rb') as inputfile:
     mathematica = inputfile.read()
     # square_brackets = mathematica.replace("{","[").replace("}","]").replace("*^","E").replace("\r\n",",")  # Windows version
     square_brackets = mathematica.replace("{", "[").replace("}", "]").replace("*^", "E").replace("\n", ",")      # Unix/Mac version
@@ -37,7 +37,7 @@ XYZ_general_table = np.concatenate((XYZ_near_raw, XYZ_mid_raw), axis=2)
 general_resistance_scalars_names = np.array(["XA", "YA", "YB", "XC", "YC", "XG", "YG", "YH", "XM", "YM", "ZM"])
 general_scalars_length = len(general_resistance_scalars_names)
 
-with open('scalars_general_resistance_blob.txt', 'wb') as outputfile:
+with open('scalars_general_resistance.npy', 'wb') as outputfile:
     np.save(outputfile, XYZ_general_table)
 
 
@@ -61,7 +61,7 @@ for s_dash in s_dash_range:
             XYZ_general_human[(lam_wr_index * s_dash_length + s_dash_index) * 2 + gam, :] = XYZ_outputline
 
 
-with open('scalars_general_resistance_text.txt', 'a') as outputfile:
+with open('scalars_general_resistance.txt', 'a') as outputfile:
     heading = "Resistance scalars, combined " + time.strftime("%d/%m/%Y %H:%M:%S") + "."
     np.savetxt(outputfile, np.array([heading]), fmt="%s")
     np.savetxt(outputfile, np.append(["s'", "lambda", "gamma"], general_resistance_scalars_names), newline=" ", fmt="%15s")

@@ -31,7 +31,7 @@ def run_fortran(s_dash, lam, case):
     else:
         fortran_code_directory = "helen_fortran/"
         starter = "./"
-    command_to_run = starter + "output-mac.exe " + str(s) + " 1 " + str(lam) + " " + case + " short"
+    command_to_run = starter + "lamb.exe " + str(s) + " 1 " + str(lam) + " " + case + " short"
     output_text = subprocess.check_output(fortran_code_directory + command_to_run, shell=True)
     return output_text.split()
 
@@ -425,13 +425,13 @@ looper_elapsed_time_hms = "%dh%02dm%02ds" % (let_h, let_m, let_s)
 print("Time elapsed " + looper_elapsed_time_hms)
 
 # Write XYZ_table and xyz_table to file (computer readable)
-with open('scalars_pairs_resistance_blob_midfield.txt', 'wb') as outputfile:
+with open('scalars_pairs_resistance_midfield.npy', 'wb') as outputfile:
     np.save(outputfile, XYZ_table)
-with open('scalars_pairs_mobility_blob_midfield.txt', 'wb') as outputfile:
+with open('scalars_pairs_mobility_midfield.npy', 'wb') as outputfile:
     np.save(outputfile, xyz_table)
-with open('scalars_general_resistance_blob_midfield.txt', 'wb') as outputfile:
+with open('scalars_general_resistance_midfield.npy', 'wb') as outputfile:
     np.save(outputfile, XYZ_general_table)
-with open('scalars_general_mobility_blob_midfield.txt', 'wb') as outputfile:
+with open('scalars_general_mobility_midfield.npy', 'wb') as outputfile:
     np.save(outputfile, xyz_general_table)
 
 # Write XYZ_table and xyz_table to file (human readable)
@@ -455,25 +455,25 @@ for s_dash in s_dash_range:
             XYZ_general_human[(lam_wr_index * s_dash_length + s_dash_index) * 2 + gam, :] = XYZ_outputline
 
 
-with open('scalars_pairs_resistance_text_midfield.txt', 'a') as outputfile:
+with open('scalars_pairs_resistance_midfield.txt', 'a') as outputfile:
     heading = "Resistance scalars, generated " + time.strftime("%d/%m/%Y %H:%M:%S") + ". Time to generate " + looper_elapsed_time_hms
     np.savetxt(outputfile, np.array([heading]), fmt="%s")
     np.savetxt(outputfile, np.append(["s'", "lambda"], resistance_scalars_names), newline=" ", fmt="%15s")
     outputfile.write("\n")
     np.savetxt(outputfile, XYZ_human, newline="\n", fmt="% .8e")
-with open('scalars_pairs_mobility_text_midfield.txt', 'a') as outputfile:
+with open('scalars_pairs_mobility_midfield.txt', 'a') as outputfile:
     heading = "Mobility scalars, generated " + time.strftime("%d/%m/%Y %H:%M:%S") + ". Time to generate " + looper_elapsed_time_hms
     np.savetxt(outputfile, np.array([heading]), fmt="%s")
     np.savetxt(outputfile, np.append(["s'", "lambda"], mobility_scalars_names), newline=" ", fmt="%15s")
     outputfile.write("\n")
     np.savetxt(outputfile, xyz_human, newline="\n", fmt="% .8e")
-with open('scalars_general_resistance_text_midfield.txt', 'a') as outputfile:
+with open('scalars_general_resistance_midfield.txt', 'a') as outputfile:
     heading = "Resistance scalars, generated " + time.strftime("%d/%m/%Y %H:%M:%S") + ". Time to generate " + looper_elapsed_time_hms
     np.savetxt(outputfile, np.array([heading]), fmt="%s")
     np.savetxt(outputfile, np.append(["s'", "lambda", "gamma"], general_resistance_scalars_names), newline=" ", fmt="%15s")
     outputfile.write("\n")
     np.savetxt(outputfile, XYZ_general_human, newline="\n", fmt="% .8e")
-with open('scalars_general_mobility_text_midfield.txt', 'a') as outputfile:
+with open('scalars_general_mobility_midfield.txt', 'a') as outputfile:
     heading = "Mobility scalars, generated " + time.strftime("%d/%m/%Y %H:%M:%S") + ". Time to generate " + looper_elapsed_time_hms
     np.savetxt(outputfile, np.array([heading]), fmt="%s")
     np.savetxt(outputfile, np.append(["s'", "lambda", "gamma"], general_mobility_scalars_names), newline=" ", fmt="%15s")
