@@ -3,6 +3,7 @@
 *.pyc
 *.so
 *.c
+*.exe
 output/*
 !output/README.md
 output_videos/*
