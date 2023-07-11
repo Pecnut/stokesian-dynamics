@@ -1,17 +1,21 @@
 # -*- coding: utf-8 -*-
 # Adam Townsend, adam@adamtownsend.com, 31/03/2014.
-'''
-Find resistance scalars for (s,lambda) as read in from a text file.
+"""
+Standalone script to find resistance scalars for (s,lambda) as read in from a
+text file.
 
-Inputs: None directly, but inputs values of s and lambda from
-        'values_of_s_midfield.txt' and 'values_of_lambda.txt'.
-Outputs: Calls find_resistance_scalars(s,lam), which returns mobility scalars and
-         resistance scalars in an array. So this takes this info and writes it to
-         'resistance_scalars_human_readable.txt',
-         'resistance_scalars_computer_readable.txt',
-         'mobility_scalars_human_readable.txt',
-         'mobility_scalars_computer_readable.txt',
-'''
+Inputs:
+    None directly, but inputs values of s and lambda from
+    values_of_s_midfield.txt  and  values_of_lambda.txt.
+
+Outputs:
+    Calls find_resistance_scalars(s,lam), which returns mobility scalars and
+    resistance scalars in an array. So this takes this info and writes it to
+        scalars_pairs_resistance_midfield.npy  and  .txt,
+        scalars_pairs_mobility_midfield.npy  and  .txt,
+        scalars_general_resistance_midfield.npy  and  .txt,
+        scalars_general_mobility_midfield.npy  and .txt.
+"""
 import subprocess
 import numpy as np
 from numpy import linalg, sqrt
@@ -20,9 +24,16 @@ import sys
 
 
 def run_fortran(s_dash, lam, case):
-    '''Run Helen's code directly.
-    Inputs: (s', lambda, case [as "F11", "F12" etc])
-    Outputs: UOE as an array'''
+    """Run Helen's code directly.
+
+    Args:
+        s_dash: Scaled separation distance s'.
+        lam: Size ratios lambda.
+        case: "F11", "F12" etc.
+
+    Returns:
+        UOE as an array
+    """
     s = 0.5 * (1 + lam) * s_dash
     print("  using s = " + str(s) + " and case = " + case)
     if sys.platform == "win32":
@@ -31,20 +42,28 @@ def run_fortran(s_dash, lam, case):
     else:
         fortran_code_directory = "helen_fortran/"
         starter = "./"
-    command_to_run = starter + "lamb.exe " + str(s) + " 1 " + str(lam) + " " + case + " short"
-    output_text = subprocess.check_output(fortran_code_directory + command_to_run, shell=True)
+    command_to_run = (starter + "lamb.exe " + str(s) + " 1 " + str(lam) + " "
+                      + case + " short")
+    output_text = subprocess.check_output(
+        fortran_code_directory + command_to_run, shell=True)
     return output_text.split()
 
 
 def find_resistance_scalars(s_dash, lam):
-    '''Use Helen's code to find all resistance scalars.
-    Inputs: (s', lambda)
-    Outputs: Returns (mobility_scalars, resistance_scalars) as arrays (X11A, X12A, ...) etc
-             and outputs to screen confirmation and timing of each computation for each (s,lambda) pair.
-    '''
+    """Use Helen's code to find all resistance scalars.
+
+    Args:
+        s_dash: Scaled separation distance s'.
+        lam: Size ratio lambda.
+
+    Returns:
+        (mobility_scalars, resistance_scalars) as arrays (X11A, X12A, ...) etc.
+        and outputs to screen confirmation and timing of each computation for
+        each (s,lambda) pair.
+    """
     start_time = time.time()
 
-    # Run Helen's Fortran code ---------------------------------------------------
+    # Run Helen's Fortran code ------------------------------------------------
     UOS_output_text = np.array([run_fortran(s_dash, lam, "F11"),
                                 run_fortran(s_dash, lam, "F12"),
                                 run_fortran(s_dash, lam, "F21"),
@@ -61,7 +80,7 @@ def find_resistance_scalars(s_dash, lam):
                                 run_fortran(s_dash, lam, "E24")])
     UOS_output = UOS_output_text.astype(float)
 
-    # Reorder output -------------------------------------------------------------
+    # Reorder output ----------------------------------------------------------
     rp = 0.5 * (1 + np.sqrt(3))
     rm = 0.5 * (-1 + np.sqrt(3))
     r2 = np.sqrt(2)
@@ -95,7 +114,7 @@ def find_resistance_scalars(s_dash, lam):
 
     np.set_printoptions(linewidth=600)
 
-    # Extract mobility scalars from output ---------------------------------------
+    # Extract mobility scalars from output ------------------------------------
 
     x11a = reordered_UOS[0, 0]
     x12a = reordered_UOS[2, 0]
@@ -222,24 +241,19 @@ def find_resistance_scalars(s_dash, lam):
                                  x11m, x12m, x21m, x22m,
                                  y11m, y12m, y21m, y22m,
                                  z11m, z12m, z21m, z22m])
-    '''
-    # Output to text file --------------------------------------------------------
-    # This isn't read in again, it's just for human interest.
 
-    outputline = np.append([s, lam], mobility_scalars)
-    with open('mobility_scalars_human_readable.txt','a') as outputfile:
-        np.savetxt(outputfile, outputline, newline=" ", fmt="% .8e")
-        outputfile.write("\n")
-    '''
-
-    # Invert mobility scalars to get resistance scalars --------------------------
+    # Invert mobility scalars to get resistance scalars -----------------------
     matrix_xc = np.array([[x11c, x12c], [x21c, x22c]])
     matrix_xa = np.array([[x11a, x12a], [x21a, x22a]])
     matrix_xg = np.array([[x11g, x12g], [x21g, x22g]])
     matrix_xgt = np.array([[x11g, x21g], [x12g, x22g]])
     matrix_xm = np.array([[x11m, x12m], [x21m, x22m]])
-    matrix_yabc = np.array([[y11a, y12a, y11b, y21b], [y12a, y22a, y12b, y22b], [y11b, y12b, y11c, y12c], [y21b, y22b, y12c, y22c]])
-    matrix_ygh = np.array([[y11g, y21g], [y12g, y22g], [-y11h, -y21h], [-y12h, -y22h]])
+    matrix_yabc = np.array([[y11a, y12a, y11b, y21b],
+                            [y12a, y22a, y12b, y22b],
+                            [y11b, y12b, y11c, y12c],
+                            [y21b, y22b, y12c, y22c]])
+    matrix_ygh = np.array([[y11g, y21g], [y12g, y22g],
+                           [-y11h, -y21h], [-y12h, -y22h]])
     matrix_ygt = np.array([[y11g, y21g], [y12g, y22g]])
     matrix_yht = np.array([[y11h, y21h], [y12h, y22h]])
     matrix_ym = np.array([[y11m, y12m], [y21m, y22m]])
@@ -290,8 +304,9 @@ def find_resistance_scalars(s_dash, lam):
     matrix_YG = np.array([[Y11G, Y12G], [Y21G, Y22G]])
     matrix_YH = np.array([[Y11H, Y12H], [Y21H, Y22H]])
 
-    matrix_XM = matrix_xm + (2. / 3.) * np.dot(matrix_XG, matrix_xgt)
-    matrix_YM = matrix_ym + 2. * (np.dot(matrix_YG, matrix_ygt) + np.dot(matrix_YH, matrix_yht))
+    matrix_XM = matrix_xm + (2/3)*np.dot(matrix_XG, matrix_xgt)
+    matrix_YM = matrix_ym + 2*(np.dot(matrix_YG, matrix_ygt)
+                               + np.dot(matrix_YH, matrix_yht))
 
     X11M = matrix_XM[0, 0]
     X12M = matrix_XM[0, 1]
@@ -321,7 +336,9 @@ def find_resistance_scalars(s_dash, lam):
                                    Z11M, Z12M, Z21M, Z22M])
 
     elapsed_time = time.time() - start_time
-    print("[s'=" + str('{0:.2f}'.format(s_dash)) + "][lam=" + str('{0:.2f}'.format(lam)) + "][time=" + str('{0:.1f}'.format(elapsed_time)) + "s]")
+    print("[s'=" + str('{0:.2f}'.format(s_dash)) + "]"
+          + "[lam=" + str('{0:.2f}'.format(lam)) + "]"
+          + "[time=" + str('{0:.1f}'.format(elapsed_time)) + "s]")
 
     return np.array([mobility_scalars, resistance_scalars])
 
@@ -350,8 +367,12 @@ mobility_scalars_names = np.array(["x11a", "x12a", "x21a", "x22a",
                                    "x11m", "x12m", "x21m",  "x22m",
                                    "y11m", "y12m", "y21m", "y22m",
                                    "z11m", "z12m", "z21m", "z22m"])
-general_resistance_scalars_names = np.array(["XA", "YA", "YB", "XC", "YC", "XG", "YG", "YH", "XM", "YM", "ZM"])
-general_mobility_scalars_names = np.array(["xa", "ya", "yb", "xc", "yc", "xg", "yg", "yh", "xm", "ym", "zm"])
+general_resistance_scalars_names = np.array(["XA", "YA", "YB", "XC", "YC",
+                                             "XG", "YG", "YH", "XM", "YM",
+                                             "ZM"])
+general_mobility_scalars_names = np.array(["xa", "ya", "yb", "xc", "yc",
+                                           "xg", "yg", "yh", "xm", "ym",
+                                           "zm"])
 
 # Initialise variables
 s_dash_range = np.loadtxt('values_of_s_dash_midfield.txt')
@@ -380,43 +401,61 @@ for lam in lam_range:
         print("Running s' = ", str(s_dash), ", lambda = " + str(lam) + " ...")
         s_dash_index = np.argwhere(s_dash_range == s_dash)[0, 0]
         lam_index = np.argwhere(lam_range == lam)[0, 0]
-        mob_res_output = find_resistance_scalars(s_dash, lam)    # It appears that if lambda > 1, Helen's Fortran code breaks.
+        # If lambda > 1, Helen's Fortran code breaks.
+        mob_res_output = find_resistance_scalars(s_dash, lam)
         mobility_scalars = mob_res_output[0]
         resistance_scalars = mob_res_output[1]
         xyz_table[:, s_dash_index, lam_index] = mobility_scalars
         XYZ_table[:, s_dash_index, lam_index] = resistance_scalars
 
-# Now we have XYZ_table, xyz_table, generate more useful XYZ_short_table/xyz_short_table
-''' The XYZ_table/xyz_table give us for (s,lam) the x11a x12a etc. But we need
-    x1a, x2a etc.'''
+# The XYZ_table/xyz_table give us for (s,lam) the x11a x12a etc. But we need
+# x1a, x2a etc.
 lam_range_with_reciprocals = lam_range
 for lam in lam_range:
-    if (1. / lam) not in lam_range_with_reciprocals:
-        lam_range_with_reciprocals = np.append(lam_range_with_reciprocals, (1. / lam))
+    if (1/lam) not in lam_range_with_reciprocals:
+        lam_range_with_reciprocals = np.append(lam_range_with_reciprocals,
+                                               1/lam)
 lam_range_with_reciprocals.sort()
 lam_wr_length = lam_range_with_reciprocals.shape[0]
-xyz_general_table = np.zeros((general_scalars_length, 2, s_dash_length, lam_wr_length))
-XYZ_general_table = np.zeros((general_scalars_length, 2, s_dash_length, lam_wr_length))
-xyz_general_human = np.zeros((s_dash_length * lam_wr_length * 2, general_scalars_length + 3))
-XYZ_general_human = np.zeros((s_dash_length * lam_wr_length * 2, general_scalars_length + 3))
-# minus_in_B_and_G: see the Note on notation in my writeup. This represents 'k', which is -1 for B and G, and 1 otherwise.
-minus_in_B_and_G_one_line = np.array([1,  1, -1,  1,  1, -1, -1,  1,  1,  1,  1])
-minus_in_B_and_G = np.tile(minus_in_B_and_G_one_line, (s_dash_length, 1)).transpose()
+xyz_general_table = np.zeros(
+    (general_scalars_length, 2, s_dash_length, lam_wr_length))
+XYZ_general_table = np.zeros(
+    (general_scalars_length, 2, s_dash_length, lam_wr_length))
+xyz_general_human = np.zeros(
+    (s_dash_length * lam_wr_length * 2, general_scalars_length + 3))
+XYZ_general_human = np.zeros(
+    (s_dash_length * lam_wr_length * 2, general_scalars_length + 3))
+# minus_in_B_and_G: see the Note on notation in my writeup.
+# This represents 'k', which is -1 for B and G, and 1 otherwise.
+minus_in_B_and_G_one_line = np.array([1, 1, -1, 1, 1, -1, -1, 1, 1, 1, 1])
+minus_in_B_and_G = np.tile(minus_in_B_and_G_one_line, (s_dash_length, 1)).T
 
 for lam in lam_range_with_reciprocals:
     lam_wr_index = np.argwhere(lam_range_with_reciprocals == lam)[0, 0]
     if lam in lam_range:  # x11a, x12a etc
         lam_index = np.argwhere(lam_range == lam)[0, 0]
-        xyz_general_table[:, 0, :, lam_wr_index] = xyz_table[(0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40), :, lam_index]
-        xyz_general_table[:, 1, :, lam_wr_index] = xyz_table[(1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41), :, lam_index]
-        XYZ_general_table[:, 0, :, lam_wr_index] = XYZ_table[(0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40), :, lam_index]
-        XYZ_general_table[:, 1, :, lam_wr_index] = XYZ_table[(1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41), :, lam_index]
+        xyz_general_table[:, 0, :, lam_wr_index] = xyz_table[
+            (0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40), :, lam_index]
+        xyz_general_table[:, 1, :, lam_wr_index] = xyz_table[
+            (1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41), :, lam_index]
+        XYZ_general_table[:, 0, :, lam_wr_index] = XYZ_table[
+            (0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40), :, lam_index]
+        XYZ_general_table[:, 1, :, lam_wr_index] = XYZ_table[
+            (1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41), :, lam_index]
     else:  # x21a, x22a etc
         lam_index = np.argwhere(lam_range == (1 / lam))[0, 0]
-        xyz_general_table[:, 0, :, lam_wr_index] = xyz_table[(3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43), :, lam_index] * minus_in_B_and_G
-        xyz_general_table[:, 1, :, lam_wr_index] = xyz_table[(2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42), :, lam_index] * minus_in_B_and_G
-        XYZ_general_table[:, 0, :, lam_wr_index] = XYZ_table[(3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43), :, lam_index] * minus_in_B_and_G
-        XYZ_general_table[:, 1, :, lam_wr_index] = XYZ_table[(2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42), :, lam_index] * minus_in_B_and_G
+        xyz_general_table[:, 0, :, lam_wr_index] = (xyz_table[
+            (3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43), :, lam_index] 
+            * minus_in_B_and_G)
+        xyz_general_table[:, 1, :, lam_wr_index] = (xyz_table[
+            (2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42), :, lam_index] 
+            * minus_in_B_and_G)
+        XYZ_general_table[:, 0, :, lam_wr_index] = (XYZ_table[
+            (3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43), :, lam_index] 
+            * minus_in_B_and_G)
+        XYZ_general_table[:, 1, :, lam_wr_index] = (XYZ_table[
+            (2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42), :, lam_index] 
+            * minus_in_B_and_G)
 # Time elapsed
 looper_elapsed_time = time.time() - looper_start_time
 let_m, let_s = divmod(looper_elapsed_time, 60)
@@ -442,44 +481,69 @@ for s_dash in s_dash_range:
     lam_wr_length = lam_range_with_reciprocals.shape[0]
     for lam in lam_range:
         lam_index = np.argwhere(lam_range == lam)[0, 0]
-        xyz_outputline = np.append([s_dash, lam], xyz_table[:, s_dash_index, lam_index])
-        xyz_human[lam_index * s_dash_length + s_dash_index, :] = xyz_outputline
-        XYZ_outputline = np.append([s_dash, lam], XYZ_table[:, s_dash_index, lam_index])
-        XYZ_human[lam_index * s_dash_length + s_dash_index, :] = XYZ_outputline
+        xyz_outputline = np.append([s_dash, lam],
+                                   xyz_table[:, s_dash_index, lam_index])
+        xyz_human[lam_index*s_dash_length + s_dash_index, :] = xyz_outputline
+        XYZ_outputline = np.append([s_dash, lam],
+                                   XYZ_table[:, s_dash_index, lam_index])
+        XYZ_human[lam_index*s_dash_length + s_dash_index, :] = XYZ_outputline
     for lam in lam_range_with_reciprocals:
         lam_wr_index = np.argwhere(lam_range_with_reciprocals == lam)[0, 0]
         for gam in range(2):
-            xyz_outputline = np.append([s_dash, lam, gam], xyz_general_table[:, gam, s_dash_index, lam_wr_index])
-            xyz_general_human[(lam_wr_index * s_dash_length + s_dash_index) * 2 + gam, :] = xyz_outputline
-            XYZ_outputline = np.append([s_dash, lam, gam], XYZ_general_table[:, gam, s_dash_index, lam_wr_index])
-            XYZ_general_human[(lam_wr_index * s_dash_length + s_dash_index) * 2 + gam, :] = XYZ_outputline
+            i = (lam_wr_index*s_dash_length + s_dash_index)*2 + gam
+            xyz_outputline = np.append(
+                [s_dash, lam, gam],
+                xyz_general_table[:, gam, s_dash_index, lam_wr_index])
+            xyz_general_human[i, :] = xyz_outputline
+            XYZ_outputline = np.append(
+                [s_dash, lam, gam],
+                XYZ_general_table[:, gam, s_dash_index, lam_wr_index])
+            XYZ_general_human[i, :] = XYZ_outputline
 
 
 with open('scalars_pairs_resistance_midfield.txt', 'a') as outputfile:
-    heading = "Resistance scalars, generated " + time.strftime("%d/%m/%Y %H:%M:%S") + ". Time to generate " + looper_elapsed_time_hms
+    heading = ("Resistance scalars, generated "
+               + time.strftime("%d/%m/%Y %H:%M:%S")
+               + ". Time to generate " + looper_elapsed_time_hms)
     np.savetxt(outputfile, np.array([heading]), fmt="%s")
-    np.savetxt(outputfile, np.append(["s'", "lambda"], resistance_scalars_names), newline=" ", fmt="%15s")
+    np.savetxt(outputfile,
+               np.append(["s'", "lambda"], resistance_scalars_names),
+               newline=" ", fmt="%15s")
     outputfile.write("\n")
     np.savetxt(outputfile, XYZ_human, newline="\n", fmt="% .8e")
 with open('scalars_pairs_mobility_midfield.txt', 'a') as outputfile:
-    heading = "Mobility scalars, generated " + time.strftime("%d/%m/%Y %H:%M:%S") + ". Time to generate " + looper_elapsed_time_hms
+    heading = ("Mobility scalars, generated "
+               + time.strftime("%d/%m/%Y %H:%M:%S")
+               + ". Time to generate " + looper_elapsed_time_hms)
     np.savetxt(outputfile, np.array([heading]), fmt="%s")
-    np.savetxt(outputfile, np.append(["s'", "lambda"], mobility_scalars_names), newline=" ", fmt="%15s")
+    np.savetxt(outputfile,
+               np.append(["s'", "lambda"], mobility_scalars_names),
+               newline=" ", fmt="%15s")
     outputfile.write("\n")
     np.savetxt(outputfile, xyz_human, newline="\n", fmt="% .8e")
 with open('scalars_general_resistance_midfield.txt', 'a') as outputfile:
-    heading = "Resistance scalars, generated " + time.strftime("%d/%m/%Y %H:%M:%S") + ". Time to generate " + looper_elapsed_time_hms
+    heading = ("Resistance scalars, generated "
+               + time.strftime("%d/%m/%Y %H:%M:%S")
+               + ". Time to generate " + looper_elapsed_time_hms)
     np.savetxt(outputfile, np.array([heading]), fmt="%s")
-    np.savetxt(outputfile, np.append(["s'", "lambda", "gamma"], general_resistance_scalars_names), newline=" ", fmt="%15s")
+    np.savetxt(outputfile,
+               np.append(["s'", "lambda", "gamma"],
+                         general_resistance_scalars_names),
+               newline=" ", fmt="%15s")
     outputfile.write("\n")
     np.savetxt(outputfile, XYZ_general_human, newline="\n", fmt="% .8e")
 with open('scalars_general_mobility_midfield.txt', 'a') as outputfile:
-    heading = "Mobility scalars, generated " + time.strftime("%d/%m/%Y %H:%M:%S") + ". Time to generate " + looper_elapsed_time_hms
+    heading = ("Mobility scalars, generated "
+               + time.strftime("%d/%m/%Y %H:%M:%S")
+               + ". Time to generate " + looper_elapsed_time_hms)
     np.savetxt(outputfile, np.array([heading]), fmt="%s")
-    np.savetxt(outputfile, np.append(["s'", "lambda", "gamma"], general_mobility_scalars_names), newline=" ", fmt="%15s")
+    np.savetxt(outputfile,
+               np.append(["s'", "lambda", "gamma"],
+                         general_mobility_scalars_names),
+               newline=" ", fmt="%15s")
     outputfile.write("\n")
     np.savetxt(outputfile, xyz_general_human, newline="\n", fmt="% .8e")
-    # newline=" " says use a space instead of a newline in between array elements
+    # newline=" " says use a space instead of a newline between array elements
     # fmt="% .8e" says ( )  use either a space or a minus sign for good spacing
     #                  (.8) use 8 digits of precision
     #                  (e)  use exponential form
