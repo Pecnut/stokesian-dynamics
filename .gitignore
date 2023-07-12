@@ -11,3 +11,4 @@ plot_XYZ.py
 plan.txt
 .DS_Store
 */build/*
+*/__pycache__/*

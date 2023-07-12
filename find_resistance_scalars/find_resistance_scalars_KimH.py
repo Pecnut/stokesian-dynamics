@@ -8,7 +8,7 @@ Calls find_resistance_scalars(s,lam), which returns mobility scalars and
 resistance scalars in an array.
 
 Reads:
-    values_of_s_midfield.txt: List of midfield distances s'.
+    values_of_s_dash_midfield.txt: List of midfield distances s'.
     values_of_lambda.txt: List of size ratios lambda.
 
 Writes:
