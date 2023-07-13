@@ -60,7 +60,7 @@ def binom(n, k):
 @cache
 def intermediate_sum(f0, f1, f2, f3, parity, lam, N=100):
     """A form of sum which is found in many functions named e.g. AX12.
-    
+
     Args:
         f0, f1, f2, f3: Given functions.
         parity: Sum over odd or even values.
@@ -438,21 +438,17 @@ def G3xa(lam):
 
 
 @cache
-def M1(m):
-    """(13)"""
-    return -2*kron(m, 2)+(m-2)*(1-kron(m, 2))
-
-
-@cache
 def AX11(lam):
-    """(14) / (J&O 3.22)"""
-    o = 1 - 1/4*G1xa(lam) + sum([
-        2**-m*(1+lam)**-m*Fxa(m, lam)
-        - G1xa(lam)
-        - 2*m**-1*G2xa(lam)
-        + 4*m**-1*M1(m)**-1*G3xa(lam)
-        for m in range(2, 100+1, 2)
-    ])
+    """(14a) / (J&O 3.22) but more conveniently written.
+
+    See note next to (14a). The term `truncation_m1_match` is included to match
+    original (using M1) definition (14) when truncating the infinite sum at 
+    M. It is just truncation noise but is left in, in case you want to match
+    with calculations using the original M1 version, truncated at some M."""
+    M = 100
+    truncation_m1_match = G3xa(lam)*4/M/(M+2)
+    o = (1 - 1/4*G1xa(lam) - G3xa(lam) - truncation_m1_match
+         + intermediate_sum(Fxa, G1xa, G2xa, G3xa, 'even', lam, M))
     return o
 
 
@@ -506,26 +502,24 @@ def G3ya(lam):
 
 @cache
 def AY11(lam):
-    """(J&O 4.17)"""
-    o = 1 + sum([
-        2**-m*(1+lam)**-m*Fya(m, lam)
-        - 2*m**-1*G2ya(lam)
-        + 4*m**-1*M1(m)**-1*G3ya(lam)
-        for m in range(2, 100+1, 2)
-    ])
+    """(J&O 4.17) but more conveniently written. See docstring on AX11."""
+    M = 100
+    truncation_m1_match = G3ya(lam)*4/M/(M+2)
+    o = (1 - G3ya(lam) - truncation_m1_match
+         + intermediate_sum(Fya, Z, G2ya, G3ya, 'even', lam, M))
     return o
 
 
 @cache
 def AY12(lam):
-    """(J&O 4.18)"""
-    o = (1/(-1/2*(1+lam)) *
-         (2*G2ya(lam)*log(2) + 2*G3ya(lam) + sum([
-             2**-m*(1+lam)**-m*Fya(m, lam)
-             - 2*m**-1*G2ya(lam)
-             + 4*m**-1 * M1(m)**-1 * G3ya(lam)
-             for m in range(1, 100+1, 2)
-         ])))
+    """(J&O 4.18) but more conveniently written. See docstring on AX11."""
+    M = 100
+    truncation_m1_match = G3ya(lam)*4/(M-1)/(M+1)
+    o = (-2/(1+lam) *
+         (2*G2ya(lam)*log(2) + 2*G3ya(lam) - 4*G3ya(lam)
+          - truncation_m1_match
+          + intermediate_sum(Fya, Z, G2ya, G3ya, 'odd', lam, M))
+         )
     return o
 
 
@@ -636,13 +630,13 @@ def G3yc(lam):
 
 @cache
 def G4yc(lam):
-    """(J&O 7.10.3)"""
+    """(J&O 7.10.3) * (1+lam)^3/8. See note around (34)."""
     return 1/10*lam**2*(1+lam)**-1
 
 
 @cache
 def G5yc(lam):
-    """(30)"""
+    """(30) * (1+lam)^3/8. See note around (34)."""
     return 1/500*lam*(43-24*lam+43*lam**2)*(1+lam)**-1
 
 
@@ -656,7 +650,7 @@ def CY11(lam):
 
 @cache
 def CY12(lam):
-    """(32)"""
+    """(32). See note around (34) re scaling."""
     o = (8/(1+lam)**3 *
          (2*G4yc(lam)*log(2) - 2*G5yc(lam) +
           intermediate_sum(Fyc, Z, G4yc, G5yc, 'odd', lam, 100)
@@ -676,7 +670,7 @@ def Y11Cn(xi, lam):
 
 @cache
 def Y12Cn(xi, lam):
-    """(34)"""
+    """(34a)"""
     xiinv = xi**-1
     return (G4yc(lam)*log(xiinv)
             + (1+lam)**3/8*CY12(lam)
@@ -811,7 +805,7 @@ def G3yh(lam):
 
 
 def G5yh(lam):
-    """(J 35b.3)"""    
+    """(J 35b.3)"""
     return 1/20*(lam**2+7*lam**3)/(1+lam)**2
 
 
@@ -863,43 +857,43 @@ def Y12Hn(xi, lam):
 
 @cache
 def G1xm(lam):
-    """(J 48b.1)"""    
+    """(J 48b.1)"""
     return 6/5*lam**2/(1+lam)**3
 
 
 @cache
 def G2xm(lam):
-    """(J 48b.2)"""        
+    """(J 48b.2)"""
     return 3/25*(lam+17*lam**2-9*lam**3)/(1+lam)**3
 
 
 @cache
 def G3xm(lam):
-    """(J 48b.3)"""        
+    """(J 48b.3)"""
     return 1/350*(5+272*lam-831*lam**2+1322*lam**3-415*lam**4)/(1+lam)**3
 
 
 @cache
 def G4xm(lam):
-    """(J 48b.4)"""        
+    """(J 48b.4)"""
     return 6/5*lam**3/(1+lam)**3
 
 
 @cache
 def G5xm(lam):
-    """(J 48b.5)"""        
+    """(J 48b.5)"""
     return 3/25*(-4*lam**2+17*lam**3-4*lam**4)/(1+lam)**3
 
 
 @cache
 def G6xm(lam):
-    """(J 48b.6)"""        
+    """(J 48b.6)"""
     return 1/350*(-65*lam+832*lam**2-1041*lam**3+832*lam**4-65*lam**5)/(1+lam)**3
 
 
 @cache
 def MX11(lam):
-    """(J 50)"""        
+    """(J 50)"""
     o = (-1/4*G1xm(lam)
          - G3xm(lam) + 1 +
          intermediate_sum(Fxm, G1xm, G2xm, G3xm, 'even', lam, 100))
@@ -908,7 +902,7 @@ def MX11(lam):
 
 @cache
 def MX12(lam):
-    """(J 50)"""  
+    """(J 50)"""
     o = 8/((1+lam)**3) * (
         1/4*G4xm(lam)
         + 2*G5xm(lam)*log(2)
@@ -950,25 +944,25 @@ def G2ym(lam):
 
 @cache
 def G3ym(lam):
-    """(J 64b.2)"""    
+    """(J 64b.2)"""
     return 1/625*(24-201*lam+882*lam**2-1182*lam**3+591*lam**4)/(1+lam)**3
 
 
 @cache
 def G5ym(lam):
-    """(J 64b.3)"""    
+    """(J 64b.3)"""
     return 3/50*(7*lam**2-10*lam**3+7*lam**4)/(1+lam)**3
 
 
 @cache
 def G6ym(lam):
-    """(J 64b.4)"""    
+    """(J 64b.4)"""
     return 3/2500*lam*(221-728*lam+1902*lam**2-728*lam**3+221*lam**4)/(1+lam)**3
 
 
 @cache
 def MY11(lam):
-    """(J 66)"""    
+    """(J 66)"""
     o = (-G3ym(lam) + 1
          + intermediate_sum(Fym, Z, G2ym, G3ym, 'even', lam, 130))
     return o
@@ -996,7 +990,7 @@ def Y11Mn(xi, lam):
 
 @cache
 def Y12Mn(xi, lam):
-    """(44)"""    
+    """(44)"""
     xiinv = xi**-1
     return (G5ym(lam)*log(xiinv)
             + 1/8*(1+lam)**3*MY12(lam)
@@ -1032,7 +1026,7 @@ def MZ12(lam):
 
 @cache
 def Z11Mn(xi, lam):
-    """(45)"""    
+    """(45)"""
     xiinv = xi**-1
     return (MZ11(lam)
             + G3zm(lam)*xi*log(xiinv)
@@ -1041,7 +1035,7 @@ def Z11Mn(xi, lam):
 
 @cache
 def Z12Mn(xi, lam):
-    """(46)"""       
+    """(46)"""
     xiinv = xi**-1
     return (1/8*(1+lam)**3*MZ12(lam)
             - G3zm(lam)*xi*log(xiinv)
