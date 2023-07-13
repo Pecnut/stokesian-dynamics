@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # Adam Townsend, adam@adamtownsend.com, 31/03/2014.
 """
-Standalone script to find resistance scalars for (s,lambda) as read in from a
-text file.
+Standalone script to generate nondimensional midfield resistance scalars 
+X11A, X12A, Y11B, ..., Z12M  for values of (s,lambda) read in from a text file.
 
 Calls find_resistance_scalars(s,lam), which returns mobility scalars and
 resistance scalars in an array.

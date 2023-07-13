@@ -1,6 +1,6 @@
 # Code for generating lubrication resistance functions: Readme #
 
-This code forms part of a [Python 3 implementation of Stokesian Dynamics](http://github.com/Pecnut/stokesian-dynamics) for spherical particles of different sizes, but can be run on its own. To run it alone, it requires **Fortran** and **Mathematica**. To use it as part of the Python implementation, you also need Python.
+This code forms part of a [Python 3 implementation of Stokesian Dynamics](http://github.com/Pecnut/stokesian-dynamics) for spherical particles of different sizes, but can be run on its own. To run it alone, it requires **Python** and **Fortran**.
 
 **If you are here from the Python Stokesian Dynamics implementation,** you do not need to run these scripts if you are happy with particle ratios of 1, 0.1 and 0.01. Data files for these ratios are already computed. If, however, you wish to change or augment these ratios, please proceed.
 
@@ -64,9 +64,9 @@ For values of *s*' between 2.001 and 2.01, in the Stokesian Dynamics code, we ge
 
 1.  Compile the Fortran code in **/helen_fortran/** into an executable called **/helen_fortran/lamb.exe**. To do this, enter the **/helen_fortran/** folder and run `gfortran 2sphere.f base.f reflect.f -o lamb.exe`, where `gfortran` is the name of your version of Fortran. Another common alternative is `g95`. *You can safely ignore warnings of the form 'Array reference at (1) out of bounds (0 < 1) in loop beginning at (2)'.* (Mac/Linux users: no need to be suspicious of the `.exe` ending; this will still work on your system.)
 
-2.  Run **find_resistance_scalars_KimH.py** to generate scalars in the mid-field (*s*' from **values_of_s_dash.txt**) using code from Wilson (2013). This code will work for *s*’ as low as about 2.01386 but no less. Running this takes about an hour on my laptop. This generates all the files ending in **\_midfield**.
+2.  Run **generate_midfield_scalars.py** to generate scalars in the mid-field (*s*' from **values_of_s_dash_midfield.txt**) using code from Wilson (2013). This code will work for *s*’ as low as about 2.01386 but no less. Running this takes about an hour on my laptop. This generates all the files ending in **\_midfield**.
 
-3.  Run **Near-field asymptotic forms of resistance scalars.nb** to generate scalars in the near-field (*s*' from **values_of_s_dash_nearfield.txt**). This takes about half an hour on my laptop. This generates both files with **\_nearfield\_** in them.
+3.  Run **generate_nearfield_scalars.py** to generate scalars in the near-field (*s*' from **values_of_s_dash_nearfield.txt**). This takes about five minutes on my laptop. This generates both files with **\_nearfield\_** in them.
 
 4.  Run **combine_resistance_scalars.py** to combine these two results. This is quick!
 

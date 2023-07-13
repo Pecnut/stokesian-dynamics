@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 # Adam Townsend, adam@adamtownsend.com, 12/07/2023.
 """
-Generator file for nondimensional nearfield resistance scalars X11A,..., Z12M.
+Standalone script to generate nondimensional nearfield resistance scalars 
+X11A, X12A, Y11B, ..., Z12M  for values of (s,lambda) read in from a text file.
 
 Reference: Townsend 2018, 'Generating, from scratch, the near-field asymptotic
 forms of scalar resistance functions for two unequal rigid spheres in
