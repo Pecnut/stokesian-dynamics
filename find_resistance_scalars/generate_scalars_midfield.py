@@ -20,6 +20,12 @@ Writes:
 import subprocess
 import numpy as np
 from numpy import linalg, sqrt
+from functions_general import (resistance_scalars_names,
+                               general_resistance_scalars_names,
+                               mobility_scalars_names,
+                               general_mobility_scalars_names,
+                               convert_mobility_to_resistance,
+                               format_seconds, save_human_table)
 import time
 import sys
 
@@ -231,110 +237,19 @@ def find_resistance_scalars(s_dash, lam):
     z21m = z21m * sc_m
     z22m = z22m * sc_m
 
-    mobility_scalars = np.array([x11a, x12a, x21a, x22a,
-                                 y11a, y12a, y21a, y22a,
-                                 y11b, y12b, y21b, y22b,
-                                 x11c, x12c, x21c, x22c,
-                                 y11c, y12c, y21c, y22c,
-                                 x11g, x12g, x21g, x22g,
-                                 y11g, y12g, y21g, y22g,
-                                 y11h, y12h, y21h, y22h,
-                                 x11m, x12m, x21m, x22m,
-                                 y11m, y12m, y21m, y22m,
-                                 z11m, z12m, z21m, z22m])
+    mobility_scalars = [x11a, x12a, x21a, x22a,
+                        y11a, y12a, y21a, y22a,
+                        y11b, y12b, y21b, y22b,
+                        x11c, x12c, x21c, x22c,
+                        y11c, y12c, y21c, y22c,
+                        x11g, x12g, x21g, x22g,
+                        y11g, y12g, y21g, y22g,
+                        y11h, y12h, y21h, y22h,
+                        x11m, x12m, x21m, x22m,
+                        y11m, y12m, y21m, y22m,
+                        z11m, z12m, z21m, z22m]
 
-    # Invert mobility scalars to get resistance scalars -----------------------
-    matrix_xc = np.array([[x11c, x12c], [x21c, x22c]])
-    matrix_xa = np.array([[x11a, x12a], [x21a, x22a]])
-    matrix_xg = np.array([[x11g, x12g], [x21g, x22g]])
-    matrix_xgt = np.array([[x11g, x21g], [x12g, x22g]])
-    matrix_xm = np.array([[x11m, x12m], [x21m, x22m]])
-    matrix_yabc = np.array([[y11a, y12a, y11b, y21b],
-                            [y12a, y22a, y12b, y22b],
-                            [y11b, y12b, y11c, y12c],
-                            [y21b, y22b, y12c, y22c]])
-    matrix_ygh = np.array([[y11g, y21g], [y12g, y22g],
-                           [-y11h, -y21h], [-y12h, -y22h]])
-    matrix_ygt = np.array([[y11g, y21g], [y12g, y22g]])
-    matrix_yht = np.array([[y11h, y21h], [y12h, y22h]])
-    matrix_ym = np.array([[y11m, y12m], [y21m, y22m]])
-
-    matrix_XA = linalg.inv(matrix_xa)
-    matrix_XC = linalg.inv(matrix_xc)
-    matrix_XG = np.dot(matrix_xg, matrix_XA)
-    matrix_YABC = linalg.inv(matrix_yabc)
-    matrix_YGH = np.dot(matrix_YABC, matrix_ygh)
-
-    X11A = matrix_XA[0, 0]
-    X12A = matrix_XA[0, 1]
-    X21A = matrix_XA[1, 0]
-    X22A = matrix_XA[1, 1]
-
-    X11C = matrix_XC[0, 0]
-    X12C = matrix_XC[0, 1]
-    X21C = matrix_XC[1, 0]
-    X22C = matrix_XC[1, 1]
-
-    X11G = matrix_XG[0, 0]
-    X12G = matrix_XG[0, 1]
-    X21G = matrix_XG[1, 0]
-    X22G = matrix_XG[1, 1]
-
-    Y11A = matrix_YABC[0, 0]
-    Y12A = matrix_YABC[0, 1]
-    Y21A = matrix_YABC[1, 0]
-    Y22A = matrix_YABC[1, 1]
-    Y11B = matrix_YABC[0, 2]
-    Y21B = matrix_YABC[0, 3]
-    Y12B = matrix_YABC[1, 2]
-    Y22B = matrix_YABC[1, 3]
-    Y11C = matrix_YABC[2, 2]
-    Y12C = matrix_YABC[2, 3]
-    Y21C = matrix_YABC[3, 2]
-    Y22C = matrix_YABC[3, 3]
-
-    Y11G = matrix_YGH[0, 0]
-    Y21G = matrix_YGH[0, 1]
-    Y12G = matrix_YGH[1, 0]
-    Y22G = matrix_YGH[1, 1]
-    Y11H = -matrix_YGH[2, 0]
-    Y21H = -matrix_YGH[2, 1]
-    Y12H = -matrix_YGH[3, 0]
-    Y22H = -matrix_YGH[3, 1]
-
-    matrix_YG = np.array([[Y11G, Y12G], [Y21G, Y22G]])
-    matrix_YH = np.array([[Y11H, Y12H], [Y21H, Y22H]])
-
-    matrix_XM = matrix_xm + (2/3)*np.dot(matrix_XG, matrix_xgt)
-    matrix_YM = matrix_ym + 2*(np.dot(matrix_YG, matrix_ygt)
-                               + np.dot(matrix_YH, matrix_yht))
-
-    X11M = matrix_XM[0, 0]
-    X12M = matrix_XM[0, 1]
-    X21M = matrix_XM[1, 0]
-    X22M = matrix_XM[1, 1]
-
-    Y11M = matrix_YM[0, 0]
-    Y12M = matrix_YM[0, 1]
-    Y21M = matrix_YM[1, 0]
-    Y22M = matrix_YM[1, 1]
-
-    Z11M = z11m
-    Z12M = z12m
-    Z21M = z21m
-    Z22M = z22m
-
-    resistance_scalars = np.array([X11A, X12A, X21A, X22A,
-                                   Y11A, Y12A, Y21A, Y22A,
-                                   Y11B, Y12B, Y21B, Y22B,
-                                   X11C, X12C, X21C, X22C,
-                                   Y11C, Y12C, Y21C, Y22C,
-                                   X11G, X12G, X21G, X22G,
-                                   Y11G, Y12G, Y21G, Y22G,
-                                   Y11H, Y12H, Y21H, Y22H,
-                                   X11M, X12M, X21M, X22M,
-                                   Y11M, Y12M, Y21M, Y22M,
-                                   Z11M, Z12M, Z21M, Z22M])
+    resistance_scalars = convert_mobility_to_resistance(mobility_scalars)
 
     elapsed_time = time.time() - start_time
     print("[s'=" + str('{0:.2f}'.format(s_dash)) + "]"
@@ -344,78 +259,35 @@ def find_resistance_scalars(s_dash, lam):
     return np.array([mobility_scalars, resistance_scalars])
 
 
-looper_start_time = time.time()
-
-resistance_scalars_names = np.array(["X11A", "X12A", "X21A", "X22A",
-                                     "Y11A", "Y12A", "Y21A", "Y22A",
-                                     "Y11B", "Y12B", "Y21B", "Y22B",
-                                     "X11C", "X12C", "X21C", "X22C",
-                                     "Y11C", "Y12C", "Y21C", "Y22C",
-                                     "X11G", "X12G", "X21G", "X22G",
-                                     "Y11G", "Y12G", "Y21G", "Y22G",
-                                     "Y11H", "Y12H", "Y21H", "Y22H",
-                                     "X11M", "X12M", "X21M", "X22M",
-                                     "Y11M", "Y12M", "Y21M", "Y22M",
-                                     "Z11M", "Z12M", "Z21M", "Z22M"])
-mobility_scalars_names = np.array(["x11a", "x12a", "x21a", "x22a",
-                                   "y11a", "y12a", "y21a", "y22a",
-                                   "y11b", "y12b", "y21b", "y22b",
-                                   "x11c", "x12c", "x21c", "x22c",
-                                   "y11c", "y12c", "y21c", "y22c",
-                                   "x11g", "x12g", "x21g", "x22g",
-                                   "y11g", "y12g", "y21g", "y22g",
-                                   "y11h", "y12h", "y21h", "y22h",
-                                   "x11m", "x12m", "x21m",  "x22m",
-                                   "y11m", "y12m", "y21m", "y22m",
-                                   "z11m", "z12m", "z21m", "z22m"])
-general_resistance_scalars_names = np.array(["XA", "YA", "YB", "XC", "YC",
-                                             "XG", "YG", "YH", "XM", "YM",
-                                             "ZM"])
-general_mobility_scalars_names = np.array(["xa", "ya", "yb", "xc", "yc",
-                                           "xg", "yg", "yh", "xm", "ym",
-                                           "zm"])
+start_time = time.time()
 
 # Initialise variables
-s_dash_range = np.loadtxt('values_of_s_dash_midfield.txt')
-lam_range = np.loadtxt('values_of_lambda.txt')
-if lam_range.shape == tuple():
-    lam_length = 1
-    lam_range = np.array([lam_range + 0])
-else:
-    lam_length = lam_range.shape[0]
-if s_dash_range.shape == tuple():
-    s_dash_length = 1
-    s_dash_range = np.array([s_dash_range + 0])
-else:
-    s_dash_length = s_dash_range.shape[0]
+s_dash_range = np.loadtxt('values_of_s_dash_midfield.txt', ndmin=1)
+s_dash_length = s_dash_range.shape[0]
+lam_range = np.loadtxt('values_of_lambda.txt', ndmin=1)
+lam_length = lam_range.shape[0]
 
-scalars_length = resistance_scalars_names.shape[0]
-general_scalars_length = general_resistance_scalars_names.shape[0]
+scalars_length = len(resistance_scalars_names)
+general_scalars_length = len(general_resistance_scalars_names)
 xyz_table = np.zeros((scalars_length, s_dash_length, lam_length))
 XYZ_table = np.zeros((scalars_length, s_dash_length, lam_length))
 xyz_human = np.zeros((s_dash_length * lam_length, scalars_length + 2))
 XYZ_human = np.zeros((s_dash_length * lam_length, scalars_length + 2))
 
 # Now run loop
-for lam in lam_range:
-    for s_dash in s_dash_range:
+for lam_index, lam in enumerate(lam_range):
+    for s_dash_index, s_dash in enumerate(s_dash_range):
         print("Running s' = ", str(s_dash), ", lambda = " + str(lam) + " ...")
-        s_dash_index = np.argwhere(s_dash_range == s_dash)[0, 0]
-        lam_index = np.argwhere(lam_range == lam)[0, 0]
         # If lambda > 1, Helen's Fortran code breaks.
-        mob_res_output = find_resistance_scalars(s_dash, lam)
-        mobility_scalars = mob_res_output[0]
-        resistance_scalars = mob_res_output[1]
+        mobility_scalars, resistance_scalars = find_resistance_scalars(s_dash, 
+                                                                       lam)
         xyz_table[:, s_dash_index, lam_index] = mobility_scalars
         XYZ_table[:, s_dash_index, lam_index] = resistance_scalars
 
 # The XYZ_table/xyz_table give us for (s,lam) the x11a x12a etc. But we need
 # x1a, x2a etc.
-lam_range_with_reciprocals = lam_range
-for lam in lam_range:
-    if (1/lam) not in lam_range_with_reciprocals:
-        lam_range_with_reciprocals = np.append(lam_range_with_reciprocals,
-                                               1/lam)
+lam_range_with_reciprocals = np.concatenate(
+    (lam_range, [1/l for l in lam_range if 1/l not in lam_range]))
 lam_range_with_reciprocals.sort()
 lam_wr_length = lam_range_with_reciprocals.shape[0]
 xyz_general_table = np.zeros(
@@ -431,8 +303,7 @@ XYZ_general_human = np.zeros(
 minus_in_B_and_G_one_line = np.array([1, 1, -1, 1, 1, -1, -1, 1, 1, 1, 1])
 minus_in_B_and_G = np.tile(minus_in_B_and_G_one_line, (s_dash_length, 1)).T
 
-for lam in lam_range_with_reciprocals:
-    lam_wr_index = np.argwhere(lam_range_with_reciprocals == lam)[0, 0]
+for lam_wr_index, lam in enumerate(lam_range_with_reciprocals):
     if lam in lam_range:  # x11a, x12a etc
         lam_index = np.argwhere(lam_range == lam)[0, 0]
         xyz_general_table[:, 0, :, lam_wr_index] = xyz_table[
@@ -446,23 +317,21 @@ for lam in lam_range_with_reciprocals:
     else:  # x21a, x22a etc
         lam_index = np.argwhere(lam_range == (1 / lam))[0, 0]
         xyz_general_table[:, 0, :, lam_wr_index] = (xyz_table[
-            (3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43), :, lam_index] 
+            (3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43), :, lam_index]
             * minus_in_B_and_G)
         xyz_general_table[:, 1, :, lam_wr_index] = (xyz_table[
-            (2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42), :, lam_index] 
+            (2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42), :, lam_index]
             * minus_in_B_and_G)
         XYZ_general_table[:, 0, :, lam_wr_index] = (XYZ_table[
-            (3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43), :, lam_index] 
+            (3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43), :, lam_index]
             * minus_in_B_and_G)
         XYZ_general_table[:, 1, :, lam_wr_index] = (XYZ_table[
-            (2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42), :, lam_index] 
+            (2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42), :, lam_index]
             * minus_in_B_and_G)
 # Time elapsed
-looper_elapsed_time = time.time() - looper_start_time
-let_m, let_s = divmod(looper_elapsed_time, 60)
-let_h, let_m = divmod(let_m, 60)
-looper_elapsed_time_hms = "%dh%02dm%02ds" % (let_h, let_m, let_s)
-print("Time elapsed " + looper_elapsed_time_hms)
+elapsed_time = time.time() - start_time
+elapsed_time_hms = format_seconds(elapsed_time)
+print("Time elapsed " + elapsed_time_hms)
 
 # Write XYZ_table and xyz_table to file (computer readable)
 with open('scalars_pairs_resistance_midfield.npy', 'wb') as outputfile:
@@ -475,21 +344,18 @@ with open('scalars_general_mobility_midfield.npy', 'wb') as outputfile:
     np.save(outputfile, xyz_general_table)
 
 # Write XYZ_table and xyz_table to file (human readable)
-for s_dash in s_dash_range:
-    s_dash_index = np.argwhere(s_dash_range == s_dash)[0, 0]
+for s_dash_index, s_dash in enumerate(s_dash_range):
     s_dash_length = s_dash_range.shape[0]
     lam_length = lam_range.shape[0]
     lam_wr_length = lam_range_with_reciprocals.shape[0]
-    for lam in lam_range:
-        lam_index = np.argwhere(lam_range == lam)[0, 0]
+    for lam_index, lam in enumerate(lam_range):
         xyz_outputline = np.append([s_dash, lam],
                                    xyz_table[:, s_dash_index, lam_index])
         xyz_human[lam_index*s_dash_length + s_dash_index, :] = xyz_outputline
         XYZ_outputline = np.append([s_dash, lam],
                                    XYZ_table[:, s_dash_index, lam_index])
         XYZ_human[lam_index*s_dash_length + s_dash_index, :] = XYZ_outputline
-    for lam in lam_range_with_reciprocals:
-        lam_wr_index = np.argwhere(lam_range_with_reciprocals == lam)[0, 0]
+    for lam_wr_index, lam in enumerate(lam_range_with_reciprocals):
         for gam in range(2):
             i = (lam_wr_index*s_dash_length + s_dash_index)*2 + gam
             xyz_outputline = np.append(
@@ -501,50 +367,28 @@ for s_dash in s_dash_range:
                 XYZ_general_table[:, gam, s_dash_index, lam_wr_index])
             XYZ_general_human[i, :] = XYZ_outputline
 
+save_human_table('scalars_pairs_resistance_midfield.txt', 
+                 'Resistance scalars', 
+                 elapsed_time_hms, 
+                 np.append(["s'", "lambda"], resistance_scalars_names),
+                 XYZ_human)
 
-with open('scalars_pairs_resistance_midfield.txt', 'a') as outputfile:
-    heading = ("Resistance scalars, generated "
-               + time.strftime("%d/%m/%Y %H:%M:%S")
-               + ". Time to generate " + looper_elapsed_time_hms)
-    np.savetxt(outputfile, np.array([heading]), fmt="%s")
-    np.savetxt(outputfile,
-               np.append(["s'", "lambda"], resistance_scalars_names),
-               newline=" ", fmt="%15s")
-    outputfile.write("\n")
-    np.savetxt(outputfile, XYZ_human, newline="\n", fmt="% .8e")
-with open('scalars_pairs_mobility_midfield.txt', 'a') as outputfile:
-    heading = ("Mobility scalars, generated "
-               + time.strftime("%d/%m/%Y %H:%M:%S")
-               + ". Time to generate " + looper_elapsed_time_hms)
-    np.savetxt(outputfile, np.array([heading]), fmt="%s")
-    np.savetxt(outputfile,
-               np.append(["s'", "lambda"], mobility_scalars_names),
-               newline=" ", fmt="%15s")
-    outputfile.write("\n")
-    np.savetxt(outputfile, xyz_human, newline="\n", fmt="% .8e")
-with open('scalars_general_resistance_midfield.txt', 'a') as outputfile:
-    heading = ("Resistance scalars, generated "
-               + time.strftime("%d/%m/%Y %H:%M:%S")
-               + ". Time to generate " + looper_elapsed_time_hms)
-    np.savetxt(outputfile, np.array([heading]), fmt="%s")
-    np.savetxt(outputfile,
-               np.append(["s'", "lambda", "gamma"],
-                         general_resistance_scalars_names),
-               newline=" ", fmt="%15s")
-    outputfile.write("\n")
-    np.savetxt(outputfile, XYZ_general_human, newline="\n", fmt="% .8e")
-with open('scalars_general_mobility_midfield.txt', 'a') as outputfile:
-    heading = ("Mobility scalars, generated "
-               + time.strftime("%d/%m/%Y %H:%M:%S")
-               + ". Time to generate " + looper_elapsed_time_hms)
-    np.savetxt(outputfile, np.array([heading]), fmt="%s")
-    np.savetxt(outputfile,
-               np.append(["s'", "lambda", "gamma"],
-                         general_mobility_scalars_names),
-               newline=" ", fmt="%15s")
-    outputfile.write("\n")
-    np.savetxt(outputfile, xyz_general_human, newline="\n", fmt="% .8e")
-    # newline=" " says use a space instead of a newline between array elements
-    # fmt="% .8e" says ( )  use either a space or a minus sign for good spacing
-    #                  (.8) use 8 digits of precision
-    #                  (e)  use exponential form
+save_human_table('scalars_pairs_mobility_midfield.txt',
+                 'Mobility scalars',
+                 elapsed_time_hms,
+                 np.append(["s'", "lambda"], mobility_scalars_names),
+                 xyz_human)
+
+save_human_table('scalars_general_resistance_midfield.txt',
+                 'Resistance scalars',
+                 elapsed_time_hms,
+                 np.append(["s'", "lambda", "gamma"],
+                           general_resistance_scalars_names),
+                 XYZ_general_human)
+
+save_human_table('scalars_general_mobility_midfield.txt',
+                 'Mobility scalars',
+                 elapsed_time_hms,
+                 np.append(["s'", "lambda", "gamma"],
+                           general_mobility_scalars_names),
+                 xyz_general_human)

@@ -20,7 +20,8 @@ Writes:
 """
 
 import numpy as np
-import time
+from functions_general import (general_resistance_scalars_names,
+                               save_human_table)
 
 values_of_s_dash_nearfield = np.loadtxt('values_of_s_dash_nearfield.txt', 
                                         ndmin=1)
@@ -30,18 +31,11 @@ values_of_s_dash = np.concatenate((values_of_s_dash_nearfield,
                                    values_of_s_dash_midfield))
 values_of_s_dash.sort()
 np.savetxt('values_of_s_dash.txt', values_of_s_dash, fmt="% .8e")
-lam_range = np.loadtxt('values_of_lambda.txt')
 s_dash_range = values_of_s_dash
-if lam_range.shape == tuple():
-    lam_length = 1
-    lam_range = np.array([lam_range + 0])
-else:
-    lam_length = lam_range.shape[0]
-if s_dash_range.shape == tuple():
-    s_dash_length = 1
-    s_dash_range = np.array([s_dash_range + 0])
-else:
-    s_dash_length = s_dash_range.shape[0]
+s_dash_length = s_dash_range.shape[0]
+
+lam_range = np.loadtxt('values_of_lambda.txt', ndmin=1)
+lam_length = lam_range.shape[0]
 
 with open('scalars_general_resistance_midfield.npy', 'rb') as inputfile:
     XYZ_mid_raw = np.load(inputfile)
@@ -60,10 +54,6 @@ print(XYZ_near_raw.shape)
 
 
 XYZ_general_table = np.concatenate((XYZ_near_raw, XYZ_mid_raw), axis=2)
-
-general_resistance_scalars_names = np.array(["XA", "YA", "YB", "XC", "YC",
-                                             "XG", "YG", "YH", "XM", "YM",
-                                             "ZM"])
 general_scalars_length = len(general_resistance_scalars_names)
 
 with open('scalars_general_resistance.npy', 'wb') as outputfile:
@@ -94,14 +84,9 @@ for s_dash in s_dash_range:
             i = (lam_wr_index*s_dash_length + s_dash_index)*2 + gam
             XYZ_general_human[i, :] = XYZ_outputline
 
-
-with open('scalars_general_resistance.txt', 'a') as outputfile:
-    heading = ("Resistance scalars, combined " 
-               + time.strftime("%d/%m/%Y %H:%M:%S") + ".")
-    np.savetxt(outputfile, np.array([heading]), fmt="%s")
-    np.savetxt(outputfile, 
-               np.append(["s'", "lambda", "gamma"], 
-                         general_resistance_scalars_names), 
-               newline=" ", fmt="%15s")
-    outputfile.write("\n")
-    np.savetxt(outputfile, XYZ_general_human, newline="\n", fmt="% .8e")
+save_human_table('scalars_general_resistance.txt',
+                 'Resistance scalars, combined',
+                 "0s",
+                 np.append(["s'", "lambda", "gamma"],
+                           general_resistance_scalars_names),
+                 XYZ_general_human)

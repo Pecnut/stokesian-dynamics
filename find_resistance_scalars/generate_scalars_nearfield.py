@@ -50,7 +50,10 @@ Writes:
 
 import numpy as np
 import time
-from nearfield_functions import (X11A, X12A, Y11A, Y12A, Y11B, Y12B,
+from functions_general import (resistance_scalars_names,
+                               general_resistance_scalars_names,
+                               format_seconds, save_human_table)
+from functions_nearfield import (X11A, X12A, Y11A, Y12A, Y11B, Y12B,
                                  X11C, X12C, Y11C, Y12C,
                                  X11G, X12G, Y11G, Y12G, Y11H, Y12H,
                                  X11M, X12M, Y11M, Y12M, Z11M, Z12M)
@@ -61,10 +64,6 @@ scalar_functions = (X11A, X12A, Y11A, Y12A, Y11B, Y12B,
                     X11C, X12C, Y11C, Y12C,
                     X11G, X12G, Y11G, Y12G, Y11H, Y12H,
                     X11M, X12M, Y11M, Y12M, Z11M, Z12M)
-
-resistance_scalars_names = [_.__name__ for _ in scalar_functions]
-general_resistance_scalars_names = ["XA", "YA", "YB", "XC", "YC",
-                                    "XG", "YG", "YH", "XM", "YM", "ZM"]
 
 # Initialise variables
 s_dash_range = np.loadtxt('values_of_s_dash_nearfield.txt', ndmin=1)
@@ -96,9 +95,7 @@ for lam_index, lam in enumerate(lam_range_with_reciprocals):
 
 # Time elapsed
 elapsed_time = time.time() - start_time
-et_m, et_s = divmod(elapsed_time, 60)
-et_h, et_m = divmod(et_m, 60)
-elapsed_time_hms = "%dh%02dm%02ds" % (et_h, et_m, et_s)
+elapsed_time_hms = format_seconds(elapsed_time)
 print("Time elapsed " + elapsed_time_hms)
 
 # Save computer readable version
@@ -114,14 +111,10 @@ for s_dash_index, s_dash in enumerate(s_dash_range):
                 [s_dash, lam, gam],
                 XYZ_general_table[:, gam, s_dash_index, lam_wr_index])
             XYZ_general_human[i, :] = XYZ_outputline
-with open('scalars_general_resistance_nearfield.txt', 'a') as outputfile:
-    heading = ("Resistance scalars, generated "
-               + time.strftime("%d/%m/%Y %H:%M:%S")
-               + ". Time to generate " + elapsed_time_hms)
-    np.savetxt(outputfile, np.array([heading]), fmt="%s")
-    np.savetxt(outputfile,
-               np.append(["s'", "lambda", "gamma"],
-                         general_resistance_scalars_names),
-               newline=" ", fmt="%15s")
-    outputfile.write("\n")
-    np.savetxt(outputfile, XYZ_general_human, newline="\n", fmt="% .8e")
+
+save_human_table('scalars_general_resistance_nearfield.txt',
+                 'Resistance scalars',
+                 elapsed_time_hms,
+                 np.append(["s'", "lambda", "gamma"],
+                           general_resistance_scalars_names),
+                 XYZ_general_human)

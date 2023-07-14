@@ -2,7 +2,7 @@
 # Adam Townsend, adam@adamtownsend.com, 12/07/2023.
 
 """
-Functions file for generate_nearfield_scalars.py. 
+Functions file for generate_scalars_nearfield.py. 
 
 Contains functions which generate X11A, X12A, Y11A, etc. 
 
