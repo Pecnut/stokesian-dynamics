@@ -39,6 +39,7 @@ general_mobility_scalars_names = ["xa", "ya", "yb", "xc", "yc",
 
 
 def save_human_table(filename, description, elapsed_time_hms, firstrow, data):
+    """Save a table of data in a human-readable form."""
     with open(filename, 'a') as outputfile:
         heading = (description + ", generated "
                    + time.strftime("%d/%m/%Y %H:%M:%S")
@@ -52,12 +53,14 @@ def save_human_table(filename, description, elapsed_time_hms, firstrow, data):
 
 
 def format_seconds(elapsed_time):
+    """Return a number of seconds in the form 0h00m00s."""
     et_m, et_s = divmod(elapsed_time, 60)
     et_h, et_m = divmod(et_m, 60)
     return "%dh%02dm%02ds" % (et_h, et_m, et_s)
 
 
 def convert_mobility_to_resistance(mobility_scalars):
+    """Convert a list of mobility scalars to a list of resistance scalars."""
     [x11a, x12a, x21a, x22a,
      y11a, y12a, y21a, y22a,
      y11b, y12b, y21b, y22b,
