@@ -44,8 +44,8 @@ Writes:
     scalars_general_resistance_nearfield.txt: 
         this file is created to be human readable and is not used by any
         further script. This file lists scalars in the form:
-            s' lambda 0 x11a y11a y11b x11c y11c x11g y11g y11h x11m y11m z11m
-            s' lambda 1 x12a y12a y12b x12c y12c x12g y12g y12h x12m y12m z12m
+            s' lambda 0 X11A Y11A Y11B X11C Y11C X11G Y11G Y11H X11M Y11M Z11M
+            s' lambda 1 X12A Y12A Y12B X12C Y12C X12G Y12G Y12H X12M Y12M Z12M
 """
 
 import numpy as np

@@ -64,11 +64,11 @@ For values of *s*' between 2.001 and 2.01, in the Stokesian Dynamics code, we ge
 
 1.  Compile the Fortran code in **/helen_fortran/** into an executable called **/helen_fortran/lamb.exe**. To do this, enter the **/helen_fortran/** folder and run `gfortran 2sphere.f base.f reflect.f -o lamb.exe`, where `gfortran` is the name of your version of Fortran. Another common alternative is `g95`. *You can safely ignore warnings of the form 'Array reference at (1) out of bounds (0 < 1) in loop beginning at (2)'.* (Mac/Linux users: no need to be suspicious of the `.exe` ending; this will still work on your system.)
 
-2.  Run **generate_midfield_scalars.py** to generate scalars in the mid-field (*s*' from **values_of_s_dash_midfield.txt**) using code from Wilson (2013). This code will work for *s*’ as low as about 2.01386 but no less. Running this takes about an hour on my laptop. This generates all the files ending in **\_midfield**.
+2.  Run **generate_scalars_midfield.py** to generate scalars in the mid-field (*s*' from **values_of_s_dash_midfield.txt**) using code from Wilson (2013). This code will work for *s*’ as low as about 2.01386 but no less. Running this takes about an hour on my laptop. This generates all the files ending in **\_midfield**.
 
-3.  Run **generate_nearfield_scalars.py** to generate scalars in the near-field (*s*' from **values_of_s_dash_nearfield.txt**). This takes about five minutes on my laptop. This generates both files with **\_nearfield\_** in them.
+3.  Run **generate_scalars_nearfield.py** to generate scalars in the near-field (*s*' from **values_of_s_dash_nearfield.txt**). This takes about five minutes on my laptop. This generates both files with **\_nearfield\_** in them.
 
-4.  Run **combine_resistance_scalars.py** to combine these two results. This is quick!
+4.  Run **combine_scalars.py** to combine these two results. This is quick!
 
 5.  Run **../convert_resistance_scalars_to_d_form.py** to convert these results into a form where the mobility interaction is already subtracted off (for unclear reasons called 'd' form). This is also quick!
 
