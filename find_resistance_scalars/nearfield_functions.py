@@ -32,6 +32,7 @@ from math import log, comb
 from functools import cache
 from scipy.special import zeta
 
+
 @cache
 def kron(i, j):
     """Kronecker delta"""
@@ -60,6 +61,36 @@ def intermediate_sum(f0, f1, f2, f3, parity, lam, N=100):
         sumover = range(2, N+1, 2)
     return sum([
         2**-m*(1+lam)**-m*f0(m, lam)
+        - f1(lam)
+        - 2*m**-1*f2(lam)
+        + 4*m**-1*(m+2)**-1*f3(lam)
+        for m in sumover
+    ])
+
+
+@cache
+def intermediate_sum_no_f0_coeff(f0, f1, f2, f3, parity, lam, N=100):
+    """Version of intermediate_sum but where the coefficient of f0 is instead
+    assumed to already be in f0. 
+    
+    Note that, for example, this coefficient normally includes 2**-m, and yet
+    every definition of the 'f' functions used in f0 includes 2**m, so it just
+    cancels out. So why include it? This choice appears to have been made in
+    the papers because it keeps the coefficients of the f functions integers,
+    which makes them easier to type. But from a programming perspective it is
+    wasteful, although harmless. More dangerous is keeping (1+lam)**-m on the
+    outside, because by bring it inside f0, it can help to stop the terms in f0
+    getting too large for double precision, which they do when lambda and N are
+    both large. To keep the functions in this script closer to the original
+    papers, we maintain the traditional form and only use this function for
+    Z11M and Z12M because we need larger N on them.
+    """
+    if parity == "odd":
+        sumover = range(1, N, 2)
+    else:
+        sumover = range(2, N+1, 2)
+    return sum([
+        f0(m, lam)
         - f1(lam)
         - 2*m**-1*f2(lam)
         + 4*m**-1*(m+2)**-1*f3(lam)
@@ -878,7 +909,7 @@ def MY12(lam):
     """(J 66)"""
     o = 8/(1+lam)**3 * (
         2*G5ym(lam)*log(2) - 2*G6ym(lam)
-        + intermediate_sum(Fym, Z, G5ym, G6ym, 'odd', lam, 128)
+        + intermediate_sum(Fym, Z, G5ym, G6ym, 'odd', lam, 130)
     )
     return o
 
@@ -957,6 +988,21 @@ def Fzm(k, lam):
 
 
 @cache
+def Fzm_with_sum_coeff(k, lam):
+    """(I 131) but multiplied by 2^(-k) (1+lambda)^(-k), which is the 
+    coefficient of Fzm which is normally in MZ11 and MZ12. Putting the 
+    coefficient inside this function means that we can avoid having lam^k,
+    which can exceed the max double precision float size of 1e308 when
+    lam=100 and k gets big, which you need as MZ11 and MZ12 converge slowly."""
+    return sum([
+        Pzm(2, k-q, q)
+        * (lam/(1+lam))**q
+        * lam**(k % 2)
+        * (1+lam)**(q-k)
+        for q in range(0, k+1)])
+
+
+@cache
 def G3zm(lam):
     """(J 79b.1)"""
     return -3/10*(lam**2+lam**4)/(1+lam)**3
@@ -964,18 +1010,22 @@ def G3zm(lam):
 
 @cache
 def MZ11(lam):
-    """(J 81)"""
+    """(J 81). See docstring on Fzm_with_sum_coeff for reasoning on using
+    intermediate_sum_no_f0_coeff."""
     o = (-G3zm(lam) + 1 +
-         intermediate_sum(Fzm, Z, Z, G3zm, 'even', lam, 150))
+         intermediate_sum_no_f0_coeff(Fzm_with_sum_coeff, Z, Z, G3zm,
+                                      'even', lam, 150))
     return o
 
 
 @cache
 def MZ12(lam):
-    """(J 81)"""
+    """(J 81). See docstring on Fzm_with_sum_coeff for reasoning on using
+    intermediate_sum_no_f0_coeff."""
     o = 8/(1+lam)**3 * (
         2*G3zm(lam) -
-        intermediate_sum(Fzm, Z, Z, G3zm, 'odd', lam, 199)
+        intermediate_sum_no_f0_coeff(Fzm_with_sum_coeff, Z, Z, G3zm,
+                                     'odd', lam, 200)
     )
     return o
 
