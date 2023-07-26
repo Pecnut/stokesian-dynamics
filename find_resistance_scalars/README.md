@@ -62,7 +62,7 @@ For values of *s*' between 2.001 and 2.01, in the Stokesian Dynamics code, we ge
 
 ## 3. Method ##
 
-1.  Compile the Fortran code in **/helen_fortran/** into an executable called **/helen_fortran/lamb.exe**. To do this, enter the **/helen_fortran/** folder and run `gfortran 2sphere.f base.f reflect.f -o lamb.exe`, where `gfortran` is the name of your version of Fortran. Another common alternative is `g95`. *You can safely ignore warnings of the form 'Array reference at (1) out of bounds (0 < 1) in loop beginning at (2)'.* (Mac/Linux users: no need to be suspicious of the `.exe` ending; this will still work on your system.)
+1.  Compile the Fortran code in **/helen_fortran/** into an executable called **/helen_fortran/lamb.exe**. To do this, enter the **/helen_fortran/** folder and run `gfortran 2sphere.f base.f reflect.f -o lamb.exe`, where `gfortran` is the name of your version of Fortran. Another common alternative is `g95`. (Mac/Linux users: no need to be suspicious of the `.exe` ending; this will still work on your system.)
 
 2.  Run **generate_scalars_midfield.py** to generate scalars in the mid-field (*s*' from **values_of_s_dash_midfield.txt**) using code from Wilson (2013). This code will work for *s*’ as low as about 2.01386 but no less. Running this takes about an hour on my laptop. This generates all the files ending in **\_midfield**.
 

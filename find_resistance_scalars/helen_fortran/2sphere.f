@@ -13,9 +13,8 @@
       integer i,j,k
       real*8 EPSILON, r1, r2
       real*8 Find_force
-      real*8 Ff(1:Nspheres,1:3), Tt(1:Nspheres,1:3),
-     >     Ee(1:Nspheres,1:3,1:3)
-      real*8 factor
+      real*8 Ff(1:Nspheres,1:3), Tt(1:Nspheres,1:3)
+      real*8 Ee(1:Nspheres,1:3,1:3)
 *
       do i=1,Nspheres
          do j=1,3
@@ -36,8 +35,6 @@
 *     - If NFUDGE=.TRUE., a smaller than optimal N is allowed
 *
 *-----* Inputs
-c      print *, "bull"
-
       call get_command_argument(1,s_input)
       call get_command_argument(2,r1_input)
       call get_command_argument(3,r2_input)
@@ -51,11 +48,8 @@ c      print *, "bull"
 *-----* Physical parameters
       radius(1) = r1
       radius(2) = r2
-c	  print *, radius(1)
-c	  print *, radius(2)
 
-c
-c     Scaling ("Conversion factors")
+c     Nondimensionalisation
 c     -Helen's originals
 c      scaling(1)=6.d0*pi*radius(1)
 c      scaling(2)=8.d0*pi*radius(1)**2.d0
@@ -69,7 +63,7 @@ c     -To have it scaled on sqrt(r1r2)
 c      scaling(1)=6.d0*pi*sqrt(radius(1)*radius(2))
 c      scaling(2)=6.d0*pi*sqrt(radius(1)*radius(2))**2.d0
 c      scaling(3)=6.d0*pi*sqrt(radius(1)*radius(2))**3
-c     -Scale on 1
+c     -Scale on 1 (i.e. no scaling, fully dimensional)
       scaling(1)=1.d0
       scaling(2)=1.d0
       scaling(3)=1.d0
@@ -87,46 +81,20 @@ c     E1, E3, E4,
             Ff(1,1) = scaling(1)
       case ("F12")
             Ff(1,2) = scaling(1)
-      case ("F13")
-            Ff(1,3) = scaling(1)
-      case ("F1112")
-            Ff(1,1) = scaling(1)
-            Ff(1,2) = scaling(1)
       case ("F21")
             Ff(2,1) = scaling(1)
       case ("F22")
             Ff(2,2) = scaling(1)
-      case ("F23")
-            Ff(2,3) = scaling(1)
       case ("T11")
-			Tt(1,1) = scaling(2)
+            Tt(1,1) = scaling(2)
       case ("T12")
             Tt(1,2) = scaling(2)
-      case ("T13")
-            Tt(1,3) = scaling(2)
       case ("T21")
             Tt(2,1) = scaling(2)
       case ("T22")
             Tt(2,2) = scaling(2)
       case ("T23")
             Tt(2,3) = scaling(2)
-      case ("E1")
-            Ee(1,1,1) = scaling(3)
-            Ee(1,2,2) = -0.5d0*scaling(3)
-            Ee(1,3,3) = -0.5d0*scaling(3)
-            Ee(2,1,1) = scaling(3)
-            Ee(2,2,2) = -0.5d0*scaling(3)
-            Ee(2,3,3) = -0.5d0*scaling(3)
-      case ("E3")
-            Ee(1,2,3) = scaling(3)
-            Ee(1,3,2) = scaling(3)
-            Ee(2,2,3) = scaling(3)
-            Ee(2,3,2) = scaling(3)
-      case ("E4")
-            Ee(1,1,2) = scaling(3)
-            Ee(1,2,1) = scaling(3)
-            Ee(2,1,2) = scaling(3)
-            Ee(2,2,1) = scaling(3)
       case ("E11")
             Ee(1,1,1) = scaling(3)
             Ee(1,2,2) = -0.5d0*scaling(3)
@@ -145,7 +113,7 @@ c     E1, E3, E4,
             Ee(2,2,3) = scaling(3)
             Ee(2,3,2) = scaling(3)
       case ("E24")
-			Ee(2,1,2) = scaling(3)
+            Ee(2,1,2) = scaling(3)
             Ee(2,2,1) = scaling(3)
       end select
 c
@@ -237,7 +205,7 @@ c         close (10)
       real*8 Ff(1:Nspheres,1:3), Tt(1:Nspheres,1:3),
      >     Ee(1:Nspheres,1:3,1:3)
 *
-      integer i,j,k,l,m,n
+      integer i,j,k,l,m
       real*8 h, Hh, Symmetry
 *
 ************************************************************************
@@ -386,21 +354,6 @@ c--------c Added 24 June 2014 noon to account for the usual "G = 2D" error.
 			 print *,'-------------------------------------'
 		  end do
       end if
-*
-      if (outputform=="mathematica") then
-            write (*,"(A,F22.19,A,F22.19,A,F22.19,A,F22.19,A,F22.19,A,
-     +      F22.19,A,F22.19,A,F22.19,A,F22.19,A,F22.19,A,F22.19,A,
-     +      F22.19,A,F22.19,A,F22.19,A,F22.19,A,F22.19,A,F22.19,A,
-     +      F22.19,A,F22.19,A,F22.19,A,F22.19,A,F22.19,A)"
-     +      ,advance='no')
-     + '{',Ux(1),'`20,', Uy(1),'`20,',Uz(1),
-     +			  '`20,',Ox(1),'`20,',
-     +	  		  Oy(1),'`20,',Oz(1),'`20,',Sxx(1),'`20,',Syy(1),'`20,',
-     + 			  Sxy(1),'`20,',Sxz(1),'`20,',Syz(1),'`20,',
-     +			  Ux(2),'`20,',Uy(2),'`20,',Uz(2),'`20,',Ox(2),'`20,',
-     +			  Oy(2),'`20,',Oz(2),'`20,',Sxx(2),'`20,',Syy(2),'`20,',
-     +			  Sxy(2),'`20,',Sxz(2),'`20,',Syz(2),'`20}'
-         endif
 
       if(outputform=="short") then
             print *, Ux(1), Uy(1), Uz(1), Ox(1), Oy(1), Oz(1),
@@ -417,7 +370,7 @@ c--------c Added 24 June 2014 noon to account for the usual "G = 2D" error.
 *
       INCLUDE 'parameters.f'
       integer k
-      real*8 lambda, error, Theta
+      real*8 lambda, error
       real*8 Ux(1:Nspheres),Uy(1:Nspheres),Uz(1:Nspheres),
      +     Ox(1:Nspheres),Oy(1:Nspheres),Oz(1:Nspheres),
      +     Sxx(Nspheres), Sxy(Nspheres), Syy(Nspheres), Sxz(Nspheres),
@@ -508,28 +461,6 @@ c--- \bS = \frac{4}{15}\pi\mu a^3\left(- 3a^{-3} \bC + 20\bD + 2a^2\bF\right)
          Oyi = Om(2,i,-1)-Om(2,i,1)
          Ozr = -Om(2,i,1)-Om(2,i,-1)
          Ozi = Om(1,i,1)+Om(1,i,-1)
-c========c
-c         Sst(1,i,3,2,0) = Stens(i,1,1)
-c         Sst(1,i,3,2,1) = Stens(i,1,2)/(3.d0)
-c         Sst(1,i,3,2,-1) = -Stens(i,1,2)/(3.d0)
-c         Sst(2,i,3,2,1) = Stens(i,1,3)/(3.d0)
-c         Sst(2,i,3,2,-1) = Stens(i,1,3)/(3.d0)
-c         Sst(1,i,3,2,2) = (2.d0*Stens(i,2,2) + Stens(i,1,1))/(12.d0)
-c         Sst(1,i,3,2,-2) = (2.d0*Stens(i,2,2) + Stens(i,1,1))/(12.d0)
-c         Sst(2,i,3,2,2) = -Stens(i,2,3)/(6.d0)
-c         Sst(2,i,3,2,-2) = Stens(i,2,3)/(6.d0)
-c========c Old version
-c         Sxxr = Sst(1,i,0)
-c         Sxxi = Sst(2,i,0)
-c         Syyr = -0.5d0*Sst(1,i,0) + 3.d0*(Sst(1,i,-2)+Sst(1,i,2))
-c         Syyi = -0.5d0*Sst(2,i,0) + 3.d0*(Sst(2,i,-2)+Sst(2,i,2))
-c         Sxyr = 3.d0*(Sst(1,i,-1)-Sst(1,i,1))
-c         Sxyi = 3.d0*(Sst(2,i,-1)-Sst(2,i,1))
-c         Sxzr = -3.d0*(Sst(2,i,-1)+Sst(2,i,1))
-c         Sxzi = 3.d0*(Sst(1,i,-1)+Sst(1,i,1))
-c         Syzr = -6.d0*(Sst(2,i,-2)-Sst(2,i,2))
-c         Syzi = 6.d0*(Sst(1,i,-2)-Sst(1,i,2))
-c========c New version
          Sxxr = Sst(1,i,0)
          Sxxi = Sst(2,i,0)
          Syyr = -0.5d0*Sst(1,i,0) + 3.d0*(Sst(1,i,-2)+Sst(1,i,2))

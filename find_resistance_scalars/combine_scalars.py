@@ -40,14 +40,8 @@ lam_length = lam_range.shape[0]
 with open('scalars_general_resistance_midfield.npy', 'rb') as inputfile:
     XYZ_mid_raw = np.load(inputfile)
 
-with open('scalars_general_resistance_nearfield_mathematica_for_python.txt', 
-          'rb') as inputfile:
-    mathematica = inputfile.read()
-    square_brackets = mathematica
-    # for pair in [["{", "["], ["}", "]"], ["*^", "E"], ["\r\n", ","]]: # Win
-    for pair in [["{", "["], ["}", "]"], ["*^", "E"], ["\n", ","]]: # Unix/Mac
-        square_brackets = square_brackets.replace(pair[0], pair[1])
-    XYZ_near_raw = np.array(eval(square_brackets)).transpose()
+with open('scalars_general_resistance_nearfield.npy', 'rb') as inputfile:
+    XYZ_near_raw = np.load(inputfile)    
 
 print(XYZ_mid_raw.shape)
 print(XYZ_near_raw.shape)
@@ -61,22 +55,17 @@ with open('scalars_general_resistance.npy', 'wb') as outputfile:
 
 
 # Write XYZ_table and xyz_table to file (human readable)
-lam_range_with_reciprocals = lam_range
-for lam in lam_range:
-    if (1. / lam) not in lam_range_with_reciprocals:
-        lam_range_with_reciprocals = np.append(lam_range_with_reciprocals, 
-                                               1/lam)
+lam_range_with_reciprocals = np.concatenate(
+    (lam_range, [1/l for l in lam_range if 1/l not in lam_range]))        
 lam_range_with_reciprocals.sort()
 lam_wr_length = lam_range_with_reciprocals.shape[0]
 XYZ_general_human = np.zeros((s_dash_length*lam_wr_length*2, 
                               general_scalars_length + 3))
-for s_dash in s_dash_range:
-    s_dash_index = np.argwhere(s_dash_range == s_dash)[0, 0]
+for s_dash_index, s_dash in enumerate(s_dash_range):
     s_dash_length = s_dash_range.shape[0]
     lam_length = lam_range.shape[0]
     lam_wr_length = lam_range_with_reciprocals.shape[0]
-    for lam in lam_range_with_reciprocals:
-        lam_wr_index = np.argwhere(lam_range_with_reciprocals == lam)[0, 0]
+    for lam_wr_index, lam in enumerate(lam_range_with_reciprocals):
         for gam in range(2):
             XYZ_outputline = np.append(
                 [s_dash, lam, gam], 
@@ -90,3 +79,5 @@ save_human_table('scalars_general_resistance.txt',
                  np.append(["s'", "lambda", "gamma"],
                            general_resistance_scalars_names),
                  XYZ_general_human)
+
+print("Nearfield and midfield scalars combined successfully.")
