@@ -225,7 +225,7 @@ The method is from:
 * [Townsend, 2018](https://arxiv.org/abs/1802.08226). Generating, from scratch, the near-field asymptotic forms of scalar resistance functions for two unequal rigid spheres in low-Reynolds-number flow, *arXiv:1802.08226 [physics.flu-dyn]*
 * [Wilson, 2013](http://www.ucl.ac.uk/~ucahhwi/publist/papers/2013-W.pdf). Stokes flow past three spheres, *Journal of Computational Physics* **245**, 302–316.
 
-## 11. Known issues <a name="s12"></a> ##
+## 11. Known issues <a name="s11"></a> ##
 
 ### (a) "RuntimeError: Invalid DISPLAY variable" error
 
