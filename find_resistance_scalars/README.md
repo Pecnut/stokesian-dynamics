@@ -22,7 +22,7 @@ We use a mid-field method and a near-field method. The mid-field method works fo
 
 The near-field method works for:
 
-| *λ*         | *s*'         |
+| λ           | s'           |
 | ----------- | ------------ |
 |       1     |      < 2.01  |
 |       0.1   |      < 2.001 |
@@ -34,7 +34,7 @@ For values of *s*' between 2.001 and 2.01, in the Stokesian Dynamics code, we ge
 
 Following Kim & Karilla, section 11.3, we have non-dimensionalised the resistance scalars. The dimensional forms can be recovered by multiplying by:
 
-| *Scalar superscript* | *Multiply by*                      |
+|  Scalar superscript  |  Multiply by                       |
 | -------------------- | ---------------------------------- |
 |                   A  |  6π*a*<sub>1</sub>                 |
 |                   B  |  4π*a*<sub>1</sub><sup>2</sup>     |
@@ -45,10 +45,10 @@ Following Kim & Karilla, section 11.3, we have non-dimensionalised the resistanc
 
 For the mid-field, we also generate the mobility scalars. As they are computed as part of the calculation of the resistance scalars, we include them here for interest, although they are not used explicitly in the Stokesian Dynamics code. Following Kim & Karilla, section 11.3, these are also non-dimensionalised. The dimensional forms can be recovered by multiplying by:
 
-| *Scalar superscript* | *Multiply by*                       |
+|  Scalar superscript  |  Multiply by                        |
 | -------------------- | ----------------------------------- |
 |                   a  |  1/(6π*a*<sub>1</sub>)              |
-|                   b  |  1/(4π*a*<sub>1</sub>^<sup>2</sup>) |
+|                   b  |  1/(4π*a*<sub>1</sub><sup>2</sup>) |
 |                   c  |  1/(8π*a*<sub>1</sub><sup>3</sup>)  |
 |                   g  |  2*a*<sub>1</sub>                   |
 |                   h  |  1                                  |
@@ -86,7 +86,7 @@ For the mid-field, we also generate the mobility scalars. As they are computed a
 
 1.  Compile the Fortran code in **/helen_fortran/** into an executable called **/helen_fortran/lamb.exe**. To do this, enter the **/helen_fortran/** folder and run `gfortran 2sphere.f base.f reflect.f -o lamb.exe`, where `gfortran` is the name of your version of Fortran. Another common alternative is `g95`. (Mac/Linux users: no need to be suspicious of the `.exe` ending; this will still work on your system.)
 
-2.  Run **generate_scalars_midfield.py** to generate scalars in the mid-field (*s*' from **values_of_s_dash_midfield.txt**) using code from Wilson (2013). This code will work for *s*’ as low as about 2.01386 but no less. Running this with a convergence tolerance of 10<sup>-8</sup> (`globalerror` in `2sphere.f`) takes about three hours on my laptop. With a tolerance of 10<sup>-6</sup> it runs in about half an hour. This generates all the files ending in **\_midfield**.
+2.  Run **generate_scalars_midfield.py** to generate scalars in the mid-field (*s*' from **values_of_s_dash_midfield.txt**) using code from Wilson (2013). This code will work for *s*’ as low as about 2.01386 but no less. Running this with a convergence tolerance of 10<sup>–8</sup> (`globalerror` in `2sphere.f`) takes about three hours on my laptop. With a tolerance of 10<sup>–6</sup> it runs in about half an hour. This generates all the files ending in **\_midfield**.
 
 3.  Run **generate_scalars_nearfield.py** to generate scalars in the near-field (*s*' from **values_of_s_dash_nearfield.txt**). This takes about five minutes on my laptop. This generates both files with **\_nearfield\_** in them.
 
