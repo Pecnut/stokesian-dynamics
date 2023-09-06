@@ -1,15 +1,6 @@
-datetime
-itertools
 matplotlib
 mpl_toolkits
 numba
 numpy
-os
 pylab
-resource
 scipy
-smtplib
-socket
-subprocess
-sys
-time
