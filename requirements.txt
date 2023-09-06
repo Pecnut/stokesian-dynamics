@@ -1,7 +1,5 @@
 datetime
-glob
 itertools
-math
 matplotlib
 mpl_toolkits
 numba

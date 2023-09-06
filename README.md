@@ -64,7 +64,7 @@ Speed and memory are the greatest limitations of the software. Loosely speaking,
 ## 4. System requirements <a name="s4"></a> ##
 This is an implementation in Python, using Numba for speed. It has been tested with Python 3.9.12 and requires the following Python packages:
 
-* datetime, glob, itertools, math, matplotlib, mpl_toolkits, numba, numpy, os, pylab, resource, scipy, smtplib, socket, subprocess, sys, time.
+* datetime, itertools, matplotlib, mpl_toolkits, numba, numpy, os, pylab, resource, scipy, smtplib, socket, subprocess, sys, time.
 
 With the exception of Numba, you probably have most of these installed already. Your best bet is just to try setting up the software and then running the sample program below.
 
