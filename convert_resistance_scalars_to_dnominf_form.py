@@ -18,7 +18,8 @@ called from this folder.
 """
 
 import numpy as np
-from functions_shared import *
+import time
+from functions_shared import add_sphere_rotations_to_positions, sqrt
 
 looper_start_time = time.time()
 
