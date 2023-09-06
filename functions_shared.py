@@ -43,7 +43,7 @@ def levi(i, j, k):
 
 
 def contraction(i, j, k):
-    """Element of contraction matrix \mathcal{E}_ijk.
+    """Element of contraction matrix \\mathcal{E}_ijk.
 
     Use for converting 3x3 symmetric traceless matrix to 5-element vector."""
     return np.array([[[0.5*(sqrt(3)+1), 0, 0],

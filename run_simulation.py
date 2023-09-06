@@ -4,7 +4,7 @@
 
 """Main Stokesian Dynamics simulation script.
 
-Run this Python script to perform a Stokesian Dynamics simulation. 
+Run this Python script to perform a Stokesian Dynamics simulation.
 See README.md for setup instructions and how to run your first simulation.
 
 You can override the inputs:
@@ -34,7 +34,7 @@ from input_setups import input_ftsuoe
 from inputs import (
     cutoff_factor, num_frames, view_graphics, viewbox_bottomleft_topright,
     printout, setup_number, posdata, setup_description, s_dash_range,
-    lam_range_with_reciprocals, view_labels, viewing_angle, timestep, 
+    lam_range_with_reciprocals, view_labels, viewing_angle, timestep,
     trace_paths, two_d_plot,
     save_positions_every_n_timesteps, save_forces_every_n_timesteps,
     save_forces_and_positions_to_temp_file_as_well,
@@ -43,8 +43,7 @@ from inputs import (
     input_number, extract_force_on_wall_due_to_dumbbells, checkpoint_filename,
     checkpoint_start_from_frame, feed_every_n_timesteps, feed_from_file,
     timestepping_scheme, bead_bead_interactions, fully_2d_problem,
-    start_saving_after_first_n_timesteps, send_email,
-    rk4_generate_minfinity_for_each_stage)
+    start_saving_after_first_n_timesteps, rk4_generate_minfinity_for_each_stage)
 
 
 # Input description of simulation
@@ -899,7 +898,7 @@ if error == 0:
 
     print("[Generating " + filename + "]")
     print("                      " + " " * 2 * len(str(num_frames))
-          + "[ Minfy  ] [invMinfy] [R2Bex'd'] [ U=R\F  ] [ Saving ] [MaxMemry] [[ Total  ]] [TimeLeft] [ ETA ]")
+          + "[ Minfy  ] [invMinfy] [R2Bex'd'] [ U=R\\F  ] [ Saving ] [MaxMemry] [[ Total  ]] [TimeLeft] [ ETA ]")
 
     if view_graphics and num_frames > 1:
         generate_frame_args = [grand_mobility_matrix, view_graphics,

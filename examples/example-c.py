@@ -75,6 +75,6 @@ plt.plot(phi_sb,u_sb,'.',markersize=10, linestyle="--",zorder=0)
 plt.legend(['Single result from code','Scraped from paper'])
 
 plt.axis([-0.02, 0.6, 0, 1.03])
-plt.xlabel('Concentration, $\phi$')#,rotation='horizontal')
+plt.xlabel('Concentration, $\\phi$')#,rotation='horizontal')
 plt.ylabel('Sedimentation velocity')
 plt.show()
