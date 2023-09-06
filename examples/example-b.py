@@ -2,17 +2,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 '''
-Example (b) 
+Example (b)
 
 Fig. 5 of Durlofsky et al. (1987) (non-periodic)
 https://doi.org/10.1017/S002211208700171X
 
-This test case considers three horizontally-aligned particles sedimenting 
-vertically, and looks at their interesting paths over a large number of 
+This test case considers three horizontally-aligned particles sedimenting
+vertically, and looks at their interesting paths over a large number of
 timesteps. Set
     invert_m_every = 1
 in `inputs.py` (instead of the default of 10), in order to recover the same
-particle paths. Set 
+particle paths. Set
     config.DISABLE_JIT = False
 in `inputs.py` for speed.
 
@@ -20,16 +20,16 @@ Choosing RK4 timestepping with a timestep of 128 for 100 frames is sufficient
 to find the solution that this software will converge to. Make sure
     timestepping_scheme = 'rk4'
 in `inputs.py`. The solution deviates slightly at the bottom of the graph from
-the 1987 paper. This could be a small error in the paper, but really this 
-system is (a) very sensitive to initial conditions (see Jánosi et al. 1997, 
-https://doi.org/10.1103/PhysRevE.56.2858) and (b) is also sensitive to the 
+the 1987 paper. This could be a small error in the paper, but really this
+system is (a) very sensitive to initial conditions (see Jánosi et al. 1997,
+https://doi.org/10.1103/PhysRevE.56.2858) and (b) is also sensitive to the
 interpolation in R2Bexact.
 
 Run
     python run_simulation.py 2 1 128 100 fte
 
 Perhaps reflecting the timestepping scheme used in the paper (which is not
-stated), we find that you can use AB2 timestepping for 800 frames with a 
+stated), we find that you can use AB2 timestepping for 800 frames with a
 timestep of 16 to recover a solution which matches the paper well. Make sure
     timestepping_scheme = 'ab2'
 in `inputs.py`. Note that shrinking the timestep converges to the same solution

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Adam Townsend, adam@adamtownsend.com, 31/03/2014.
 """
-Script to generate nondimensional midfield resistance scalars 
+Script to generate nondimensional midfield resistance scalars
 X11A, X12A, Y11B, ..., Z12M  for values of (s,lambda) read in from a text file.
 
 Requires Fortran files in /helen_fortran/ to be compiled first. See README.
@@ -19,7 +19,7 @@ Writes:
     scalars_general_mobility_midfield.npy  and .txt.
     and if desired:
         scalars_pairs_resistance_midfield.npy  and  .txt.
-        scalars_pairs_mobility_midfield.npy  and  .txt.    
+        scalars_pairs_mobility_midfield.npy  and  .txt.
 """
 import subprocess
 import numpy as np
@@ -44,7 +44,7 @@ def run_fortran(s_dash, lam, case):
     Args:
         s_dash: Scaled separation distance s'.
         lam: Size ratios lambda.
-        case: A code, "F11", "F12" etc., which is understood in `2sphere.f` to 
+        case: A code, "F11", "F12" etc., which is understood in `2sphere.f` to
             represent, e.g., "a force of 1 parallel to the separation vector".
 
     Returns:
@@ -73,7 +73,7 @@ def find_dim_kim_mobility_scalars(s_dash, lam):
         (U O S) = M (F T E),
     for given F, T and E, and sphere separation and size ratio.
 
-    Sphere radii are assumed to be a_1 = 1, a_2 = lam. The Fortran code 
+    Sphere radii are assumed to be a_1 = 1, a_2 = lam. The Fortran code
     requires lam<=1.
 
     Args:
@@ -333,7 +333,7 @@ def convert_dim_kim_mobility_to_dim_resistance(mobility_scalars):
 
 def nondimensionalise_scalars(scalars, scales):
     '''
-    Convert dimensional resistance/mobility scalars into nondimensional 
+    Convert dimensional resistance/mobility scalars into nondimensional
     resistance/mobility scalars.
     '''
     nd_scalars = scalars
@@ -381,20 +381,19 @@ for lam_index, lam in enumerate(lam_range):
         XYZ_table[:, s_dash_index, lam_index] = nondim_resistance_scalars
         xyz_table[:, s_dash_index, lam_index] = nondim_mobility_scalars
 
-# XYZ_table gives us for (s,lam) the values of X11A, X12A, X21A, etc. Since 
+# XYZ_table gives us for (s,lam) the values of X11A, X12A, X21A, etc. Since
 #   X21A(1/lam) = X12A(lam),  (and similarly for other scalars modulo +/-),
 # we only store _11_ and _12_ for different lams in XYZ_general_table, and call
 # these _1_ and _2_ etc. See PhD thesis section 2.4.2 and A.2.1.
 
 # The minus sign differences for 12/21 are only for B and G, and are
-# represented by 'kappa' in the thesis, which is -1 for B and G, and 1 
+# represented by 'kappa' in the thesis, which is -1 for B and G, and 1
 # otherwise. See Kim & Karilla, section 11.3, p. 278.
 minus_in_B_and_G_one_line = np.array([1, 1, -1, 1, 1, -1, -1, 1, 1, 1, 1])
 minus_in_B_and_G = np.tile(minus_in_B_and_G_one_line, (s_dash_length, 1)).T
 
-lam_range_with_reciprocals = np.concatenate(
-    (lam_range, [1/l for l in lam_range if 1/l not in lam_range]))
-lam_range_with_reciprocals.sort()
+lam_range_with_reciprocals = sorted(np.concatenate(
+    (lam_range, [1/l for l in lam_range if 1/l not in lam_range])))
 lam_wr_length = lam_range_with_reciprocals.shape[0]
 XYZ_general_table = np.zeros(
     (general_scalars_length, 2, s_dash_length, lam_wr_length))
@@ -416,24 +415,24 @@ for lam_wr_index, lam in enumerate(lam_range_with_reciprocals):
             (0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40), :, lam_index]
         xyz_general_table[:, 1, :, lam_wr_index] = xyz_table[
             (1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41), :, lam_index]
-    else:  
+    else:
         # Use X21A(1/lam), X22A(1/lam),... to generate X11A(lam), X12A(lam),...
 
-        # When we generate X12A(lam) from X21A(1/lam), the values in XYZ_table 
-        # are nondimensionalised on a_2 from our perspective (a_1 from their 
+        # When we generate X12A(lam) from X21A(1/lam), the values in XYZ_table
+        # are nondimensionalised on a_2 from our perspective (a_1 from their
         # perspective, which is set at 1). But we want to nondim on a_1, so we
         # multiply by (a_2/a_1)^n, i.e. lam^n.
-        lam_scales_one_line_r = np.array([lam, lam, lam**2, lam**3, lam**3, 
-                                          lam**2, lam**2, lam**3, 
+        lam_scales_one_line_r = np.array([lam, lam, lam**2, lam**3, lam**3,
+                                          lam**2, lam**2, lam**3,
                                           lam**3, lam**3, lam**3])
         lam_scales_r = np.tile(lam_scales_one_line_r, (s_dash_length, 1)).T
 
-        lam_scales_one_line_m = np.array([1/lam, 1/lam, 1/lam**2, 
-                                          1/lam**3, 1/lam**3, 
-                                          lam, lam, 1, 
+        lam_scales_one_line_m = np.array([1/lam, 1/lam, 1/lam**2,
+                                          1/lam**3, 1/lam**3,
+                                          lam, lam, 1,
                                           lam**3, lam**3, lam**3])
         lam_scales_m = np.tile(lam_scales_one_line_m, (s_dash_length, 1)).T
-        
+
         lam_index = np.argwhere(lam_range == (1 / lam))[0, 0]
         XYZ_general_table[:, 0, :, lam_wr_index] = (XYZ_table[
             (3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43), :, lam_index]
@@ -441,7 +440,7 @@ for lam_wr_index, lam in enumerate(lam_range_with_reciprocals):
         XYZ_general_table[:, 1, :, lam_wr_index] = (XYZ_table[
             (2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42), :, lam_index]
             * minus_in_B_and_G * lam_scales_r)
-        
+
         xyz_general_table[:, 0, :, lam_wr_index] = (xyz_table[
             (3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43), :, lam_index]
             * minus_in_B_and_G * lam_scales_m)

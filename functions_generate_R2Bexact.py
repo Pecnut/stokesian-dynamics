@@ -196,7 +196,7 @@ def Mf(gamma, d, lam_index, ss, i, j, k, l):
 
 @njit
 def con_Gf(gamma, d, lam_index, s_dash, m, i):
-    """Element mi of (condensed) R2Bexact submatrix G. See PhD thesis (2.69), 
+    """Element mi of (condensed) R2Bexact submatrix G. See PhD thesis (2.69),
     and see section 2.4.4 for condensation details."""
     if m == 0:
         return (0.5 * (s3+1) * Gf(gamma, d, lam_index, s_dash, 0, 0, i)
@@ -214,7 +214,7 @@ def con_Gf(gamma, d, lam_index, s_dash, m, i):
 
 @njit
 def con_Hf(gamma, d, lam_index, s_dash, m, i):
-    """Element mi of (condensed) R2Bexact submatrix H. See PhD thesis (2.69), 
+    """Element mi of (condensed) R2Bexact submatrix H. See PhD thesis (2.69),
     and see section 2.4.4 for condensation details."""
     if m == 0:
         return (0.5 * (s3+1) * Hf(gamma, d, lam_index, s_dash, 0, 0, i)
@@ -232,7 +232,7 @@ def con_Hf(gamma, d, lam_index, s_dash, m, i):
 
 @njit
 def con1_Mf(gamma, d, lam_index, s_dash, n, k, l):
-    """Element nkl of partially condensed R2Bexact submatrix M. See PhD thesis 
+    """Element nkl of partially condensed R2Bexact submatrix M. See PhD thesis
     (2.69), and see section 2.4.4 for condensation details."""
     if n == 0:
         return (0.5 * (s3+1) * Mf(gamma, d, lam_index, s_dash, 0, 0, k, l)
@@ -280,8 +280,12 @@ def XYZ(scalar_index, gamma, s_dash, lam_index):
     if s_dash > s_dash_range[-1]:
         print("S DASH OUT OF RANGE, functions_generate_R2Bexact.py")
     return np.interp(s_dash, s_dash_range, interp_y)
-    # return np.interp(s_dash, s_dash_range, interp_y, right=0) # Numba only has a version of interp for the first three arguments. (Originally from non-periodic.)
-    # return np.interp(s_dash,s_dash_range,interp_y,left=XYZ_raw[scalar_index,gamma,0,lam_index],right=0) # Numba only has a version of interp for the first three arguments. (Originally from periodic.)
+    # Numba only has a version of interp for the first three arguments.
+    # Originally from non-periodic:
+    #   return np.interp(s_dash, s_dash_range, interp_y, right=0)
+    # Originally from periodic:
+    #   return np.interp(s_dash,s_dash_range,interp_y,
+    #                    left=XYZ_raw[scalar_index,gamma,0,lam_index],right=0)
 
 
 def generate_R2Bexact(posdata,
@@ -295,14 +299,14 @@ def generate_R2Bexact(posdata,
     Args:
         posdata: Particle position, size and count data.
         printout: (Unused) flag which allows you to put in debug statements.
-        cutoff_factor: Separation distance, multiple of (a1+a2) below which 
+        cutoff_factor: Separation distance, multiple of (a1+a2) below which
             R2Bexact applies.
         frameno: (Unused) frame number you can put in debug statements.
         mu: Viscosity.
         [All arguments below should be ignored for non-periodic domains]
-        box_bottom_left, box_top_right: Periodic box coordinates. If equal, 
-            domain is assumed to be non-periodic and all remaining args are 
-            ignored. 
+        box_bottom_left, box_top_right: Periodic box coordinates. If equal,
+            domain is assumed to be non-periodic and all remaining args are
+            ignored.
         Ot_infinity, Et_infinity: Integral of O_infinity and E_infinity dt.
 
     Returns:
@@ -312,14 +316,14 @@ def generate_R2Bexact(posdata,
     global average_size_matrix, upper_triangle
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
         dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells,
-        element_sizes, element_positions, element_deltax,  num_elements,
+        element_sizes, element_positions, element_deltax, num_elements,
         num_elements_array, element_type, uv_start, uv_size,
         element_start_count) = posdata_data(posdata)
 
     R2Bexact_sidelength = 11 * num_spheres + 6 * num_dumbbells
     R2Bexact = sparse.lil_matrix((R2Bexact_sidelength, R2Bexact_sidelength), dtype=float)
-    bead_positions = np.concatenate([sphere_positions, 
-                                     dumbbell_positions - 0.5*dumbbell_deltax, 
+    bead_positions = np.concatenate([sphere_positions,
+                                     dumbbell_positions - 0.5*dumbbell_deltax,
                                      dumbbell_positions + 0.5*dumbbell_deltax])
     bead_sizes = np.concatenate([sphere_sizes, dumbbell_sizes, dumbbell_sizes])
 
@@ -356,8 +360,8 @@ def generate_R2Bexact(posdata,
          R15_coords, R25_coords, R35_coords, R45_coords,
          R55_coords) = submatrix_coords(a1_index, a2_index, num_spheres, num_dumbbells)
 
-        if (is_sphere(a1_index, num_spheres) 
-            and is_sphere(a2_index, num_spheres)):
+        if (is_sphere(a1_index, num_spheres)
+                and is_sphere(a2_index, num_spheres)):
             # Sphere to sphere
             if a1_index == a2_index:
                 nearby_beads = []
@@ -388,12 +392,18 @@ def generate_R2Bexact(posdata,
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
                     d_p = r_p / s_dash_p
-                    A_sum += np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j)*scale_A for j in range(3)] for i in range(3)])
-                    Bt_sum += np.asarray([[Bf(0, d_p, lam_index_p, s_dash_p, j, i)*scale_B for j in range(3)] for i in range(3)])
-                    C_sum += np.asarray([[Cf(0, d_p, lam_index_p, s_dash_p, i, j)*scale_C for j in range(3)] for i in range(3)])
-                    Gt_sum += np.asarray([[con_Gf(0, d_p, lam_index_p, s_dash_p, j, i)*scale_G for j in range(5)] for i in range(3)])
-                    Ht_sum += np.asarray([[con_Hf(0, d_p, lam_index_p, s_dash_p, j, i)*scale_H for j in range(5)] for i in range(3)])
-                    M_sum += np.asarray([[con_Mf(0, d_p, lam_index_p, s_dash_p, i, j)*scale_M for j in range(5)] for i in range(5)])
+                    A_sum += np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j)*scale_A
+                                          for j in range(3)] for i in range(3)])
+                    Bt_sum += np.asarray([[Bf(0, d_p, lam_index_p, s_dash_p, j, i)*scale_B
+                                           for j in range(3)] for i in range(3)])
+                    C_sum += np.asarray([[Cf(0, d_p, lam_index_p, s_dash_p, i, j)*scale_C
+                                          for j in range(3)] for i in range(3)])
+                    Gt_sum += np.asarray([[con_Gf(0, d_p, lam_index_p, s_dash_p, j, i)*scale_G
+                                           for j in range(5)] for i in range(3)])
+                    Ht_sum += np.asarray([[con_Hf(0, d_p, lam_index_p, s_dash_p, j, i)*scale_H
+                                           for j in range(5)] for i in range(3)])
+                    M_sum += np.asarray([[con_Mf(0, d_p, lam_index_p, s_dash_p, i, j)*scale_M
+                                          for j in range(5)] for i in range(5)])
                     pp += 1
                 R2Bexact[A_coords] = A_sum
                 R2Bexact[Bt_coords] = Bt_sum
@@ -403,39 +413,52 @@ def generate_R2Bexact(posdata,
                 R2Bexact[M_coords] = M_sum
 
             else:
-                R2Bexact[A_coords] = [[Af(1, d, lam_index, s_dash, i, j)*scale_A for j in range(3)] for i in range(3)]
-                R2Bexact[Bt_coords] = [[Bf(1, -d, lam_index_recip, s_dash, j, i)*scale_B2 for j in range(3)] for i in range(3)]
-                R2Bexact[C_coords] = [[Cf(1, d, lam_index, s_dash, i, j)*scale_C for j in range(3)] for i in range(3)]
-                R2Bexact[Gt_coords] = [[con_Gf(1, -d, lam_index_recip, s_dash, j, i)*scale_G2 for j in range(5)] for i in range(3)]
-                R2Bexact[Ht_coords] = [[con_Hf(1, -d, lam_index_recip, s_dash, j, i)*scale_H2 for j in range(5)] for i in range(3)]
-                R2Bexact[M_coords] = [[con_Mf(1, d, lam_index, s_dash, i, j)*scale_M for j in range(5)] for i in range(5)]
+                R2Bexact[A_coords] = [[Af(1, d, lam_index, s_dash, i, j)*scale_A
+                                       for j in range(3)] for i in range(3)]
+                R2Bexact[Bt_coords] = [[Bf(1, -d, lam_index_recip, s_dash, j, i)*scale_B2
+                                        for j in range(3)] for i in range(3)]
+                R2Bexact[C_coords] = [[Cf(1, d, lam_index, s_dash, i, j)*scale_C
+                                       for j in range(3)] for i in range(3)]
+                R2Bexact[Gt_coords] = [[con_Gf(1, -d, lam_index_recip, s_dash, j, i)*scale_G2
+                                        for j in range(5)] for i in range(3)]
+                R2Bexact[Ht_coords] = [[con_Hf(1, -d, lam_index_recip, s_dash, j, i)*scale_H2
+                                        for j in range(5)] for i in range(3)]
+                R2Bexact[M_coords] = [[con_Mf(1, d, lam_index, s_dash, i, j)*scale_M
+                                       for j in range(5)] for i in range(5)]
                 if lam == 1:
                     R2Bexact[Bt_coords_21] = -R2Bexact[Bt_coords]
                     R2Bexact[Gt_coords_21] = -R2Bexact[Gt_coords]
                     R2Bexact[Ht_coords_21] = R2Bexact[Ht_coords]
                 else:
-                    R2Bexact[Bt_coords_21] = [[Bf(1, d, lam_index, s_dash, j, i)*scale_B for j in range(3)] for i in range(3)]
-                    R2Bexact[Gt_coords_21] = [[con_Gf(1, d, lam_index, s_dash, j, i)*scale_G for j in range(5)] for i in range(3)]
-                    R2Bexact[Ht_coords_21] = [[con_Hf(1, d, lam_index, s_dash, j, i)*scale_H for j in range(5)] for i in range(3)]
+                    R2Bexact[Bt_coords_21] = [[Bf(1, d, lam_index, s_dash, j, i)*scale_B
+                                               for j in range(3)] for i in range(3)]
+                    R2Bexact[Gt_coords_21] = [[con_Gf(1, d, lam_index, s_dash, j, i)*scale_G
+                                               for j in range(5)] for i in range(3)]
+                    R2Bexact[Ht_coords_21] = [[con_Hf(1, d, lam_index, s_dash, j, i)*scale_H
+                                               for j in range(5)] for i in range(3)]
 
-        elif (is_sphere(a1_index, num_spheres) 
+        elif (is_sphere(a1_index, num_spheres)
               and is_dumbbell_bead_1(a2_index, num_spheres, num_dumbbells)):
             # Sphere to dumbbell bead 1
-            R2Bexact[R14_coords] = [[Af(1, d, lam_index, s_dash, i, j)*scale_A for j in range(3)] for i in range(3)]
-            R2Bexact[R24_coords] = [[Bf(1, d, lam_index, s_dash, i, j)*scale_B for j in range(3)] for i in range(3)]
-            R2Bexact[R34_coords] = [[con_Gf(1, d, lam_index, s_dash, i, j)*scale_G for j in range(3)] for i in range(5)]
+            R2Bexact[R14_coords] = [[Af(1, d, lam_index, s_dash, i, j)*scale_A
+                                     for j in range(3)] for i in range(3)]
+            R2Bexact[R24_coords] = [[Bf(1, d, lam_index, s_dash, i, j)*scale_B
+                                     for j in range(3)] for i in range(3)]
+            R2Bexact[R34_coords] = [[con_Gf(1, d, lam_index, s_dash, i, j)*scale_G
+                                     for j in range(3)] for i in range(5)]
 
         elif (is_sphere(a1_index, num_spheres)):
             # Sphere to dumbbell bead 2
-            R2Bexact[R15_coords] = [[Af(1, d, lam_index, s_dash, i, j)*scale_A for j in range(3)] for i in range(3)]
-            R2Bexact[R25_coords] = [[Bf(1, d, lam_index, s_dash, i, j)*scale_B for j in range(3)] for i in range(3)]
-            R2Bexact[R35_coords] = [[con_Gf(1, d, lam_index, s_dash, i, j)*scale_G for j in range(3)] for i in range(5)]
+            R2Bexact[R15_coords] = [[Af(1, d, lam_index, s_dash, i, j)*scale_A
+                                     for j in range(3)] for i in range(3)]
+            R2Bexact[R25_coords] = [[Bf(1, d, lam_index, s_dash, i, j)*scale_B
+                                     for j in range(3)] for i in range(3)]
+            R2Bexact[R35_coords] = [[con_Gf(1, d, lam_index, s_dash, i, j)*scale_G
+                                     for j in range(3)] for i in range(5)]
 
-        elif (is_dumbbell_bead_1(a1_index, num_spheres, num_dumbbells) 
+        elif (is_dumbbell_bead_1(a1_index, num_spheres, num_dumbbells)
               and is_dumbbell_bead_1(a2_index, num_spheres, num_dumbbells)):
             # Dumbbell bead 1 to dumbbell bead 1
-            a1_index_d = a1_index - num_spheres
-            a2_index_d = a2_index - num_spheres
             if a1_index == a2_index:
                 nearby_beads = []
                 nearby_beads_displacements = []
@@ -460,18 +483,21 @@ def generate_R2Bexact(posdata,
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
                     d_p = r_p / s_dash_p
-                    A_sum += np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j) * scale_A for j in range(3)] for i in range(3)])
+                    A_sum += np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j)*scale_A
+                                          for j in range(3)] for i in range(3)])
                     pp = pp + 1
                 R2Bexact[R44_coords] = A_sum
             else:
                 if bead_bead_interactions:
-                    R2Bexact[R44_coords] = [[Af(1, d, lam_index, s_dash, i, j)*scale_A for j in range(3)] for i in range(3)]
+                    R2Bexact[R44_coords] = [[Af(1, d, lam_index, s_dash, i, j)*scale_A
+                                             for j in range(3)] for i in range(3)]
 
-        elif (is_dumbbell_bead_1(a1_index, num_spheres, num_dumbbells) 
+        elif (is_dumbbell_bead_1(a1_index, num_spheres, num_dumbbells)
               and is_dumbbell_bead_2(a2_index, num_spheres, num_dumbbells)):
             # Dumbbell bead 1 to dumbbell bead 2
             if bead_bead_interactions:
-                R2Bexact[R45_coords] = [[Af(1, d, lam_index, s_dash, i, j)*scale_A for j in range(3)] for i in range(3)]
+                R2Bexact[R45_coords] = [[Af(1, d, lam_index, s_dash, i, j)*scale_A
+                                         for j in range(3)] for i in range(3)]
 
         else:
             # Dumbbell bead 2 to dumbbell bead 2
@@ -499,12 +525,14 @@ def generate_R2Bexact(posdata,
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
                     d_p = r_p / s_dash_p
-                    A_sum += np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j) * scale_A for j in range(3)] for i in range(3)])
+                    A_sum += np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j)*scale_A
+                                          for j in range(3)] for i in range(3)])
                     pp = pp + 1
                 R2Bexact[R55_coords] = A_sum
             else:
                 if bead_bead_interactions:
-                    R2Bexact[R55_coords] = [[Af(1, d, lam_index, s_dash, i, j) * scale_A for j in range(3)] for i in range(3)]
+                    R2Bexact[R55_coords] = [[Af(1, d, lam_index, s_dash, i, j)*scale_A
+                                             for j in range(3)] for i in range(3)]
         ii = ii + 1
 
     # symmetrise
@@ -516,7 +544,9 @@ def generate_R2Bexact(posdata,
     # [ 0 -1  1 ]   [ g h i ]   [ 0  1  1 ]
     #   "L"                         "R"
 
-    # I know that we could generate L and R elsewhere rather than doing it every timestep but it takes 0.01s for a few thousand dumbbells so for now I don't mind
+    # I know that we could generate L and R elsewhere rather than doing it
+    # every timestep but it takes 0.01s for a few thousand dumbbells so for now
+    # I don't mind
     Lrow = np.array([i for i in range(11*num_spheres + 6*num_dumbbells)]
                     + [i + 11*num_spheres for i in range(3*num_dumbbells)]
                     + [i + 11*num_spheres + 3*num_dumbbells for i in range(3*num_dumbbells)])

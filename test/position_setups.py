@@ -17,31 +17,31 @@ def pos_setup_tests(n):
         s_dash = 2.1
         s = s_dash/sum(sphere_sizes)*2
         sphere_positions = np.array([[-s/2, 0, 0], [s/2, 0, 0]])
-        
+
     if n == -2:
         # Two large spheres, s'=3.9 apart
         sphere_sizes = np.array([1, 1])
         sphere_positions = np.array([[0, 0, 0], [3.9, 0, 0]])
-        
+
     if n == -3:
         # One big one small sphere, s'=2.1 apart
         sphere_sizes = np.array([1, 0.1])
-        sphere_positions = np.array([[0, 0, 0], [1.155, 0, 0]]) 
+        sphere_positions = np.array([[0, 0, 0], [1.155, 0, 0]])
 
     if n == -4:
         # One big one small sphere, s'=3.9 apart
         sphere_sizes = np.array([1, 0.1])
-        sphere_positions = np.array([[0, 0, 0], [2.145, 0, 0]]) 
+        sphere_positions = np.array([[0, 0, 0], [2.145, 0, 0]])
 
     if n == -5:
         # One small one small big, s'=2.1 apart (Minus sign test cf. -3 and -4)
         sphere_sizes = np.array([0.1, 1])
-        sphere_positions = np.array([[0, 0, 0], [1.155, 0, 0]]) 
+        sphere_positions = np.array([[0, 0, 0], [1.155, 0, 0]])
 
     if n == -6:
         # One small one big sphere, s'=3.9 apart
         sphere_sizes = np.array([0.1, 1])
-        sphere_positions = np.array([[0, 0, 0], [2.145, 0, 0]]) 
+        sphere_positions = np.array([[0, 0, 0], [2.145, 0, 0]])
 
     if n == -7:
         # Two small spheres, s'=2.1 apart

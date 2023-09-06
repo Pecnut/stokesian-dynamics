@@ -8,7 +8,7 @@ Reads:
     values_of_s_nearfield.txt: List of nearfield distances s'.
     values_of_lambda.txt: List of size ratios lambda.
 
-    scalars_general_resistance_midfield.npy: 
+    scalars_general_resistance_midfield.npy:
         Midfield resistance scalars (from find_resistsance_scalars_KimH.py).
     scalars_general_resistance_nearfield_mathematica_for_python.txt:
         Nearfield resistance scalars (from Mathematica).
@@ -23,13 +23,12 @@ import numpy as np
 from functions_general import (general_resistance_scalars_names,
                                save_human_table)
 
-values_of_s_dash_nearfield = np.loadtxt('values_of_s_dash_nearfield.txt', 
+values_of_s_dash_nearfield = np.loadtxt('values_of_s_dash_nearfield.txt',
                                         ndmin=1)
-values_of_s_dash_midfield = np.loadtxt('values_of_s_dash_midfield.txt', 
+values_of_s_dash_midfield = np.loadtxt('values_of_s_dash_midfield.txt',
                                        ndmin=1)
-values_of_s_dash = np.concatenate((values_of_s_dash_nearfield, 
-                                   values_of_s_dash_midfield))
-values_of_s_dash.sort()
+values_of_s_dash = sorted(np.concatenate((values_of_s_dash_nearfield,
+                                          values_of_s_dash_midfield)))
 np.savetxt('values_of_s_dash.txt', values_of_s_dash, fmt="% .8e")
 s_dash_range = values_of_s_dash
 s_dash_length = s_dash_range.shape[0]
@@ -41,7 +40,7 @@ with open('scalars_general_resistance_midfield.npy', 'rb') as inputfile:
     XYZ_mid_raw = np.load(inputfile)
 
 with open('scalars_general_resistance_nearfield.npy', 'rb') as inputfile:
-    XYZ_near_raw = np.load(inputfile)    
+    XYZ_near_raw = np.load(inputfile)
 
 print(XYZ_mid_raw.shape)
 print(XYZ_near_raw.shape)
@@ -56,10 +55,10 @@ with open('scalars_general_resistance.npy', 'wb') as outputfile:
 
 # Write XYZ_table and xyz_table to file (human readable)
 lam_range_with_reciprocals = np.concatenate(
-    (lam_range, [1/l for l in lam_range if 1/l not in lam_range]))        
+    (lam_range, [1/l for l in lam_range if 1/l not in lam_range]))
 lam_range_with_reciprocals.sort()
 lam_wr_length = lam_range_with_reciprocals.shape[0]
-XYZ_general_human = np.zeros((s_dash_length*lam_wr_length*2, 
+XYZ_general_human = np.zeros((s_dash_length*lam_wr_length*2,
                               general_scalars_length + 3))
 for s_dash_index, s_dash in enumerate(s_dash_range):
     s_dash_length = s_dash_range.shape[0]
@@ -68,7 +67,7 @@ for s_dash_index, s_dash in enumerate(s_dash_range):
     for lam_wr_index, lam in enumerate(lam_range_with_reciprocals):
         for gam in range(2):
             XYZ_outputline = np.append(
-                [s_dash, lam, gam], 
+                [s_dash, lam, gam],
                 XYZ_general_table[:, gam, s_dash_index, lam_wr_index])
             i = (lam_wr_index*s_dash_length + s_dash_index)*2 + gam
             XYZ_general_human[i, :] = XYZ_outputline

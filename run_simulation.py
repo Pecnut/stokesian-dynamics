@@ -61,8 +61,8 @@ if view_graphics:
     import matplotlib.pyplot as plt
     from matplotlib import animation
     from matplotlib import rcParams
-    from mpl_toolkits.mplot3d import proj3d
-    from functions_graphics import *
+    from functions_graphics import (plot_all_spheres, plot_all_dumbbells,
+                                    plot_all_force_lines)
 
 
 # Initialise
@@ -168,9 +168,9 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
             print(" "*len(processing_message), end=" ")
 
         '''
-        # If we're feeding particles in from the bottom as it falls, 
+        # If we're feeding particles in from the bottom as it falls,
         # this is the function that does that. Otherwise it just passes through.
-        posdata = feed_particles_from_bottom(posdata, feed_every_n_timesteps, 
+        posdata = feed_particles_from_bottom(posdata, feed_every_n_timesteps,
                                              feed_from_file, frameno)
         if feed_every_n_timesteps > 0 and printout>0:
             print("num of dumbbells",posdata[3].shape)
@@ -198,8 +198,8 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
         '''
         if num_elements > 1:
             error = are_some_of_the_particles_too_close(
-                error, printout, s_dash_range, sphere_positions, 
-                dumbbell_positions, dumbbell_deltax, sphere_sizes, 
+                error, printout, s_dash_range, sphere_positions,
+                dumbbell_positions, dumbbell_deltax, sphere_sizes,
                 dumbbell_sizes, element_positions)
             error = do_we_have_all_size_ratios(error, element_sizes,
                                                lam_range, num_spheres)
@@ -246,7 +246,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 last_generated_Minfinity_inverse, regenerate_Minfinity,
                 input_form, cutoff_factor, printout, use_drag_Minfinity,
                 use_Minfinity_only, extract_force_on_wall_due_to_dumbbells,
-                last_velocities, last_velocity_vector, box_bottom_left, 
+                last_velocities, last_velocity_vector, box_bottom_left,
                 box_top_right, feed_every_n_timesteps=feed_every_n_timesteps)
             # Euler/AB2 timestepping k1
             if (num_spheres > 0):
@@ -378,8 +378,8 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
             posdata_k1 = (sphere_sizes, sphere_positions_k1,
                           sphere_rotations_k1, dumbbell_sizes,
                           dumbbell_positions_k1, dumbbell_deltax_k1)
-            # See note in inputs, but essentially, might not want to 
-            # regenerate M_infinity_inverse for frame 1's K2, K3, K4, 
+            # See note in inputs, but essentially, might not want to
+            # regenerate M_infinity_inverse for frame 1's K2, K3, K4,
             # when if invert_m_every>1, we use frame 1's K1 for everything.
             if not rk4_generate_minfinity_for_each_stage:
                 regenerate_Minfinity = False
@@ -519,10 +519,10 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                                         + 2*Oa_out_plus_infinities_k2
                                         + 2*Oa_out_plus_infinities_k3
                                         + Oa_out_plus_infinities_k4)
-                Ea_out_blended = 1/6 * (Ea_out_k1
-                                        + 2*Ea_out_k2
-                                        + 2*Ea_out_k3
-                                        + Ea_out_k4)
+                # Ea_out_blended = 1/6 * (Ea_out_k1
+                #                         + 2*Ea_out_k2
+                #                         + 2*Ea_out_k3
+                #                         + Ea_out_k4)
 
                 if fully_2d_problem:
                     Ua_out_blended[:, 1] = 0
@@ -602,10 +602,11 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
         # In the meantime it is saved as a temp file every
         # `save_to_temp_file_every_n_timesteps` timesteps.
         save_time_start = time.time()
-        if (save_positions_every_n_timesteps > 0
+        if (
+            save_positions_every_n_timesteps > 0
             and frameno % save_positions_every_n_timesteps == 0
             and frameno >= start_saving_after_first_n_timesteps
-            ):
+        ):
             if frameno == start_saving_after_first_n_timesteps:  # usually 0
                 saved_element_positions = np.array([element_positions])
                 saved_sphere_rotations = np.array([sphere_rotations])
@@ -626,10 +627,11 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                                                    np.array([new_sphere_rotations]), 0)
                 saved_deltax = np.append(np.copy(saved_deltax),
                                          np.array([new_dumbbell_deltax]), 0)
-        if (save_forces_every_n_timesteps > 0
+        if (
+            save_forces_every_n_timesteps > 0
             and frameno % save_forces_every_n_timesteps == 0
             and frameno >= start_saving_after_first_n_timesteps
-            ):
+        ):
             if frameno == start_saving_after_first_n_timesteps:  # usually 0
                 saved_Fa_out = np.array([Fa_out])
                 saved_Fb_out = np.array([Fb_out])
@@ -663,7 +665,6 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
         print("[" + format_elapsed_time(save_elapsed_time) + "]", end=" ")
 
         # Pictures
-        pic_time_start = time.time()
         if view_graphics:
             # Remove old spheres
             for q in (spheres + force_lines + torque_lines + velocity_lines
@@ -672,7 +673,8 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 q.remove()
             if viewbox_bottomleft_topright.size == 0:
                 if num_spheres > 0 and num_dumbbells > 0:
-                    m = np.array([abs(sphere_positions).max(), abs(dumbbell_positions).max()]).max()
+                    m = np.array([abs(sphere_positions).max(),
+                                  abs(dumbbell_positions).max()]).max()
                 elif num_spheres > 0 and num_dumbbells == 0:
                     m = abs(sphere_positions).max()
                 elif num_dumbbells > 0 and num_spheres == 0:
@@ -722,7 +724,6 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
             ax.set_title("Setup " + str(setup_number)
                          + ", input " + str(input_number),
                          loc='center', y=1.05)
-        pic_elapsed_time = time.time() - pic_time_start
         posdata = posdata_final
 
         # Maximum memory the program has used since starting.
@@ -743,8 +744,8 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
         times[frameno] = elapsed_time
 
         time_left, flags = calculate_time_left(times, frameno, num_frames,
-                                              invert_m_every,
-                                              checkpoint_start_from_frame)
+                                               invert_m_every,
+                                               checkpoint_start_from_frame)
 
         print("[" + format_time_left(time_left, flags) + "]", end=" ")
         print("[" + format_finish_time(time_left, flags) + "]")
@@ -768,12 +769,16 @@ error = 0
  element_sizes, element_positions, element_deltax, num_elements,
  num_elements_array, element_type, uv_start, uv_size,
  element_start_count) = posdata_data(posdata)
-if num_spheres == 0 and input_form not in ["fts", "duf", "RPY_dumbbells_only", "stokes_drag_dumbbells_only"]:
-    error = throw_error("If you have only dumbbells, you need to use the FTS, DUF, RPY or Stokes Drag input forms.")
-if num_spheres > 0 and input_form in ["duf", "RPY_dumbbells_only", "stokes_drag_dumbbells_only"]:
+if num_spheres == 0 and input_form not in ["fts", "duf", "RPY_dumbbells_only",
+                                           "stokes_drag_dumbbells_only"]:
+    error = throw_error("If you have only dumbbells, you need to use the FTS, "
+                        + "DUF, RPY or Stokes Drag input forms.")
+if num_spheres > 0 and input_form in ["duf", "RPY_dumbbells_only",
+                                      "stokes_drag_dumbbells_only"]:
     error = throw_error("These input forms are for dumbbell-only simulations.")
 if num_spheres > 0 and input_form in ["fts"]:
-    throw_warning("If you have spheres, it is more likely that you want to use FTE, UFTE or UFTEU form, rather than FTS.")
+    throw_warning("If you have spheres, it is more likely that you want to "
+                  + "use FTE, UFTE or UFTEU form, rather than FTS.")
 
 (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in,
  Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in, input_description,
@@ -783,14 +788,18 @@ if num_spheres > 0 and input_form in ["fts"]:
      skip_computation=True, input_form=input_form)
 if Fa_in != []:
     if (Fa_in[0][0] == 99999):
-        error = throw_error("Input number not recognised (you probably haven't uploaded input_setups.py recently enough)")
+        error = throw_error("Input number not recognised (you probably haven't"
+                            + " uploaded input_setups.py recently enough)")
 
 # Are all size ratios in the XYZ table for R2Bexact?
 sphere_sizes_unique = list(set(sphere_sizes))
-size_ratios = list(set([i/j for i in sphere_sizes_unique for j in sphere_sizes_unique]))
+size_ratios = list(set([i/j
+                        for i in sphere_sizes_unique
+                        for j in sphere_sizes_unique]))
 for size_ratio in size_ratios:
     if not np.any(np.isclose(size_ratio, lam_range_with_reciprocals)):
-        throw_error("Particle size ratio " + str(size_ratio) + " not in the table of calculated values")
+        throw_error("Particle size ratio " + str(size_ratio) + " not in the "
+                    + "table of calculated values")
 
 if error == 0:
     # --- End error checking
@@ -820,16 +829,19 @@ if error == 0:
             saved_element_positions = saved_data['centres']
             saved_sphere_rotations = saved_data['sphere_rotations']
             saved_deltax = saved_data['deltax']
-            saved_force_on_wall_due_to_dumbbells = saved_data['force_on_wall_due_to_dumbbells']
+            saved_force_on_wall_due_to_dumbbells = saved_data[
+                'force_on_wall_due_to_dumbbells']
 
     warning_formatting_start = "\033[43m\033[30m"
     warning_formatting_end = "\033[39m\033[49m"
 
-    invert_type = ["Fast R\\F", "Slow"][extract_force_on_wall_due_to_dumbbells]  # invert for finding dumbbell contribution to sphere-wall force
+    # invert for finding dumbbell contribution to sphere-wall force
+    invert_type = ["Fast R\\F", "Slow"][extract_force_on_wall_due_to_dumbbells]
     minf_status = ["ON", "OFF"][use_drag_Minfinity]
     r2b_status = ["ON", "OFF"][use_Minfinity_only]
     bead_bead_status = ["OFF", "ON"][bead_bead_interactions]
-    periodic_status = ["ON", "OFF"][np.array_equal(box_bottom_left - box_top_right, np.array([0, 0, 0]))]
+    periodic_status = ["ON", "OFF"][np.array_equal(
+        box_bottom_left - box_top_right, np.array([0, 0, 0]))]
     if timestepping_scheme == "euler":
         timestep_method = "Euler"
     elif timestepping_scheme == "ab2":

@@ -34,7 +34,8 @@ running_on_legion = 0
 
 try:
     if number_of_args >= 6:
-        extract_force_on_wall_due_to_dumbbells = (args[5] in ["True", "true", "t", "T", "1"])
+        extract_force_on_wall_due_to_dumbbells = (
+            args[5] in ["True", "true", "t", "T", "1"])
     if number_of_args >= 5:
         input_form = args[4]
     if number_of_args >= 4:
@@ -46,7 +47,9 @@ try:
     if number_of_args >= 1:
         setup_number = int(args[0])
 except ValueError:
-    throw_error("Invalid input. Command-line input should come in the order: setup number, input number, timestep, no. frames, input form, extract dumbbell force Boolean.")
+    throw_error("Invalid input. Command-line input should come in the "
+                + "order: setup number, input number, timestep, no. frames, "
+                + "input form, extract dumbbell force Boolean.")
 # --------------------------------------------------|
 
 
@@ -74,10 +77,10 @@ for filename in sorted(glob.glob("output/*_TEMP.npz"), reverse=True):
     else:
         raw_timestep = filename.split("-")[4][1:]
     checkpoint_timestep = float(raw_timestep.replace("p", "."))
-    if (checkpoint_setup_number == setup_number 
-        and checkpoint_input_number == input_number 
-        and checkpoint_num_frames == num_frames 
-        and checkpoint_timestep == timestep):
+    if (checkpoint_setup_number == setup_number
+        and checkpoint_input_number == input_number
+        and checkpoint_num_frames == num_frames
+            and checkpoint_timestep == timestep):
         ignored_posdata, setup_description = pos_setup(checkpoint_setup_number)
         try:
             with np.load(filename) as data1:
@@ -102,10 +105,13 @@ for filename in sorted(glob.glob("output/*_TEMP.npz"), reverse=True):
 
             word_checkpoint = "\033[42m\033[01m CHECKPOINT FOUND \033[0m\033[49m "
             print(
-                f"{word_checkpoint}Continuing file '{checkpoint_filename}' from frame {str(checkpoint_start_from_frame + 1)}/{num_frames}"
+                f"{word_checkpoint}Continuing file '{checkpoint_filename}' "
+                + f"from frame {str(checkpoint_start_from_frame + 1)}/{num_frames}"
             )
         except Exception:
-            print("Checkpoint possibly found but the file was corrupt (normally because power was lost midway through saving). Starting from beginning.")
+            print("Checkpoint possibly found but the file was corrupt "
+                  + "(normally because power was lost midway through saving). "
+                  + "Starting from beginning.")
 
 # End checkpointing -----|
 
@@ -120,11 +126,11 @@ invert_m_every = 1
 # When to start using R2bexact. cutoff_factor = r*/(a1+a2). Default 2.
 cutoff_factor = 2
 
-# Timestepping scheme: Choose explicit timestep from: ['euler', 'ab2', 'rk4'] 
+# Timestepping scheme: Choose explicit timestep from: ['euler', 'ab2', 'rk4']
 # (ab2=Adams Bashforth)
 timestepping_scheme = 'euler'
 
-# If using RK4, can choose to use the same Minfinity for each of the 4 stages. 
+# If using RK4, can choose to use the same Minfinity for each of the 4 stages.
 # In absence of R2Bexact, this makes the timestep equivalent to Euler; but if
 # R2Bexact is present, and invert_m_every>1, this might be an OK approximation.
 rk4_generate_minfinity_for_each_stage = True
@@ -166,7 +172,8 @@ save_forces_and_positions_to_temp_file_as_well = True
 save_to_temp_file_every_n_timesteps = 120
 
 if start_saving_after_first_n_timesteps > num_frames:
-    print("WARNING: start_saving_after_first_n_timesteps > num_frames. Saving will fail.")
+    print("WARNING: start_saving_after_first_n_timesteps > num_frames. "
+          + "Saving will fail.")
 
 # Just use diagonal terms of Minfinity. Good(?) approximation for dense
 # suspensions only.
@@ -177,12 +184,12 @@ use_Minfinity_only = False
 
 # Only relevant if  use_drag_Minfinity = True.
 # The precomputed XYZ scalars in the resistance matrix already have R2binfinity
-# subtracted off them (it's quicker). For historical reasons, they are called 
+# subtracted off them (it's quicker). For historical reasons, they are called
 # 'd' scalars and the data files are labelled with '-d'.
-# If use_drag_Minfinity = True, there is a choice of using 'd' scalars where 
-# the drag Minfinity is subtracted, or using 'd' scalars where the full 
+# If use_drag_Minfinity = True, there is a choice of using 'd' scalars where
+# the drag Minfinity is subtracted, or using 'd' scalars where the full
 # Minfinity is subtracted. You might pick the drag version if you wanted
-# to make sure that the two-sphere case works, but you might pick the full 
+# to make sure that the two-sphere case works, but you might pick the full
 # version if you have a dense suspension.
 use_full_Minfinity_scalars_with_drag_Minfinity = False
 
@@ -231,7 +238,7 @@ lam_range_with_reciprocals.sort()
 
 # Decide here whether we are going to use the d values or not
 if not use_drag_Minfinity or (
-    use_drag_Minfinity and use_full_Minfinity_scalars_with_drag_Minfinity):
+        use_drag_Minfinity and use_full_Minfinity_scalars_with_drag_Minfinity):
     filename = f'{resistance_scalars_folder}/scalars_general_resistance_d.npy'
 else:
     filename = f'{resistance_scalars_folder}/scalars_general_resistance_dnominf.npy'

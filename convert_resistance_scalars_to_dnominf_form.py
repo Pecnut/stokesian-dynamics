@@ -13,7 +13,7 @@ with diagonal entries only. This is good for when you want to "turn Minfinity
 off", which means just make Minfinity a diagonal matrix (so self terms only).
 
 It's in the main folder because otherwise it's a pain to import
-generate_Minfinity and then use the scripts which it call which expect to be 
+generate_Minfinity and then use the scripts which it call which expect to be
 called from this folder.
 """
 
@@ -32,7 +32,7 @@ lam_range = np.loadtxt('find_resistance_scalars/values_of_lambda.txt')
 lam_range_with_reciprocals = np.copy(lam_range)
 for lam in lam_range:
     if 1/lam not in lam_range_with_reciprocals:
-        lam_range_with_reciprocals = np.append(lam_range_with_reciprocals, 
+        lam_range_with_reciprocals = np.append(lam_range_with_reciprocals,
                                                1/lam)
 lam_range_with_reciprocals.sort()
 
@@ -130,7 +130,7 @@ s_dash_length = s_dash_range.shape[0]
 lam_length = lam_range.shape[0]
 lam_wr_length = lam_range_with_reciprocals.shape[0]
 general_scalars_length = general_resistance_scalars_names.shape[0]
-XYZ_general_human = np.zeros((s_dash_length*lam_wr_length*2, 
+XYZ_general_human = np.zeros((s_dash_length*lam_wr_length*2,
                               general_scalars_length + 3))
 for s_dash_index, s_dash in enumerate(s_dash_range):
     for lam_wr_index, lam in enumerate(lam_range_with_reciprocals):
@@ -139,12 +139,12 @@ for s_dash_index, s_dash in enumerate(s_dash_range):
                 [s_dash, lam, gam], XYZd_raw[:, gam, s_dash_index, lam_wr_index])
             XYZ_general_human[(lam_wr_index*s_dash_length + s_dash_index)*2 + gam, :] = XYZ_outputline
 with open('find_resistance_scalars/scalars_general_resistance_dnominf.txt', 'a') as outputfile:
-    heading = ("'D'-form nondimensionalised resistance scalars, generated " 
+    heading = ("'D'-form nondimensionalised resistance scalars, generated "
                + time.strftime("%d/%m/%Y %H:%M:%S"))
     np.savetxt(outputfile, np.array([heading]), fmt="%s")
-    np.savetxt(outputfile, 
-               np.append(["s'", "lambda", "gamma"], 
-                         general_resistance_scalars_names), 
+    np.savetxt(outputfile,
+               np.append(["s'", "lambda", "gamma"],
+                         general_resistance_scalars_names),
                newline=" ", fmt="%15s")
     outputfile.write("\n")
     np.savetxt(outputfile, XYZ_general_human, newline="\n", fmt="% .8e")

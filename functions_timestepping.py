@@ -33,7 +33,8 @@ def did_something_go_wrong_with_dumbells(error, dumbbell_deltax,
                                          explosion_protection):
     """Check new dumbbell lengths for signs of numerical explosion.
 
-    Specifically, see whether dumbbells have rotated or stretched too far in a timestep.
+    Specifically, see whether dumbbells have rotated or stretched too far in a
+    timestep.
 
     Args:
         error (bool): Current error flag from any previous error checks.
@@ -42,10 +43,15 @@ def did_something_go_wrong_with_dumbells(error, dumbbell_deltax,
         explosion_protection (bool): Flag whether to enact the length check.
 
     Returns:
-        error: True if these checks flag up problems, else passes through inputted value."""
+        error: True if these checks flag up problems, else passes through
+            inputted value."""
 
     for i in range(new_dumbbell_deltax.shape[0]):
-        if np.arccos(np.round(np.dot(dumbbell_deltax[i], new_dumbbell_deltax[i]) / (np.linalg.norm(dumbbell_deltax[i]) * np.linalg.norm(new_dumbbell_deltax[i])), 4)) > np.pi / 2:
+        if (np.arccos(np.round(
+            np.dot(dumbbell_deltax[i], new_dumbbell_deltax[i])
+            / (np.linalg.norm(dumbbell_deltax[i])
+               * np.linalg.norm(new_dumbbell_deltax[i])),
+                4)) > np.pi / 2):
             print(" ")
             print(f"Code point H# reached on dumbbell {str(i)}")
             print(f"Old delta x: {str(dumbbell_deltax[i])}")
@@ -92,7 +98,10 @@ def euler_timestep_rotation(sphere_positions, sphere_rotations,
             Otest = (abs(Oa_out[i] / O)).astype('float')
             perp1 = [0, 0, 1] if np.allclose(Otest, [1, 0, 0]) else [1, 0, 0]
             rot_matrix = np.array([np.cross(Oa_out[i], perp1) / O,
-                                   np.cross(Oa_out[i], np.cross(Oa_out[i], perp1)) / O ** 2,
+                                   np.cross(
+                                       Oa_out[i],
+                                       np.cross(Oa_out[i], perp1))
+                                   / O**2,
                                    Oa_out[i] / O]
                                   ).transpose()
 
@@ -151,7 +160,8 @@ def do_we_have_all_size_ratios(error, element_sizes, lam_range, num_spheres):
         [len(element_sizes), len(element_sizes)])
     offending_elements = np.where(do_we_have_it_matrix == 0)
     if len(offending_elements[0]) > 0:
-        offending_lambda_1 = lambda_matrix[offending_elements[0][0], offending_elements[0][1]]
+        offending_lambda_1 = lambda_matrix[offending_elements[0][0],
+                                           offending_elements[0][1]]
         offending_element_str = np.empty(2, dtype='|S25')
         for i in (0, 1):
             offending_element_str[i] = (
@@ -160,12 +170,13 @@ def do_we_have_all_size_ratios(error, element_sizes, lam_range, num_spheres):
                 else f"sphere {str(offending_elements[0][i])}"
             )
         print("ERROR")
-        print(
-            f"Element size ratio ({str(offending_lambda_1)} or {str(1 / offending_lambda_1)}) is not in our calculated list of size ratios"
-        )
-        print(
-            f"Offending elements: {offending_element_str[0]} and {offending_element_str[1]} (counting from 0)"
-        )
+        print(f"Element size ratio ({str(offending_lambda_1)} or "
+              + f"{str(1 / offending_lambda_1)}) is not in our calculated "
+              + "list of size ratios"
+              )
+        print(f"Offending elements: {offending_element_str[0]} and "
+              + f"{offending_element_str[1]} (counting from 0)"
+              )
         return True
     return error
 
@@ -179,19 +190,25 @@ def are_some_of_the_particles_too_close(error, printout, s_dash_range,
     By default, just returns the value of the `error` flag given to it."""
 
     # Error check 1 : are some of my particles too close together for R2Bexact?
-    # min_s_dash_range = np.min(s_dash_range)  # This is the minimum s' we have calculated values for
+    # min_s_dash_range = np.min(s_dash_range)  # This is the minimum s' we have
+    # calculated values for
 
-    sphere_and_bead_positions = np.concatenate([sphere_positions,
-                                                dumbbell_positions + 0.5 * dumbbell_deltax,
-                                                dumbbell_positions - 0.5 * dumbbell_deltax])
-    sphere_and_bead_sizes = np.concatenate([sphere_sizes, dumbbell_sizes, dumbbell_sizes])
+    sphere_and_bead_positions = np.concatenate(
+        [sphere_positions,
+         dumbbell_positions + 0.5 * dumbbell_deltax,
+         dumbbell_positions - 0.5 * dumbbell_deltax])
+    sphere_and_bead_sizes = np.concatenate([sphere_sizes,
+                                            dumbbell_sizes, dumbbell_sizes])
     sphere_and_bead_positions = sphere_and_bead_positions.astype('float')
-    distance_matrix = np.linalg.norm(sphere_and_bead_positions - sphere_and_bead_positions[:, None], axis=2)
+    distance_matrix = np.linalg.norm(
+        sphere_and_bead_positions - sphere_and_bead_positions[:, None], axis=2)
     average_size = 0.5 * (sphere_and_bead_sizes + sphere_and_bead_sizes[:, None])
     distance_over_average_size = distance_matrix / average_size  # Matrix of s'
 
-    # min_element_distance = np.min(distance_over_average_size[np.nonzero(distance_over_average_size)])
-    # two_closest_elements = np.where(distance_over_average_size == min_element_distance)
+    # min_element_distance = np.min(
+    #   distance_over_average_size[np.nonzero(distance_over_average_size)])
+    # two_closest_elements = np.where(
+    #   distance_over_average_size == min_element_distance)
 
     if printout > 0:
         print("")
@@ -292,18 +309,24 @@ def generate_output_FTSUOE(
         num_dumbbells = len(Ub_in)
         if input_form == 'fts':
             try:
-                force_vector = construct_force_vector_from_fts(posdata, Fa_in, Ta_in, Sa_in, Fb_in, DFb_in)
+                force_vector = construct_force_vector_from_fts(
+                    posdata, Fa_in, Ta_in, Sa_in, Fb_in, DFb_in)
             except:
-                throw_error("FTS mode has been selected but not all values of F, T and S have been provided.")
+                throw_error("FTS mode has been selected but not all values of "
+                            + "F, T and S have been provided.")
             velocity_vector = np.linalg.solve(grand_resistance_matrix, force_vector)
-            (Ua_out, Oa_out, Ea_out, Ub_out, HalfDUb_out) = deconstruct_velocity_vector_for_fts(posdata, velocity_vector)
-            (Fa_out, Ta_out, Sa_out, Fb_out, DFb_out) = (Fa_in[:], Ta_in[:], Sa_in[:], Fb_in[:], DFb_in[:])
+            (Ua_out, Oa_out, Ea_out, Ub_out, HalfDUb_out) = deconstruct_velocity_vector_for_fts(
+                posdata, velocity_vector)
+            (Fa_out, Ta_out, Sa_out, Fb_out, DFb_out) = (
+                Fa_in[:], Ta_in[:], Sa_in[:], Fb_in[:], DFb_in[:])
             if num_spheres == 0:
                 Ea_out = Ea_in
 
         elif input_form == 'fte':
-            # Call this the same name to reduce memory requirements (no need to reproduce)
-            grand_resistance_matrix = fts_to_fte_matrix(posdata, grand_resistance_matrix)
+            # Call this the same name to reduce memory requirements
+            # (no need to reproduce)
+            grand_resistance_matrix = fts_to_fte_matrix(
+                posdata, grand_resistance_matrix)
 
             # Get inputs a second time not in "skip_computation" mode, putting
             # in the grand resistance matrix which is needed for some
@@ -320,7 +343,8 @@ def generate_output_FTSUOE(
                 force_vector = construct_force_vector_from_fts(
                     posdata, Fa_in, Ta_in, Ea_in, Fb_in, DFb_in)
             except:
-                throw_error("FTE mode has been selected but not all values of F, T and E have been provided.")
+                throw_error("FTE mode has been selected but not all values "
+                            + "of F, T and E have been provided.")
             velocity_vector = np.linalg.solve(grand_resistance_matrix,
                                               force_vector)
             (Ua_out, Oa_out, Sa_out, Ub_out, HalfDUb_out) = deconstruct_velocity_vector_for_fts(
@@ -338,47 +362,65 @@ def generate_output_FTSUOE(
                     Ua_in[0:num_fixed_velocity_spheres] + Fa_in[num_fixed_velocity_spheres:num_spheres],
                     Ta_in, Ea_in, Fb_in, DFb_in)
             except:
-                throw_error("UFTE mode has been selected but not enough values of U, F, T and E have been provided. At a guess, not all your spheres have either a U or an F.")
+                throw_error("UFTE mode has been selected but not enough "
+                            + "values of U, F, T and E have been provided. At "
+                            + "a guess, not all your spheres have either a U "
+                            + "or an F.")
             force_vector = np.array(force_vector, float)
             grand_resistance_matrix_fte = fts_to_fte_matrix(
                 posdata, grand_resistance_matrix)
             grand_resistance_matrix_ufte = fte_to_ufte_matrix(
                 num_fixed_velocity_spheres, posdata, grand_resistance_matrix_fte)
             if extract_force_on_wall_due_to_dumbbells:
-                grand_mobility_matrix_ufte = np.linalg.inv(grand_resistance_matrix_ufte)
+                grand_mobility_matrix_ufte = np.linalg.inv(
+                    grand_resistance_matrix_ufte)
                 velocity_vector = np.dot(grand_mobility_matrix_ufte, force_vector)
             else:
-                velocity_vector = np.linalg.solve(grand_resistance_matrix_ufte, force_vector)
-                (FUa_out, Oa_out, Sa_out, Ub_out, HalfDUb_out) = deconstruct_velocity_vector_for_fts(posdata, velocity_vector)
-                Fa_out = [['chen', 'chen', 'chen'] for i in range(num_spheres)]
-                Ua_out = [['chen', 'chen', 'chen'] for i in range(num_spheres)]
+                velocity_vector = np.linalg.solve(grand_resistance_matrix_ufte,
+                                                  force_vector)
+                (FUa_out, Oa_out, Sa_out, Ub_out, HalfDUb_out) = deconstruct_velocity_vector_for_fts(
+                    posdata, velocity_vector)
+                Fa_out = [['chen', 'chen', 'chen'] for _ in range(num_spheres)]
+                Ua_out = [['chen', 'chen', 'chen'] for _ in range(num_spheres)]
                 Fa_out[0:num_fixed_velocity_spheres] = FUa_out[0:num_fixed_velocity_spheres]
                 Fa_out[num_fixed_velocity_spheres:num_spheres] = Fa_in[num_fixed_velocity_spheres:num_spheres]
                 Ua_out[0:num_fixed_velocity_spheres] = Ua_in[0:num_fixed_velocity_spheres]
                 Ua_out[num_fixed_velocity_spheres:num_spheres] = FUa_out[num_fixed_velocity_spheres:num_spheres]
-                (Ta_out, Ea_out, Fb_out, DFb_out) = (Ta_in[:], Ea_in[:], Fb_in[:], DFb_in[:])
+                (Ta_out, Ea_out, Fb_out, DFb_out) = (
+                    Ta_in[:], Ea_in[:], Fb_in[:], DFb_in[:])
 
             if extract_force_on_wall_due_to_dumbbells:
                 # For finding effect of the dumbbells on the measured Force on the walls.
                 # Since   Fafixed = ()Uafixed + ()Fafree + ()Ta + ()E +   ()Fb  + ()DFb       ,
                 #                                                       | want this bit |
-                force_on_wall_due_to_dumbbells_matrix = grand_mobility_matrix_ufte[:num_fixed_velocity_spheres*3, 11*num_spheres:]
+                force_on_wall_due_to_dumbbells_matrix = grand_mobility_matrix_ufte[
+                    :num_fixed_velocity_spheres*3, 11*num_spheres:]
                 dumbbell_forces = force_vector[11*num_spheres:]
-                force_on_wall_due_to_dumbbells_flat = np.dot(force_on_wall_due_to_dumbbells_matrix, dumbbell_forces)
-                force_on_wall_due_to_dumbbells = force_on_wall_due_to_dumbbells_flat.reshape(len(force_on_wall_due_to_dumbbells_flat)/3, 3)
+                force_on_wall_due_to_dumbbells_flat = np.dot(
+                    force_on_wall_due_to_dumbbells_matrix, dumbbell_forces)
+                force_on_wall_due_to_dumbbells = force_on_wall_due_to_dumbbells_flat.reshape(
+                    len(force_on_wall_due_to_dumbbells_flat)/3, 3)
 
         elif input_form == 'ufteu':
-            num_fixed_velocity_spheres = num_spheres - Ua_in.count(['pippa', 'pippa', 'pippa'])
-            num_fixed_velocity_dumbbells = num_dumbbells - Ub_in.count(['pippa', 'pippa', 'pippa'])
+            num_fixed_velocity_spheres = (num_spheres
+                                          - Ua_in.count(['pippa', 'pippa', 'pippa']))
+            num_fixed_velocity_dumbbells = (num_dumbbells
+                                            - Ub_in.count(['pippa', 'pippa', 'pippa']))
             try:
                 force_vector = construct_force_vector_from_fts(
                     posdata,
-                    Ua_in[0:num_fixed_velocity_spheres] + Fa_in[num_fixed_velocity_spheres:num_spheres],
+                    Ua_in[0:num_fixed_velocity_spheres] + Fa_in[
+                        num_fixed_velocity_spheres:num_spheres],
                     Ta_in, Ea_in,
-                    Ub_in[0:num_fixed_velocity_dumbbells] + Fb_in[num_fixed_velocity_dumbbells:num_dumbbells],
-                    HalfDUb_in[0:num_fixed_velocity_dumbbells] + DFb_in[num_fixed_velocity_dumbbells:num_dumbbells])
+                    Ub_in[0:num_fixed_velocity_dumbbells] + Fb_in[
+                        num_fixed_velocity_dumbbells:num_dumbbells],
+                    HalfDUb_in[0:num_fixed_velocity_dumbbells] + DFb_in[
+                        num_fixed_velocity_dumbbells:num_dumbbells])
             except:
-                throw_error("UFTEU mode has been selected but not enough values of U, F, T and E and U(dumbbell) have been provided. At a guess, not all your spheres/dumbbells have either a U or an F.")
+                throw_error("UFTEU mode has been selected but not enough "
+                            + "values of U, F, T and E and U(dumbbell) have "
+                            + "been provided. At a guess, not all your "
+                            + "spheres/dumbbells have either a U or an F.")
 
             force_vector = np.array(force_vector, float)
             grand_resistance_matrix_fte = fts_to_fte_matrix(
@@ -391,55 +433,83 @@ def generate_output_FTSUOE(
             velocity_vector = np.linalg.solve(grand_resistance_matrix_ufteu,
                                               force_vector)
 
-            (FUa_out, Oa_out, Sa_out, FUb_out, DFUb_out) = deconstruct_velocity_vector_for_fts(posdata, velocity_vector)
-            Fa_out = [['chen', 'chen', 'chen'] for i in range(num_spheres)]
-            Ua_out = [['chen', 'chen', 'chen'] for i in range(num_spheres)]
+            (FUa_out, Oa_out, Sa_out, FUb_out, DFUb_out) = deconstruct_velocity_vector_for_fts(
+                posdata, velocity_vector)
+            Fa_out = [['chen', 'chen', 'chen'] for _ in range(num_spheres)]
+            Ua_out = [['chen', 'chen', 'chen'] for _ in range(num_spheres)]
             Fa_out[0:num_fixed_velocity_spheres] = FUa_out[0:num_fixed_velocity_spheres]
-            Fa_out[num_fixed_velocity_spheres:num_spheres] = Fa_in[num_fixed_velocity_spheres:num_spheres]
+            Fa_out[num_fixed_velocity_spheres:num_spheres] = Fa_in[
+                num_fixed_velocity_spheres:num_spheres]
             Ua_out[0:num_fixed_velocity_spheres] = Ua_in[0:num_fixed_velocity_spheres]
-            Ua_out[num_fixed_velocity_spheres:num_spheres] = FUa_out[num_fixed_velocity_spheres:num_spheres]
+            Ua_out[num_fixed_velocity_spheres:num_spheres] = FUa_out[
+                num_fixed_velocity_spheres:num_spheres]
             (Ta_out, Ea_out) = (Ta_in[:], Ea_in[:])
-            Fb_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
-            Ub_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
-            Fb_out[0:num_fixed_velocity_dumbbells] = FUb_out[0:num_fixed_velocity_dumbbells]
-            Fb_out[num_fixed_velocity_dumbbells:num_dumbbells] = Fb_in[num_fixed_velocity_dumbbells:num_dumbbells]
-            Ub_out[0:num_fixed_velocity_dumbbells] = Ub_in[0:num_fixed_velocity_dumbbells]
-            Ub_out[num_fixed_velocity_dumbbells:num_dumbbells] = FUb_out[num_fixed_velocity_dumbbells:num_dumbbells]
-            DFb_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
-            HalfDUb_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
-            DFb_out[0:num_fixed_velocity_dumbbells] = DFUb_out[0:num_fixed_velocity_dumbbells]
-            DFb_out[num_fixed_velocity_dumbbells:num_dumbbells] = DFb_in[num_fixed_velocity_dumbbells:num_dumbbells]
-            HalfDUb_out[0:num_fixed_velocity_dumbbells] = HalfDUb_in[0:num_fixed_velocity_dumbbells]
-            HalfDUb_out[num_fixed_velocity_dumbbells:num_dumbbells] = DFUb_out[num_fixed_velocity_dumbbells:num_dumbbells]
+            Fb_out = [['chen', 'chen', 'chen'] for _ in range(num_dumbbells)]
+            Ub_out = [['chen', 'chen', 'chen'] for _ in range(num_dumbbells)]
+            Fb_out[0:num_fixed_velocity_dumbbells] = FUb_out[
+                0:num_fixed_velocity_dumbbells]
+            Fb_out[num_fixed_velocity_dumbbells:num_dumbbells] = Fb_in[
+                num_fixed_velocity_dumbbells:num_dumbbells]
+            Ub_out[0:num_fixed_velocity_dumbbells] = Ub_in[
+                0:num_fixed_velocity_dumbbells]
+            Ub_out[num_fixed_velocity_dumbbells:num_dumbbells] = FUb_out[
+                num_fixed_velocity_dumbbells:num_dumbbells]
+            DFb_out = [['chen', 'chen', 'chen'] for _ in range(num_dumbbells)]
+            HalfDUb_out = [['chen', 'chen', 'chen'] for _ in range(num_dumbbells)]
+            DFb_out[0:num_fixed_velocity_dumbbells] = DFUb_out[
+                0:num_fixed_velocity_dumbbells]
+            DFb_out[num_fixed_velocity_dumbbells:num_dumbbells] = DFb_in[
+                num_fixed_velocity_dumbbells:num_dumbbells]
+            HalfDUb_out[0:num_fixed_velocity_dumbbells] = HalfDUb_in[
+                0:num_fixed_velocity_dumbbells]
+            HalfDUb_out[num_fixed_velocity_dumbbells:num_dumbbells] = DFUb_out[
+                num_fixed_velocity_dumbbells:num_dumbbells]
             if extract_force_on_wall_due_to_dumbbells:
-                print("WARNING: Cannot extract force on wall due to dumbbells in UFTEU mode. Use UFTE mode instead.")
+                print("WARNING: Cannot extract force on wall due to dumbbells "
+                      + "in UFTEU mode. Use UFTE mode instead.")
 
         elif input_form == 'duf':  # Dumbbells only, some imposed velocities
-            num_fixed_velocity_dumbbells = num_dumbbells - Ub_in.count(['pippa', 'pippa', 'pippa'])
+            num_fixed_velocity_dumbbells = (num_dumbbells
+                                            - Ub_in.count(['pippa', 'pippa', 'pippa']))
             try:
                 force_vector = construct_force_vector_from_fts(
                     posdata, Fa_in, Ta_in, Ea_in,
-                    Ub_in[0:num_fixed_velocity_dumbbells] + Fb_in[num_fixed_velocity_dumbbells:num_dumbbells],
-                    HalfDUb_in[0:num_fixed_velocity_dumbbells] + DFb_in[num_fixed_velocity_dumbbells:num_dumbbells])
+                    Ub_in[0:num_fixed_velocity_dumbbells] + Fb_in[
+                        num_fixed_velocity_dumbbells:num_dumbbells],
+                    HalfDUb_in[0:num_fixed_velocity_dumbbells] + DFb_in[
+                        num_fixed_velocity_dumbbells:num_dumbbells])
             except:
-                throw_error("DUF mode has been selected but not enough values of U (dumbbell) and F (dumbbell) have been provided. At a guess, not all your dumbbells have either a U or an F.")
+                throw_error("DUF mode has been selected but not enough values "
+                            + "of U (dumbbell) and F (dumbbell) have been "
+                            + "provided. At a guess, not all your dumbbells "
+                            + "have either a U or an F.")
             force_vector = np.array(force_vector, float)
-            grand_resistance_matrix_duf = fts_to_duf_matrix(num_fixed_velocity_dumbbells,
-                                                            posdata, grand_resistance_matrix)
-            velocity_vector = np.linalg.solve(grand_resistance_matrix_duf, force_vector)
+            grand_resistance_matrix_duf = fts_to_duf_matrix(
+                num_fixed_velocity_dumbbells,
+                posdata, grand_resistance_matrix)
+            velocity_vector = np.linalg.solve(grand_resistance_matrix_duf,
+                                              force_vector)
             (Fa_out, Oa_out, Sa_out, FUb_out, DFUb_out) = deconstruct_velocity_vector_for_fts(posdata, velocity_vector)
-            Fb_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
-            Ub_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
-            DFb_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
-            HalfDUb_out = [['chen', 'chen', 'chen'] for i in range(num_dumbbells)]
-            Fb_out[0:num_fixed_velocity_dumbbells] = FUb_out[0:num_fixed_velocity_dumbbells]
-            Fb_out[num_fixed_velocity_dumbbells:num_dumbbells] = Fb_in[num_fixed_velocity_dumbbells:num_dumbbells]
-            Ub_out[0:num_fixed_velocity_dumbbells] = Ub_in[0:num_fixed_velocity_dumbbells]
-            Ub_out[num_fixed_velocity_dumbbells:num_dumbbells] = FUb_out[num_fixed_velocity_dumbbells:num_dumbbells]
-            DFb_out[0:num_fixed_velocity_dumbbells] = DFUb_out[0:num_fixed_velocity_dumbbells]
-            DFb_out[num_fixed_velocity_dumbbells:num_dumbbells] = DFb_in[num_fixed_velocity_dumbbells:num_dumbbells]
-            HalfDUb_out[0:num_fixed_velocity_dumbbells] = HalfDUb_in[0:num_fixed_velocity_dumbbells]
-            HalfDUb_out[num_fixed_velocity_dumbbells:num_dumbbells] = DFUb_out[num_fixed_velocity_dumbbells:num_dumbbells]
+            Fb_out = [['chen', 'chen', 'chen'] for _ in range(num_dumbbells)]
+            Ub_out = [['chen', 'chen', 'chen'] for _ in range(num_dumbbells)]
+            DFb_out = [['chen', 'chen', 'chen'] for _ in range(num_dumbbells)]
+            HalfDUb_out = [['chen', 'chen', 'chen'] for _ in range(num_dumbbells)]
+            Fb_out[0:num_fixed_velocity_dumbbells] = FUb_out[
+                0:num_fixed_velocity_dumbbells]
+            Fb_out[num_fixed_velocity_dumbbells:num_dumbbells] = Fb_in[
+                num_fixed_velocity_dumbbells:num_dumbbells]
+            Ub_out[0:num_fixed_velocity_dumbbells] = Ub_in[
+                0:num_fixed_velocity_dumbbells]
+            Ub_out[num_fixed_velocity_dumbbells:num_dumbbells] = FUb_out[
+                num_fixed_velocity_dumbbells:num_dumbbells]
+            DFb_out[0:num_fixed_velocity_dumbbells] = DFUb_out[
+                0:num_fixed_velocity_dumbbells]
+            DFb_out[num_fixed_velocity_dumbbells:num_dumbbells] = DFb_in[
+                num_fixed_velocity_dumbbells:num_dumbbells]
+            HalfDUb_out[0:num_fixed_velocity_dumbbells] = HalfDUb_in[
+                0:num_fixed_velocity_dumbbells]
+            HalfDUb_out[num_fixed_velocity_dumbbells:num_dumbbells] = DFUb_out[
+                num_fixed_velocity_dumbbells:num_dumbbells]
             (Fa_out, Ta_out, Ea_out) = (Fa_in[:], Ta_in[:], Ea_in[:])
             Ua_out, Oa_out = np.array([]), np.array([])
 
@@ -584,14 +654,14 @@ def wrap_around(new_sphere_positions, box_bottom_left, box_top_right,
     """Return sphere positions modulo the periodic box.
 
     This ideally should just be
-        new_sphere_positions = 
+        new_sphere_positions =
             np.mod(new_sphere_positions + np.array([Lx/2.,Ly/2.,Lz/2.]),Lx)
                 - np.array([Lx/2.,Ly/2.,Lz/2.])
     but if you have a slanted box /_/ and you go off the top, you actually
     want to go to the bottom and slightly to the left.
     This is achieved by instead doing
-        new_sphere_positions = 
-            SHEAR [ np.mod( UNSHEAR [ new_sphere_positions ] + np.array([Lx/2.,Ly/2.,Lz/2.]),Lx) 
+        new_sphere_positions =
+            SHEAR [ np.mod( UNSHEAR [ new_sphere_positions ] + np.array([Lx/2.,Ly/2.,Lz/2.]),Lx)
                    - np.array([Lx/2.,Ly/2.,Lz/2.]) ]
     """
     box_dimensions = box_top_right - box_bottom_left

@@ -3,7 +3,7 @@
 # Adam Townsend, adam@adamtownsend.com, 07/06/2017
 
 """Create MP4 video of either the most recently created NPZ file in the
-output folder or an NPZ file specified in the script. 
+output folder or an NPZ file specified in the script.
 
 Video is created in the output_videos folder.
 """
@@ -16,7 +16,10 @@ from input_setups import input_ftsuoe
 from position_setups import pos_setup
 from functions_shared import shear_basis_vectors, format_elapsed_time
 from functions_timestepping import format_time_left
-from functions_graphics import *
+from functions_graphics import (plot_all_spheres, plot_all_dumbbells,
+                                plot_all_torque_lines, plot_all_velocity_lines,
+                                plot_all_angular_velocity_lines,
+                                plot_all_force_lines)
 from matplotlib import animation, rcParams
 import matplotlib.pyplot as plt
 import numpy as np
@@ -198,7 +201,7 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]),
         # box corners, sheared:
         #  (i) Transformed into the canonical basis (box length = 1 unit)
         # (ii) Transformed into the sheared basis
-        corners_sheared = np.dot(sheared_basis_vectors, 
+        corners_sheared = np.dot(sheared_basis_vectors,
                                  np.linalg.solve(basis_canonical,
                                                  corners.T)).T
         cor1 = corners_sheared[0]

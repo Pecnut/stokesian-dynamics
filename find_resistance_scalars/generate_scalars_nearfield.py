@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Adam Townsend, adam@adamtownsend.com, 12/07/2023.
 """
-Standalone script to generate nondimensional nearfield resistance scalars 
+Standalone script to generate nondimensional nearfield resistance scalars
 X11A, X12A, Y11B, ..., Z12M  for values of (s,lambda) read in from a text file.
 
 Reference: Townsend 2018, 'Generating, from scratch, the near-field asymptotic
@@ -19,18 +19,18 @@ Equation numbers relating to:
 If you are running this as part of the Python Stokesian Dynamics
 implementation: You can just run this file and read no further.
 
-For two spheres of radius  a_1  and  a_2 , a distance  r  apart, the 
-nondimensional particle separation distance  s'  is defined as 
-    s' = 2r / (a_1 + a+2). 
+For two spheres of radius  a_1  and  a_2 , a distance  r  apart, the
+nondimensional particle separation distance  s'  is defined as
+    s' = 2r / (a_1 + a+2).
 
 The size ratio is  lambda = a_2/a_1.
 
 These scalars are NONDIMENSIONAL. To recover the dimensional forms, follow the
-Kim & Karrila (sec 11.3) approach and multiply by 
+Kim & Karrila (sec 11.3) approach and multiply by
    6 pi a_1,  4 pi a_1^2,  8 pi a_1^3,  4 pi a_1^2,  8 pi a_1^3,  20/3 pi a_1^3
 where the scalar has the superscript
    A,         B,           C,           G,           H,           M.
-    
+
 Reads:
     values_of_s_dash_nearfield.txt: List of nearfield distances s'.
     values_of_lambda.txt: List of size ratios lambda. Note that only values
@@ -40,8 +40,8 @@ Reads:
 Writes:
     scalars_general_resistance_nearfield.npy:
         this file is for reading directly by Python in constructing a larger
-        database of resistance scalars. 
-    scalars_general_resistance_nearfield.txt: 
+        database of resistance scalars.
+    scalars_general_resistance_nearfield.txt:
         this file is created to be human readable and is not used by any
         further script. This file lists scalars in the form:
             s' lambda 0 X11A Y11A Y11B X11C Y11C X11G Y11G Y11H X11M Y11M Z11M
@@ -69,9 +69,8 @@ scalar_functions = (X11A, X12A, Y11A, Y12A, Y11B, Y12B,
 s_dash_range = np.loadtxt('values_of_s_dash_nearfield.txt', ndmin=1)
 s_dash_length = s_dash_range.shape[0]
 lam_range = np.loadtxt('values_of_lambda.txt', ndmin=1)
-lam_range_with_reciprocals = np.concatenate(
-    (lam_range, [1/l for l in lam_range if 1/l not in lam_range]))
-lam_range_with_reciprocals.sort()
+lam_range_with_reciprocals = sorted(np.concatenate(
+    (lam_range, [1/l for l in lam_range if 1/l not in lam_range])))
 lam_wr_length = lam_range_with_reciprocals.shape[0]
 
 scalars_length = len(resistance_scalars_names)

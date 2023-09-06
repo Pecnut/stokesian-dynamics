@@ -33,7 +33,7 @@ def run_fortran(s_dash, a1, a2, case):
         s_dash: Scaled separation distance s'.
         a1: Radius of first particle
         a2: Radius of second particle.
-        case: A code, "F11", "F12" etc., which is understood in `2sphere.f` to 
+        case: A code, "F11", "F12" etc., which is understood in `2sphere.f` to
             represent, e.g., "a force of 1 parallel to the separation vector".
 
     Returns:

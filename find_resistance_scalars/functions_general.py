@@ -27,7 +27,7 @@ mobility_scalars_names = ["x11a", "x12a", "x21a", "x22a",
                           "x11g", "x12g", "x21g", "x22g",
                           "y11g", "y12g", "y21g", "y22g",
                           "y11h", "y12h", "y21h", "y22h",
-                          "x11m", "x12m", "x21m",  "x22m",
+                          "x11m", "x12m", "x21m", "x22m",
                           "y11m", "y12m", "y21m", "y22m",
                           "z11m", "z12m", "z21m", "z22m"]
 general_resistance_scalars_names = ["XA", "YA", "YB", "XC", "YC",

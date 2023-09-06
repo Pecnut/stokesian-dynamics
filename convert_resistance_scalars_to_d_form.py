@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 # Adam Townsend, adam@adamtownsend.com, 28/12/2014
 
-"""Reads in resistance scalars from 
-    find_resistance_scalars/scalars_general_resistance.npy 
-and converts them to their 'd' form, i.e. with the R2binfinity term already 
+"""Reads in resistance scalars from
+    find_resistance_scalars/scalars_general_resistance.npy
+and converts them to their 'd' form, i.e. with the R2binfinity term already
 subtracted away from it. Then it saves it to
     find_resistance_scalars/scalars_general_resistance_d.npy  and  .txt
 
-It's in the main folder because otherwise it's a pain to import 
-generate_Minfinity and then use the scripts which it calls which expect to be 
+It's in the main folder because otherwise it's a pain to import
+generate_Minfinity and then use the scripts which it calls which expect to be
 called from this folder.
 """
 

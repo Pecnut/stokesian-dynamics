@@ -19,18 +19,18 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
         posdata: Position data of all particles.
         frameno (int): Frame number of the simulation.
         timestep: Timestep size.
-        last_velocities: Velocities of particles in previous timestep of 
+        last_velocities: Velocities of particles in previous timestep of
             simulation.
-        input_form (str): Specifies which of F/T/S/U/Omega/E you are providing 
+        input_form (str): Specifies which of F/T/S/U/Omega/E you are providing
             as inputs.
         skip_computation (bool): You might want to do some computation in this
-            function if the forces depend on e.g. position in a nontrivial way. 
-            But you might be just calling this function to retrieve something 
-            simple like `box_bottom_left`. This flag states whether that 
-            computation is necessary (False) or whether the function is just 
-            being called to extract a constant (True). You can then use this 
+            function if the forces depend on e.g. position in a nontrivial way.
+            But you might be just calling this function to retrieve something
+            simple like `box_bottom_left`. This flag states whether that
+            computation is necessary (False) or whether the function is just
+            being called to extract a constant (True). You can then use this
             flag to skip the computation in your function.
-        grand resistance_matrix_fte: Some computation in this function might 
+        grand resistance_matrix_fte: Some computation in this function might
             require the grand resistance matrix, e.g. when computing friction.
             If required, this is passed in here.
 
@@ -57,9 +57,9 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
     # Then define num_spheres and num_dumbbells
     (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in, Ea_c_in,
         Ub_in, HalfDUb_in) = empty_vectors(posdata)
-    (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes,
+    (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
         dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells,
-        element_sizes, element_positions, element_deltax,  num_elements,
+        element_sizes, element_positions, element_deltax, num_elements,
         num_elements_array, element_type, uv_start, uv_size,
         element_start_count) = posdata_data(posdata)
 
@@ -127,7 +127,11 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
         # Oscillatory background flow, about the point (2.25,0,2.25)
         natural_deltax = 2.
         spring_constant = -1
-        DFb_in[:] = [list(spring_constant*(dumbbell_deltax[i]-natural_deltax*dumbbell_deltax[i]/np.linalg.norm(dumbbell_deltax[i]))) for i in range(num_dumbbells)]
+        DFb_in[:] = [list(spring_constant*(
+            dumbbell_deltax[i]
+            - natural_deltax*dumbbell_deltax[i]/np.linalg.norm(dumbbell_deltax[i])
+        ))
+            for i in range(num_dumbbells)]
         # Simple shear with speed gammadot
         # amplitude is amplitude at z = 1
         (Ea_in, U_infinity, O_infinity, centre_of_background_flow,
@@ -155,7 +159,7 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
         # Constant shear
         (Ea_in, U_infinity, O_infinity, centre_of_background_flow,
          Ot_infinity, Et_infinity) = constant_shear(
-            gammadot=1, frameno=frameno, timestep=timestep, 
+            gammadot=1, frameno=frameno, timestep=timestep,
             num_spheres=num_spheres)
         desc = "constant-shear"
 
@@ -170,7 +174,7 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
 
     return (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in,
             Ea_c_in, Ub_in, HalfDUb_in, desc, U_infinity, O_infinity,
-            centre_of_background_flow, Ot_infinity, Et_infinity, 
+            centre_of_background_flow, Ot_infinity, Et_infinity,
             box_bottom_left, box_top_right, mu)
 
 
@@ -182,35 +186,42 @@ def repulsion_forces(strength, tau, num_spheres, num_dumbbells,
 
     Args:
         strength, tau: Parameters in the force function.
-        num_spheres, ..., num_sphere_in_each_lid: Positions and counts of 
+        num_spheres, ..., num_sphere_in_each_lid: Positions and counts of
             particles.
         Fa_in, Fb_in, DFb_in: Current forces acting on spheres and dumbbells.
         last_velocities: Velocities of particles at the previous timestep.
 
     Returns:
-        Fa_in, Fb_in, DFb_in: Forces acting on the spheres and dumbbells after 
+        Fa_in, Fb_in, DFb_in: Forces acting on the spheres and dumbbells after
             repulsion added.
     """
 
-    bead_force = [[0, 0, 0] for i in range(num_spheres + 2*num_dumbbells)]
+    bead_force = [[0, 0, 0] for _ in range(num_spheres + 2*num_dumbbells)]
     bead_positions = np.concatenate([sphere_positions,
                                      dumbbell_positions - 0.5*dumbbell_deltax,
                                      dumbbell_positions + 0.5*dumbbell_deltax])
     bead_sizes = np.concatenate([sphere_sizes, dumbbell_sizes, dumbbell_sizes])
-    distance_matrix = np.linalg.norm(bead_positions-bead_positions[:, None], axis=2)
+    distance_matrix = np.linalg.norm(bead_positions-bead_positions[:, None],
+                                     axis=2)
     average_size_matrix = 0.5*(bead_sizes+bead_sizes[:, None])
     scaled_distance_matrix = distance_matrix/average_size_matrix
 
-    index_matrix = range(num_spheres+2*num_dumbbells)-np.array(range(num_spheres+2*num_dumbbells))[:, None]
+    index_matrix = (range(num_spheres+2*num_dumbbells)
+                    - np.array(range(num_spheres+2*num_dumbbells))[:, None])
 
     cutoff = 2.2
-    overlapping_or_close = np.where(np.logical_and(scaled_distance_matrix > 0, np.logical_and(scaled_distance_matrix < cutoff, index_matrix >= 0)))
-    overlapping_or_close_pairs = zip(overlapping_or_close[0], overlapping_or_close[1])
+    overlapping_or_close = np.where(
+        np.logical_and(scaled_distance_matrix > 0,
+                       np.logical_and(scaled_distance_matrix < cutoff,
+                                      index_matrix >= 0)))
+    overlapping_or_close_pairs = zip(overlapping_or_close[0],
+                                     overlapping_or_close[1])
 
     for pair in overlapping_or_close_pairs:
         scaled_overlap = scaled_distance_matrix[pair]
         h = scaled_overlap - 2.
-        unit_vector = (bead_positions[pair[1]] - bead_positions[pair[0]])/np.linalg.norm((bead_positions[pair[1]] - bead_positions[pair[0]]))
+        r = bead_positions[pair[1]] - bead_positions[pair[0]]
+        unit_vector = r/np.linalg.norm(r)
         a1 = bead_sizes[pair[0]]
         a2 = bead_sizes[pair[1]]
         repulsion_force_length = 0
@@ -226,9 +237,13 @@ def repulsion_forces(strength, tau, num_spheres, num_dumbbells,
         else:
             repulsion_force_length += strength*(2.*a1*a2/(a1+a2))
 
-        bead_force[pair[0]] = np.array(bead_force[pair[0]]) + repulsion_force_length*unit_vector
-        bead_force[pair[1]] = np.array(bead_force[pair[1]]) - repulsion_force_length*unit_vector
-    Fa_in[2*num_sphere_in_each_lid:num_spheres] = Fa_in[2*num_sphere_in_each_lid:num_spheres] - np.array(bead_force[2*num_sphere_in_each_lid:num_spheres])
+        bead_force[pair[0]] = (np.array(bead_force[pair[0]])
+                               + repulsion_force_length*unit_vector)
+        bead_force[pair[1]] = (np.array(bead_force[pair[1]])
+                               - repulsion_force_length*unit_vector)
+    Fa_in[2*num_sphere_in_each_lid:num_spheres] = (Fa_in[
+        2*num_sphere_in_each_lid:num_spheres]
+        - np.array(bead_force[2*num_sphere_in_each_lid:num_spheres]))
     Fb_in = Fb_in - (np.array(bead_force[num_spheres:num_spheres+num_dumbbells])
                      + np.array(bead_force[num_spheres+num_dumbbells:]))
     DFb_in = DFb_in - (np.array(bead_force[num_spheres+num_dumbbells:])
@@ -240,12 +255,12 @@ def oscillatory_shear(amplitude, period, frameno, timestep, phase=0,
                       centre_of_background_flow=np.array([0, 0, 0]),
                       num_spheres=1, unused_axis=1, transpose_shear=False,
                       opposite_direction=False):
-    """Define background flow for an oscillatory shear at a given time, 
+    """Define background flow for an oscillatory shear at a given time,
     "a omega cos(omega t + phi)".
 
     Args:
         amplitude: Amplitude of oscillation. Directly returned.
-        period: Period of oscillation. 
+        period: Period of oscillation.
         frameno: Frame number.
         timestep: Timestep size.
         phase: Phase offset in the oscillation, phi in cos(omega t + phi).
@@ -256,7 +271,7 @@ def oscillatory_shear(amplitude, period, frameno, timestep, phase=0,
         transpose_shear (bool): True means e.g. /| ("zx") rather than  _  ("xz").
                                                |/                     /_/
 
-    Returns: 
+    Returns:
         Ea_in: E^infinity for each spherical particle (at least 1).
         U_infinity, O_infinity: Background flow.
         centre_of_background_flow: As input.
@@ -301,7 +316,7 @@ def oscillatory_shear(amplitude, period, frameno, timestep, phase=0,
             Ot_infinity, Et_infinity)
 
 
-def constant_shear(gammadot, frameno, timestep, 
+def constant_shear(gammadot, frameno, timestep,
                    centre_of_background_flow=np.array([0, 0, 0]),
                    num_spheres=1):
     """Define background flow for an constant shear at a given time.
@@ -313,7 +328,7 @@ def constant_shear(gammadot, frameno, timestep,
         centre_of_background_flow: Coordinates of background flow centre point.
         num_spheres: Number of spheres in the simulation (used for size of Ea_in).
 
-    Returns: 
+    Returns:
         Ea_in: E^infinity for each spherical particle (at least 1).
         U_infinity, O_infinity: Background flow.
         centre_of_background_flow: As input.
@@ -327,8 +342,8 @@ def constant_shear(gammadot, frameno, timestep,
                   [0, 0, 0],
                   [0.5*gammadot, 0, 0]]
     Et_infinity = [[0, 0, 0.5*gammadot*t],
-                  [0, 0, 0],
-                  [0.5*gammadot*t, 0, 0]]
+                   [0, 0, 0],
+                   [0.5*gammadot*t, 0, 0]]
     Ea_in = [E_infinity for _ in range(max(1, num_spheres))]
     return (Ea_in, U_infinity, O_infinity, centre_of_background_flow,
             Ot_infinity, Et_infinity)

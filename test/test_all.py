@@ -48,7 +48,7 @@ def uos_compare(line, Ua, Oa, Sa):
               "output from Lamb code.")
         print("   From Lamb: O1,O2=", line[6:12])
         print("   SD code:   O1,O2=", list(Oa.flatten()))
-    if not np.all(np.isclose(line[12:22], np.array(condense(Sa, 2)).flatten(), 
+    if not np.all(np.isclose(line[12:22], np.array(condense(Sa, 2)).flatten(),
                              rtol=1e-3)):
         is_wrong += 1
         print("Stresslet output from SD code is not close enough to output",

@@ -2,9 +2,9 @@
 # Adam Townsend, adam@adamtownsend.com, 12/07/2023.
 
 """
-Functions file for generate_scalars_nearfield.py. 
+Functions file for generate_scalars_nearfield.py.
 
-Contains functions which generate X11A, X12A, Y11A, etc. 
+Contains functions which generate X11A, X12A, Y11A, etc.
 
 Reference: Townsend 2018, 'Generating, from scratch, the near-field asymptotic
 forms of scalar resistance functions for two unequal rigid spheres in
@@ -18,14 +18,14 @@ Equation numbers relating to:
     Jeffrey               ,,       (J 1),
     Ichiki et al.         ,,       (I 1).
 
-For two spheres of radius  a_1  and  a_2 , a distance  r  apart, the 
-nondimensional particle centre-to-centre separation distance  s'  is defined as 
-    s' = 2r / (a_1 + a+2). 
-These functions are written in terms of the scaled surface separation distance, 
+For two spheres of radius  a_1  and  a_2 , a distance  r  apart, the
+nondimensional particle centre-to-centre separation distance  s'  is defined as
+    s' = 2r / (a_1 + a+2).
+These functions are written in terms of the scaled surface separation distance,
     xi = s' - 2.
 
 The size ratio is  lambda = a_2/a_1.
-    
+
 """
 
 from math import log, comb
@@ -71,8 +71,8 @@ def intermediate_sum(f0, f1, f2, f3, parity, lam, N=100):
 @cache
 def intermediate_sum_no_f0_coeff(f0, f1, f2, f3, parity, lam, N=100):
     """Version of intermediate_sum but where the coefficient of f0 is instead
-    assumed to already be in f0. 
-    
+    assumed to already be in f0.
+
     Note that, for example, this coefficient normally includes 2**-m, and yet
     every definition of the 'f' functions used in f0 includes 2**m, so it just
     cancels out. So why include it? This choice appears to have been made in
@@ -164,7 +164,7 @@ def AX11(lam):
     """(14a) / (J&O 3.22) but more conveniently written.
 
     See note next to (14a). The term `truncation_m1_match` is included to match
-    original (using M1) definition (14) when truncating the infinite sum at 
+    original (using M1) definition (14) when truncating the infinite sum at
     M. It is just truncation noise but is left in, in case you want to match
     with calculations using the original M1 version, truncated at some M."""
     M = 100
@@ -989,8 +989,8 @@ def Fzm(k, lam):
 
 @cache
 def Fzm_with_sum_coeff(k, lam):
-    """(I 131) but multiplied by 2^(-k) (1+lambda)^(-k), which is the 
-    coefficient of Fzm which is normally in MZ11 and MZ12. Putting the 
+    """(I 131) but multiplied by 2^(-k) (1+lambda)^(-k), which is the
+    coefficient of Fzm which is normally in MZ11 and MZ12. Putting the
     coefficient inside this function means that we can avoid having lam^k,
     which can exceed the max double precision float size of 1e308 when
     lam=100 and k gets big, which you need as MZ11 and MZ12 converge slowly."""

@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 # Adam Townsend, adam@adamtownsend.com, 07/06/2017
 
-"""Plot particles at a given frame number for an NPZ file specified in the 
-script. 
+"""Plot particles at a given frame number for an NPZ file specified in the
+script.
 
 Does not plot any periodic copies. If you want to do this, see the code in
 plot_particle_positions_video.py.
@@ -12,7 +12,9 @@ plot_particle_positions_video.py.
 import numpy as np
 import matplotlib.pyplot as plt
 from pylab import rcParams
-from functions_graphics import *
+from functions_graphics import (plot_all_spheres, plot_all_dumbbells,
+                                plot_all_torque_lines, plot_all_velocity_lines,
+                                plot_all_angular_velocity_lines)
 from functions_shared import add_sphere_rotations_to_positions
 
 rcParams['figure.figsize'] = 5, 5
@@ -91,7 +93,7 @@ fig.tight_layout()
 # Pictures
 if viewbox_bottomleft_topright.size == 0:
     if num_spheres > 0 and num_dumbbells > 0:
-        m = np.array([abs(sphere_positions).max(), 
+        m = np.array([abs(sphere_positions).max(),
                       abs(dumbbell_positions).max()]).max()
     elif num_spheres > 0 and num_dumbbells == 0:
         m = abs(sphere_positions).max()
@@ -124,8 +126,8 @@ if view_labels == 1:
 for q in (dumbbell_lines):
     q.remove()
 
-ax.set_title("  frame " 
-             + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno+1) 
+ax.set_title("  frame "
+             + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno+1)
              + "/" + str(num_frames), loc='left', y=0.97)
 ax.set_title(filename, loc='center', y=1.05)
 

@@ -19,7 +19,7 @@ def generate_grand_resistance_matrix(
     Args:
         posdata: Particle position, size and count data
         last_generated_Minfinity_inverse: Precomputed Minfinity_inverse matrix
-            from a previous timestep or timestep stage which may want to be 
+            from a previous timestep or timestep stage which may want to be
             used here.
         regenerate_Minfinity (bool): Instruction to either use the precomputed
             Minfinity_inverse (False) or to generate a new one (True)
@@ -38,7 +38,7 @@ def generate_grand_resistance_matrix(
     """
 
     Minfinity_start_time = time.time()
-    if not(use_drag_Minfinity):
+    if not use_drag_Minfinity:
         if regenerate_Minfinity:
             (Minfinity, headingM) = generate_Minfinity(posdata, printout,
                                                        frameno=frameno, mu=mu)
@@ -56,7 +56,7 @@ def generate_grand_resistance_matrix(
     else:
         (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
             dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells,
-            element_sizes, element_positions, element_deltax,  num_elements,
+            element_sizes, element_positions, element_deltax, num_elements,
             num_elements_array, element_type, uv_start, uv_size,
             element_start_count) = posdata_data(posdata)
         Minfinity_inverse = mu*np.diag(
@@ -105,17 +105,6 @@ def generate_grand_resistance_matrix(
         print(np.array_str(grand_resistance_matrix, max_line_width=100000))
         save_matrix(grand_resistance_matrix, "Grand Resistance Matrix",
                     "R-" + str(frameno) + ".txt")
-        
-    # print()
-    # print(np.array_str(Minfinity[0:6,6:12], max_line_width=100000))
-    # print(np.array_str(np.linalg.inv(Minfinity)[0:6,6:12], max_line_width=100000))
-    # print("R2Bexact")
-    # print(np.array_str(R2Bexact.toarray()[0:6,12:22], max_line_width=100000))
-    # print("Grand R")
-    # print(np.array_str(grand_resistance_matrix[0:6, 12:22], max_line_width=100000))
-    # save_matrix(R2Bexact.toarray(), "R2Bexact without d",
-    #             "Rnod-" + str(frameno) + ".txt")
-    # print(np.linalg.norm(grand_resistance_matrix))
 
     gen_times = [Minfinity_elapsed_time, Minfinity_inverse_elapsed_time,
                  R2Bexact_elapsed_time]
@@ -136,7 +125,7 @@ def generate_grand_resistance_matrix_periodic(
     Args:
         posdata: Particle position, size and count data
         last_generated_Minfinity_inverse: Precomputed Minfinity_inverse matrix
-            from a previous timestep or timestep stage which may want to be 
+            from a previous timestep or timestep stage which may want to be
             used here.
         box_bottom_left, box_top_right: Coordinates of the periodic box.
         regenerate_Minfinity (bool): Instruction to either use the precomputed
@@ -159,7 +148,7 @@ def generate_grand_resistance_matrix_periodic(
         gen_times: List of runtimes for various parts of the code
     """
 
-    if not(use_drag_Minfinity):  # i.e. if we should do Minfinity properly:
+    if not use_drag_Minfinity:  # i.e. if we should do Minfinity properly:
         Minfinity_start_time = time.time()
         if regenerate_Minfinity:
             (Minfinity, headingM) = generate_Minfinity_periodic(
@@ -177,7 +166,7 @@ def generate_grand_resistance_matrix_periodic(
     else:
         (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
             dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells,
-            element_sizes, element_positions, element_deltax,  num_elements,
+            element_sizes, element_positions, element_deltax, num_elements,
             num_elements_array, element_type, uv_start, uv_size,
             element_start_count) = posdata_data(posdata)
         Minfinity_inverse = mu * np.diag(

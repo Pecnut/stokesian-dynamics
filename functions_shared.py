@@ -77,14 +77,16 @@ def sizeof_fmt(num, suffix='B'):
 
 
 def save_matrix(matrix, heading, filename):
-    """Save a matrix to a text file with a given heading as the first line in the file."""
+    """Save a matrix to a text file with a given heading as the first line in
+    the file."""
     with open(filename, 'a') as outputfile:
         np.savetxt(outputfile, np.array([heading]), fmt="%s")
         np.savetxt(outputfile, matrix, newline="\n", fmt="% .8e")
 
 
 def submatrix_coords(a1_index, a2_index, num_spheres, num_dumbbells):
-    """Return a tuple of the coordinates for the submatrices of a pair of particles."""
+    """Return a tuple of the coordinates for the submatrices of a pair of
+    particles."""
     R1 = np.s_[a1_index*3:(a1_index+1)*3]
     R2 = np.s_[3*num_spheres+a1_index*3:3*num_spheres+(a1_index+1)*3]
     R3 = np.s_[6*num_spheres+a1_index*5:6*num_spheres+(a1_index+1)*5]
@@ -97,8 +99,10 @@ def submatrix_coords(a1_index, a2_index, num_spheres, num_dumbbells):
     C4 = np.s_[11*num_spheres+a2_index_d*3:11*num_spheres+(a2_index_d+1)*3]
     a1_index_d2 = a1_index-num_spheres-num_dumbbells
     a2_index_d2 = a2_index-num_spheres-num_dumbbells
-    R5 = np.s_[11*num_spheres+3*num_dumbbells+a1_index_d2*3:11*num_spheres+3*num_dumbbells+(a1_index_d2+1)*3]
-    C5 = np.s_[11*num_spheres+3*num_dumbbells+a2_index_d2*3:11*num_spheres+3*num_dumbbells+(a2_index_d2+1)*3]
+    R5 = np.s_[11*num_spheres+3*num_dumbbells+a1_index_d2*3:
+               11*num_spheres+3*num_dumbbells+(a1_index_d2+1)*3]
+    C5 = np.s_[11*num_spheres+3*num_dumbbells+a2_index_d2*3:
+               11*num_spheres+3*num_dumbbells+(a2_index_d2+1)*3]
 
     A_coords = np.s_[R1, C1]
     Bt_coords = np.s_[R1, C2]
@@ -126,9 +130,9 @@ def submatrix_coords(a1_index, a2_index, num_spheres, num_dumbbells):
 
 
 def posdata_data(posdata):
-    """Return useful particle position, size and count information from a 
+    """Return useful particle position, size and count information from a
     single `posdata` list."""
-    (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes,
+    (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
      dumbbell_positions, dumbbell_deltax) = posdata
 
     num_spheres = sphere_sizes.shape[0]
@@ -154,19 +158,21 @@ def posdata_data(posdata):
             uv_start, uv_size, element_start_count)
 
 
-def add_sphere_rotations_to_positions(sphere_positions, sphere_sizes, sphere_rotations):
-    """Take a pair of vectors which start at the origin and use them as particle rotation vectors.
+def add_sphere_rotations_to_positions(sphere_positions, sphere_sizes,
+                                      sphere_rotations):
+    """Take a pair of vectors which start at the origin and use them as
+    particle rotation vectors.
 
     Args:
         sphere_positions: Array of sphere positions
         sphere_sizes: Array of sphere sizes
-        sphere_rotations: A pair of unit vectors which represent 1 unit 
+        sphere_rotations: A pair of unit vectors which represent 1 unit
             'horizontal' and 'vertical'.
 
     Returns:
         b: Array of pairs of 'rotation vectors' for each particle which start
-            at the particle centre and extend in the 'horizontal' and 
-            'vertical' direction specified. These can now be used in 
+            at the particle centre and extend in the 'horizontal' and
+            'vertical' direction specified. These can now be used in
             `sphere_rotations` definitions.
     """
     b = np.zeros([sphere_positions.shape[0], 2, sphere_positions.shape[1]])
@@ -248,32 +254,42 @@ def same_setup_as(filename, frameno=0, sphere_size=1, dumbbell_size=0.1,
 
 def feed_particles_from_bottom(posdata, feed_every_n_timesteps, feed_from_file,
                                frameno, reference_particle=0):
-    """For sedimentation sims: Delete particles that are too far above the 
-        reference particle and add new ones beneath it. Reads new particle 
-        positions in from a previously saved simulation file at a given frame 
-        number.        
+    """For sedimentation sims: Delete particles that are too far above the
+        reference particle and add new ones beneath it. Reads new particle
+        positions in from a previously saved simulation file at a given frame
+        number.
     """
 
-    if feed_every_n_timesteps == 0 or frameno % feed_every_n_timesteps != 0 or frameno == 0:
+    if (feed_every_n_timesteps == 0
+        or frameno % feed_every_n_timesteps != 0
+            or frameno == 0):
         return posdata
     # For simplicity's sake, I am going to assume :
-    # 1. That the reference_particle is a sphere, and that the other particles are all dumbbell beads.
+    # 1. That the reference_particle is a sphere, and that the other particles
+    # are all dumbbell beads.
     # 2. That all dumbbell beads are the same size (0.1).
-    # This may not always be the case (e.g. walls) but for now it is easier to implement.
+    # This may not always be the case (e.g. walls) but for now it is easier
+    # to implement.
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
         dumbbell_positions, dumbbell_deltax) = posdata
     num_beads_before = dumbbell_sizes.shape[0]*2
-    bead_positions = np.concatenate((dumbbell_positions + 0.5*dumbbell_deltax,
-                                     dumbbell_positions - 0.5*dumbbell_deltax), axis=0)
-    height_from_reference_particle_to_top_bead = np.max(bead_positions[:, 2]-sphere_positions[reference_particle, 2])
-    height_from_reference_particle_to_bottom_bead = -np.min(bead_positions[:, 2]-sphere_positions[reference_particle, 2])
-    height_needed_below = 0.5*(height_from_reference_particle_to_top_bead - height_from_reference_particle_to_bottom_bead)
+    bead_positions = np.concatenate(
+        (dumbbell_positions + 0.5*dumbbell_deltax,
+         dumbbell_positions - 0.5*dumbbell_deltax), axis=0)
+    height_from_reference_particle_to_top_bead = np.max(
+        bead_positions[:, 2]-sphere_positions[reference_particle, 2])
+    height_from_reference_particle_to_bottom_bead = -np.min(
+        bead_positions[:, 2]-sphere_positions[reference_particle, 2])
+    height_needed_below = 0.5*(
+        height_from_reference_particle_to_top_bead
+        - height_from_reference_particle_to_bottom_bead)
     print("sphere position", sphere_positions)
     print("height_needed_below", height_needed_below)
     # chop off top
-    keep_bead_positions = bead_positions[bead_positions[:, 2] <= (sphere_positions[reference_particle, 2]
-                                                                  + height_from_reference_particle_to_bottom_bead
-                                                                  + height_needed_below)]
+    keep_bead_positions = bead_positions[bead_positions[:, 2] <= (
+        sphere_positions[reference_particle, 2]
+        + height_from_reference_particle_to_bottom_bead
+        + height_needed_below)]
     num_deleted_beads_from_top = num_beads_before - keep_bead_positions.shape[0]
     # Prepare beads to add below. Read in a full block of beads.
     (add_sphere_sizes, add_sphere_positions, add_sphere_rotations,
@@ -281,17 +297,25 @@ def feed_particles_from_bottom(posdata, feed_every_n_timesteps, feed_from_file,
         add_dumbbell_deltax) = same_setup_as(
             feed_from_file, frameno=0, sphere_size=sphere_sizes[0],
             dumbbell_size=dumbbell_sizes[0])  # load file
-    add_bead_positions = np.concatenate((add_dumbbell_positions + 0.5*add_dumbbell_deltax,
-                                         add_dumbbell_positions - 0.5*add_dumbbell_deltax), axis=0)
-    add_bead_positions = add_bead_positions[add_bead_positions[:, 2].argsort()]  # Sort the beads in height order
+    add_bead_positions = np.concatenate(
+        (add_dumbbell_positions + 0.5*add_dumbbell_deltax,
+         add_dumbbell_positions - 0.5*add_dumbbell_deltax), axis=0)
+    # Sort the beads in height order:
+    add_bead_positions = add_bead_positions[add_bead_positions[:, 2].argsort()]
     add_bead_positions_to_add = add_bead_positions[:num_deleted_beads_from_top]
     top_new_bead_position = np.max(add_bead_positions_to_add[:, 2])
-    add_bead_positions_to_add = (add_bead_positions_to_add
-                                 - [0, 0, top_new_bead_position - np.min(bead_positions[:, 2])])  # Shift down to the bottom of the box
-    print("add_bead_positions_to_add (size of)", add_bead_positions_to_add.shape)
-    print("top of the add_bead_positions_to_add", np.max(add_bead_positions_to_add[:, 2]))
-    print("bottom of the add_bead_positions_to_add", np.min(add_bead_positions_to_add[:, 2]))
-    print("bottom of the beads that are already there", np.min(keep_bead_positions[:, 2]))
+    # Shift down to the bottom of the box:
+    add_bead_positions_to_add = (
+        add_bead_positions_to_add
+        - [0, 0, top_new_bead_position - np.min(bead_positions[:, 2])])
+    print("add_bead_positions_to_add (size of)",
+          add_bead_positions_to_add.shape)
+    print("top of the add_bead_positions_to_add",
+          np.max(add_bead_positions_to_add[:, 2]))
+    print("bottom of the add_bead_positions_to_add",
+          np.min(add_bead_positions_to_add[:, 2]))
+    print("bottom of the beads that are already there",
+          np.min(keep_bead_positions[:, 2]))
     # check for overlaps
     add_bead_positions_to_add_really = np.empty([0, 3])
     for s in add_bead_positions_to_add:
@@ -300,27 +324,33 @@ def feed_particles_from_bottom(posdata, feed_every_n_timesteps, feed_from_file,
             if np.linalg.norm(s-t) <= 2*dumbbell_sizes[0]:
                 overlap = 1
         if overlap == 0:
-            add_bead_positions_to_add_really = np.append(add_bead_positions_to_add_really, np.array([s]), axis=0)
+            add_bead_positions_to_add_really = np.append(
+                add_bead_positions_to_add_really, np.array([s]), axis=0)
     # stitch together
     ("add_bead_positions_to_add_really", add_bead_positions_to_add_really)
-    new_bead_positions = np.concatenate((keep_bead_positions, add_bead_positions_to_add_really), axis=0)
-    # There is a problem if the overall number of dumbbells changes when saving. To fix this:
+    new_bead_positions = np.concatenate(
+        (keep_bead_positions, add_bead_positions_to_add_really), axis=0)
+    # There is a problem if the overall number of dumbbells changes when
+    # saving. To fix this:
     # If the number of beads has increased, delete the last ones
     if new_bead_positions.shape[0] > num_beads_before:
         new_bead_positions = new_bead_positions[:num_beads_before]
         # If the number of beads is not enough, add some of the old ones back in
     if new_bead_positions.shape[0] < num_beads_before:
-        # Not checking for overlap with the deleted ones. In theory this shouldn't happen...
+        # Not checking for overlap with the deleted ones. In theory this
+        # shouldn't happen...
         num_beads_needed = num_beads_before - new_bead_positions.shape[0]
-        deleted_beads = bead_positions[bead_positions[:, 2] > (sphere_positions[reference_particle, 2]
-                                                               + height_from_reference_particle_to_bottom_bead
-                                                               + height_needed_below)]
+        deleted_beads = bead_positions[bead_positions[:, 2] > (
+            sphere_positions[reference_particle, 2]
+            + height_from_reference_particle_to_bottom_bead
+            + height_needed_below)]
         readd_beads = deleted_beads[:num_beads_needed]
         new_bead_positions = np.concatenate([new_bead_positions, readd_beads], axis=0)
 
     # form back into dumbbells
     beads1 = new_bead_positions[:new_bead_positions.shape[0]/2]
-    beads2 = new_bead_positions[new_bead_positions.shape[0]/2:(new_bead_positions.shape[0]/2)*2]
+    beads2 = new_bead_positions[new_bead_positions.shape[0]/2:
+                                (new_bead_positions.shape[0]/2)*2]
     new_dumbbell_positions = 0.5*(beads1+beads2)
     new_dumbbell_deltax = beads2-beads1
     new_dumbbell_sizes = np.array(
@@ -337,7 +367,8 @@ def shear_basis_vectors(basis_canonical, box_dimensions,
     sheared_basis_vectors_add_on = (np.cross(Ot_infinity, basis_canonical).transpose()
                                     + np.dot(Et_infinity, basis_canonical.transpose())).transpose()
 
-    sheared_basis_vectors_add_on_mod = np.mod(sheared_basis_vectors_add_on, box_dimensions)
+    sheared_basis_vectors_add_on_mod = np.mod(sheared_basis_vectors_add_on,
+                                              box_dimensions)
     sheared_basis_vectors = basis_canonical + sheared_basis_vectors_add_on_mod
     return sheared_basis_vectors
 
