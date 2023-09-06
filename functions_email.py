@@ -25,7 +25,7 @@ def send_email(subject, body):
     to_address = recipient if isinstance(recipient,list) else [recipient]
 
     # Prepare actual message
-    message = """\From: %s\nTo: %s\nSubject: %s\n\n%s
+    message = """\\From: %s\nTo: %s\nSubject: %s\n\n%s
     """ % (from_address, ", ".join(to_address), subject, body)
     try:
         server = smtplib.SMTP("smtp.gmail.com", 587)

@@ -9,7 +9,7 @@
 import numpy as np
 from functions_shared import (posdata_data, levi, close_particles, s2, s3,
                               submatrix_coords, is_sphere, is_dumbbell_bead_1,
-                              is_dumbbell_bead_2, throw_error)
+                              is_dumbbell_bead_2)
 from scipy import sparse
 from inputs import (s_dash_range, lam_range_with_reciprocals, XYZ_raw,
                     bead_bead_interactions)

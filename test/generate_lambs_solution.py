@@ -19,7 +19,6 @@ be executed if you are happy with the existing test cases.
 import subprocess
 import sys
 import numpy as np
-import csv
 
 
 def run_fortran(s_dash, a1, a2, case):
