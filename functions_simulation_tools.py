@@ -52,7 +52,7 @@ def condense(s_spheres, num_spheres):
     '''Condense 3x3 matrix to 5-element vector for each sphere.'''
     s_spheres_condensed = [
         ['pippa' for _ in range(5)] for _ in range(num_spheres)
-        ]
+    ]
     for i in range(num_spheres):
         for j in range(5):
             s_spheres_condensed[i][j] = sum(
