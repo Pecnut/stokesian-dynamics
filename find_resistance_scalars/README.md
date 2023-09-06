@@ -4,7 +4,7 @@ This code forms part of a [Python 3 implementation of Stokesian Dynamics](http:/
 
 **If you are here from the Python Stokesian Dynamics implementation,** you do not need to run these scripts if you are happy with particle ratios of 1, 0.1 and 0.01. Data files for these ratios are already computed. If, however, you wish to change or augment these ratios, please proceed.
 
-This code generates lubrication resistance functions for two unequal rigid particles which are both close (near-field) and quite close (mid-field). These functions are commonly notated *X*<sub>11</sub><sup>*A*</sup>, *X*<sub>12</sub><sup>*A*</sup>, *Y*<sub>11</sub><sup>*A*</sup>, etc.
+This code generates nondimensionalised lubrication resistance functions for two unequal rigid particles which are both close (near-field) and quite close (mid-field). These functions are commonly notated *X*<sub>11</sub><sup>*A*</sup>, *X*<sub>12</sub><sup>*A*</sup>, *Y*<sub>11</sub><sup>*A*</sup>, etc.
 
  The near-field resistance functions were first given analytically in [Jeffrey & Onishi (1984)](https://doi.org/10.1017/S0022112084000355) and [Jeffrey (1992)](https://doi.org/10.1063/1.858494). The expressions in these articles have been completely corrected in [Townsend (2018)](https://arxiv.org/abs/1802.08226), and these corrected expressions are used here. The mid-field resistance functions are computed using a version of Lamb's method described in [Wilson (2013)](http://www.ucl.ac.uk/~ucahhwi/publist/papers/2013-W.pdf).
 
@@ -32,6 +32,28 @@ This is because the near-field equations are only good for *s*' – 2 ≪ *λ*.
 
 For values of *s*' between 2.001 and 2.01, in the Stokesian Dynamics code, we generate near-field scalars up to 2.001, and then interpolate between 2.001 and 2.01. This gives much better data than trying to get the ‘arbitrary values’ expressions in Jeffrey & Onishi (1984) to give you something that is smooth between the upper end of the near-field and the lower end of the mid-field. Since we’re already interpolating between data points anyway, this is neat and easy.
 
+Following Kim & Karilla, section 11.3, we have non-dimensionalised the resistance scalars. The dimensional forms can be recovered by multiplying by:
+
+| *Scalar superscript* | *Multiply by*                      |
+| -------------------- | ---------------------------------- |
+|                   A  |  6π*a*<sub>1</sub>                 |
+|                   B  |  4π*a*<sub>1</sub><sup>2</sup>     |
+|                   C  |  8π*a*<sub>1</sub><sup>3</sup>     |
+|                   G  |  4π*a*<sub>1</sub><sup>2</sup>     |
+|                   H  |  8π*a*<sub>1</sub><sup>3</sup>     |
+|                   M  |  (20/3)π*a*<sub>1</sub><sup>3</sup> |
+
+For the mid-field, we also generate the mobility scalars. As they are computed as part of the calculation of the resistance scalars, we include them here for interest, although they are not used explicitly in the Stokesian Dynamics code. Following Kim & Karilla, section 11.3, these are also non-dimensionalised. The dimensional forms can be recovered by multiplying by:
+
+| *Scalar superscript* | *Multiply by*                       |
+| -------------------- | ----------------------------------- |
+|                   a  |  1/(6π*a*<sub>1</sub>)              |
+|                   b  |  1/(4π*a*<sub>1</sub>^<sup>2</sup>) |
+|                   c  |  1/(8π*a*<sub>1</sub><sup>3</sup>)  |
+|                   g  |  2*a*<sub>1</sub>                   |
+|                   h  |  1                                  |
+|                   m  |  (20/3)π*a*<sub>1</sub><sup>3</sup>  |
+
 ## 2. Inputs and outputs
 
 **If you are running this as part of the Stokesian Dynamics implementation,** the only input you may wish to change here is the list of values of *λ*. After changing this, you can simply follow the instructions in section 3 with no further regard to any of the inputs and outputs of the scripts.
@@ -48,23 +70,23 @@ For values of *s*' between 2.001 and 2.01, in the Stokesian Dynamics code, we ge
 
 (Some highlights of the outputs only)
 
-* **scalars_general_resistance.txt**: Resistance scalars for different values of *s'* and *λ*. Scalars commonly labelled '11' are in the row where `gamma` = 0; scalars commonly labelled '12' are in the row where `gamma` = 1. Scalars corresponding to '21' and '22' can be found as '12' and '11' respectively for the reciprocal value of *λ*.
+* **scalars_general_resistance.txt**: Nondimensionalised resistance scalars for different values of *s'* and *λ*. Scalars commonly labelled '11' are in the row where `gamma` = 0; scalars commonly labelled '12' are in the row where `gamma` = 1. Scalars corresponding to '21' and '22' can be found as '12' and '11' respectively for the reciprocal value of *λ*.
 
 * **scalars_general_resistance.npy**: Numpy NPY data file of the above table.
 
-* **scalars_general_resistance_d.txt**: Resistance scalars with the two-body long-range mobility interaction subtracted off.
+* **scalars_general_resistance_d.txt**: Nondimensionalised resistance scalars with the two-body long-range mobility interaction subtracted off.
 
 * **scalars_general_resistance_d.npy**: Numpy NPY data file of the above table: this is the data file used by the Stokesian Dynamics code by default.
 
-* **scalars_pairs_resistance_midfield.txt**: More verbose version of **scalars_general_resistance.txt** for midfield values of *s*' only.
+* **scalars_pairs_resistance_midfield.txt**: More verbose version of **scalars_general_resistance.txt** for midfield values of *s*' only (if requsted).
 
-* **scalars_pairs_mobility_midfield.txt**: Verbose list of the mobility scalars x11a, x12a etc. for midfield values of *s*' only.
+* **scalars_pairs_mobility_midfield.txt**: Verbose list of the nondimensionalised mobility scalars x11a, x12a etc. for midfield values of *s*' only (if requested).
 
 ## 3. Method ##
 
 1.  Compile the Fortran code in **/helen_fortran/** into an executable called **/helen_fortran/lamb.exe**. To do this, enter the **/helen_fortran/** folder and run `gfortran 2sphere.f base.f reflect.f -o lamb.exe`, where `gfortran` is the name of your version of Fortran. Another common alternative is `g95`. (Mac/Linux users: no need to be suspicious of the `.exe` ending; this will still work on your system.)
 
-2.  Run **generate_scalars_midfield.py** to generate scalars in the mid-field (*s*' from **values_of_s_dash_midfield.txt**) using code from Wilson (2013). This code will work for *s*’ as low as about 2.01386 but no less. Running this takes about an hour on my laptop. This generates all the files ending in **\_midfield**.
+2.  Run **generate_scalars_midfield.py** to generate scalars in the mid-field (*s*' from **values_of_s_dash_midfield.txt**) using code from Wilson (2013). This code will work for *s*’ as low as about 2.01386 but no less. Running this with a convergence tolerance of 10<sup>-8</sup> (`globalerror` in `2sphere.f`) takes about three hours on my laptop. With a tolerance of 10<sup>-6</sup> it runs in about half an hour. This generates all the files ending in **\_midfield**.
 
 3.  Run **generate_scalars_nearfield.py** to generate scalars in the near-field (*s*' from **values_of_s_dash_nearfield.txt**). This takes about five minutes on my laptop. This generates both files with **\_nearfield\_** in them.
 
@@ -76,3 +98,4 @@ For values of *s*' between 2.001 and 2.01, in the Stokesian Dynamics code, we ge
 
 * [Townsend, 2018](https://arxiv.org/abs/1802.08226). Generating, from scratch, the near-field asymptotic forms of scalar resistance functions for two unequal rigid spheres in low-Reynolds-number flow, *arXiv:1802.08226 [physics.flu-dyn]*
 * [Wilson, 2013](http://www.ucl.ac.uk/~ucahhwi/publist/papers/2013-W.pdf). Stokes flow past three spheres, *Journal of Computational Physics* **245**, 302–316.
+* Kim & Karilla, 2005. Microhydrodynamics.

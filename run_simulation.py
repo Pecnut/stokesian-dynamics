@@ -34,7 +34,8 @@ from input_setups import input_ftsuoe
 from inputs import (
     cutoff_factor, num_frames, view_graphics, viewbox_bottomleft_topright,
     printout, setup_number, posdata, setup_description, s_dash_range,
-    lam_range, view_labels, viewing_angle, timestep, trace_paths, two_d_plot,
+    lam_range_with_reciprocals, view_labels, viewing_angle, timestep, 
+    trace_paths, two_d_plot,
     save_positions_every_n_timesteps, save_forces_every_n_timesteps,
     save_forces_and_positions_to_temp_file_as_well,
     save_to_temp_file_every_n_timesteps, use_drag_Minfinity,
@@ -784,6 +785,13 @@ if num_spheres > 0 and input_form in ["fts"]:
 if Fa_in != []:
     if (Fa_in[0][0] == 99999):
         error = throw_error("Input number not recognised (you probably haven't uploaded input_setups.py recently enough)")
+
+# Are all size ratios in the XYZ table for R2Bexact?
+sphere_sizes_unique = list(set(sphere_sizes))
+size_ratios = list(set([i/j for i in sphere_sizes_unique for j in sphere_sizes_unique]))
+for size_ratio in size_ratios:
+    if not np.any(np.isclose(size_ratio, lam_range_with_reciprocals)):
+        throw_error("Particle size ratio " + str(size_ratio) + " not in the table of calculated values")
 
 if error == 0:
     # --- End error checking

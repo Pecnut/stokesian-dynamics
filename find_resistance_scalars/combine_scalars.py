@@ -74,7 +74,7 @@ for s_dash_index, s_dash in enumerate(s_dash_range):
             XYZ_general_human[i, :] = XYZ_outputline
 
 save_human_table('scalars_general_resistance.txt',
-                 'Resistance scalars, combined',
+                 'Nondimensionalised resistance scalars, combined',
                  "0s",
                  np.append(["s'", "lambda", "gamma"],
                            general_resistance_scalars_names),

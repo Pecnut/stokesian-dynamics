@@ -54,7 +54,9 @@ posdata, setup_description = pos_setup(setup_number)
 
 # Checkpointing ---------|
 
-# Checkpoint override. If a file exists with the same input number, position number, number of frames and timestep, AND it ends in _TEMP, try to continue it.
+# Checkpoint override. If a file exists with the same input number, position
+# number, number of frames and timestep, AND it ends in _TEMP, try to
+# continue it.
 
 # Initialise variables
 checkpoint_filename = ''
@@ -72,7 +74,10 @@ for filename in sorted(glob.glob("output/*_TEMP.npz"), reverse=True):
     else:
         raw_timestep = filename.split("-")[4][1:]
     checkpoint_timestep = float(raw_timestep.replace("p", "."))
-    if checkpoint_setup_number == setup_number and checkpoint_input_number == input_number and checkpoint_num_frames == num_frames and checkpoint_timestep == timestep:
+    if (checkpoint_setup_number == setup_number 
+        and checkpoint_input_number == input_number 
+        and checkpoint_num_frames == num_frames 
+        and checkpoint_timestep == timestep):
         ignored_posdata, setup_description = pos_setup(checkpoint_setup_number)
         try:
             with np.load(filename) as data1:
@@ -82,12 +87,15 @@ for filename in sorted(glob.glob("output/*_TEMP.npz"), reverse=True):
             num_dumbbells = positions_deltax.shape[1]
             num_spheres = num_particles - num_dumbbells
             sphere_positions = positions_centres[-1, 0:num_spheres, :]
-            dumbbell_positions = positions_centres[-1, num_spheres:num_particles, :]
+            dumbbell_positions = positions_centres[
+                -1, num_spheres:num_particles, :]
             dumbbell_deltax = positions_deltax[-1, :, :]
             sphere_sizes = ignored_posdata[0]
             dumbbell_sizes = ignored_posdata[3]
-            sphere_rotations = add_sphere_rotations_to_positions(sphere_positions, sphere_sizes, np.array([[1, 0, 0], [0, 0, 1]]))
-            posdata = (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes, dumbbell_positions, dumbbell_deltax)
+            sphere_rotations = add_sphere_rotations_to_positions(
+                sphere_positions, sphere_sizes, np.array([[1,0,0],[0,0,1]]))
+            posdata = (sphere_sizes, sphere_positions, sphere_rotations,
+                       dumbbell_sizes, dumbbell_positions, dumbbell_deltax)
 
             checkpoint_filename = filename
             checkpoint_start_from_frame = positions_centres.shape[0]
@@ -105,35 +113,43 @@ for filename in sorted(glob.glob("output/*_TEMP.npz"), reverse=True):
 # --------------------
 # GLOBAL INPUTS
 
-# How many timesteps to wait in between finding (Minfinity)^-1 (10 normally OK). In between these timesteps we use the previously computed value.
+# How many timesteps to wait in between finding (Minfinity)^-1 (10 is normally
+# OK). In between these timesteps we use the previously computed value.
 invert_m_every = 1
 
 # When to start using R2bexact. cutoff_factor = r*/(a1+a2). Default 2.
 cutoff_factor = 2
 
-# Timestepping scheme: Choose explicit timestep from: ['euler', 'ab2', 'rk4']  (ab2=Adams Bashforth)
-timestepping_scheme = 'rk4'
+# Timestepping scheme: Choose explicit timestep from: ['euler', 'ab2', 'rk4'] 
+# (ab2=Adams Bashforth)
+timestepping_scheme = 'euler'
 
 # If using RK4, can choose to use the same Minfinity for each of the 4 stages. 
-# In absence of R2Bexact, this makes the timestep equivalent to Euler; but if R2Bexact is present, and invert_m_every>1, this might be an OK approximation.
+# In absence of R2Bexact, this makes the timestep equivalent to Euler; but if
+# R2Bexact is present, and invert_m_every>1, this might be an OK approximation.
 rk4_generate_minfinity_for_each_stage = True
 
-# Are we going to be feeding in new particles underneath the box? (Really just for certain types of simulations)
+# Are we going to be feeding in new particles underneath the box? (Really just
+# for certain types of simulations)
 feed_every_n_timesteps = 0  # 0 to turn off
 feed_from_file = 'feed-from-file-name'
 
-# For periodic boxes, how many repeats of the box do we want to consider before the contribution decays away?
-# If Lx is box width, '1' corresponds to [-Lx, 0, Lx]. '2' corresponds to [-2Lx, -Lx, 0, Lx, 2Lx] etc.
+# For periodic boxes, how many repeats of the box do we want to consider before
+# the contribution decays away?
+# If Lx is box width, '1' corresponds to [-Lx, 0, Lx]. '2' corresponds to
+# [-2Lx, -Lx, 0, Lx, 2Lx] etc.
 # '2' is normally sufficient. '3' gives you a bit more accuracy.
 how_far_to_reproduce_gridpoints = 2
 
-# Set level of output to screen. # 0 = minimal output, 1 = separation distance and velocities, 2 = matrices, 3 = individual calculations
+# Set level of output to screen. # 0 = minimal output, 1 = separation distance
+# and velocities, 2 = matrices, 3 = individual calculations
 printout = 0
 
 # Send email on completion? Set this up in functions_email.py.
 send_email = False
 
-# View graphics? (Note: doesn't save a video. To do that, use plot_particle_positions_video.py after the fact.)
+# View graphics? (Note: doesn't save a video. To do that, use
+# plot_particle_positions_video.py after the fact.)
 view_graphics = True
 
 # Bead-bead interactions? (Should really always be true)
@@ -152,9 +168,11 @@ save_to_temp_file_every_n_timesteps = 120
 if start_saving_after_first_n_timesteps > num_frames:
     print("WARNING: start_saving_after_first_n_timesteps > num_frames. Saving will fail.")
 
-# Just use diagonal terms of Minfinity. Good(?) approximation for dense suspensions only.
+# Just use diagonal terms of Minfinity. Good(?) approximation for dense
+# suspensions only.
 use_drag_Minfinity = False
-# Only use Minfinity, i.e. turn off R2Bexact. Mostly put in for a little discussion.
+# Only use Minfinity, i.e. turn off R2Bexact. Mostly put in for a little
+# discussion.
 use_Minfinity_only = False
 
 # Only relevant if  use_drag_Minfinity = True.
@@ -172,9 +190,10 @@ use_full_Minfinity_scalars_with_drag_Minfinity = False
 # VIDEO-RELATED INPUTS
 
 # If generating video, what should we be able to see?
-viewbox_bottomleft_topright = np.array([[-15, 0, -15], [15, 1, 15]])
+viewbox_bottomleft_topright = np.array([[-1.5, 0, -1.5], [1.5, 1, 1.5]])
 
-# Viewing angle on video, (elev,azim). e.g. (0,-90) = x-z plane; (30,-60) = default
+# Viewing angle on video, (elev,azim).
+# e.g. (0,-90) = x-z plane; (30,-60) = default
 viewing_angle = (0, -90)
 
 # View labels and arrows on spheres in the video?
@@ -183,7 +202,8 @@ view_labels = 0
 # Frames per second
 fps = 8
 
-# Trace the paths on the video? 0 off, >=1 on. It will generate a line between every n timesteps.
+# Trace the paths on the video? 0 off, >=1 on. It will generate a line between
+# every n timesteps.
 trace_paths = 0
 
 # 2D Plot? This removes the third axis.
@@ -194,8 +214,10 @@ two_d_plot = 1
 
 resistance_scalars_folder = "find_resistance_scalars/"
 
-# IMPORTANT NOTE: if you change s_range or lam_range, you must rerun find_resistance_scalars_looper().
-# Note: the s_range is the same currently for all values of lambda. This may be a bad idea in the long run. Not sure.
+# IMPORTANT NOTE: if you change s_range or lam_range, you must rerun
+# find_resistance_scalars_looper().
+# Note: the s_range is the same currently for all values of lambda. This may be
+# a bad idea in the long run. Not sure.
 s_dash_range = np.loadtxt(f'{resistance_scalars_folder}/values_of_s_dash.txt')
 range_s_dash_range = range(s_dash_range.shape[0])
 range_len_of_s_dash_range = range(s_dash_range.shape[0])
@@ -203,11 +225,13 @@ lam_range = np.loadtxt(f'{resistance_scalars_folder}/values_of_lambda.txt')
 lam_range_with_reciprocals = lam_range
 for lam in lam_range_with_reciprocals:
     if (1./lam) not in lam_range_with_reciprocals:
-        lam_range_with_reciprocals = np.append(lam_range_with_reciprocals, (1./lam))
+        lam_range_with_reciprocals = np.append(lam_range_with_reciprocals,
+                                               (1/lam))
 lam_range_with_reciprocals.sort()
 
 # Decide here whether we are going to use the d values or not
-if not use_drag_Minfinity or (use_drag_Minfinity and use_full_Minfinity_scalars_with_drag_Minfinity):
+if not use_drag_Minfinity or (
+    use_drag_Minfinity and use_full_Minfinity_scalars_with_drag_Minfinity):
     filename = f'{resistance_scalars_folder}/scalars_general_resistance_d.npy'
 else:
     filename = f'{resistance_scalars_folder}/scalars_general_resistance_dnominf.npy'
@@ -216,14 +240,15 @@ try:
     with open(filename, 'rb') as inputfile:
         XYZ_raw = np.load(inputfile)
 except IOError:
-    XYZ_raw = []  # Only likely to be in this position when generating the resistance scalars.
+    # Only likely to be in this position when generating the resistance scalars.
+    XYZ_raw = []
 
 filename = f'{resistance_scalars_folder}/scalars_general_resistance.npy'
 with open(filename, 'rb') as inputfile:
     XYZ_raw_no_d = np.load(inputfile)
 s_dash_range = np.loadtxt(f'{resistance_scalars_folder}/values_of_s_dash.txt')
 
-XYZf = 0
+# XYZ_raw = XYZ_raw_no_d
 
 # ------------
 # TURN NUMBA ON OR OFF

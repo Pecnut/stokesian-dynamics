@@ -105,6 +105,17 @@ def generate_grand_resistance_matrix(
         print(np.array_str(grand_resistance_matrix, max_line_width=100000))
         save_matrix(grand_resistance_matrix, "Grand Resistance Matrix",
                     "R-" + str(frameno) + ".txt")
+        
+    # print()
+    # print(np.array_str(Minfinity[0:6,6:12], max_line_width=100000))
+    # print(np.array_str(np.linalg.inv(Minfinity)[0:6,6:12], max_line_width=100000))
+    # print("R2Bexact")
+    # print(np.array_str(R2Bexact.toarray()[0:6,12:22], max_line_width=100000))
+    # print("Grand R")
+    # print(np.array_str(grand_resistance_matrix[0:6, 12:22], max_line_width=100000))
+    # save_matrix(R2Bexact.toarray(), "R2Bexact without d",
+    #             "Rnod-" + str(frameno) + ".txt")
+    # print(np.linalg.norm(grand_resistance_matrix))
 
     gen_times = [Minfinity_elapsed_time, Minfinity_inverse_elapsed_time,
                  R2Bexact_elapsed_time]

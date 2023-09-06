@@ -11,6 +11,7 @@ Create a new setup by adding one to the list of 'if' statements in pos_setup.
 import numpy as np
 from functions_shared import add_sphere_rotations_to_positions, same_setup_as
 from os import sys
+from test.position_setups import pos_setup_tests
 
 
 def pos_setup(n):
@@ -21,8 +22,14 @@ def pos_setup(n):
         desc: Description of the setup for use in filenames.
     """
     desc = ""
+
+    if n < 0:
+        # Tests for Pytest
+        posdata, desc = pos_setup_tests(n)
+        return posdata, desc
+
     if n == 1:
-        # Test case 1
+        # Example case 1
         # Durlofsky, Brady & Bossis, 1987. Dynamic simulation of hydro-
         # dynamically interacting particles. Figure 1. This test case looks at
         # horizontal chains of 5, 9 and 15 spheres sedimenting vertically.
@@ -39,7 +46,7 @@ def pos_setup(n):
         dumbbell_deltax = np.empty([0, 3])
 
     elif n == 2:
-        # Test case 2
+        # Example case 2
         # Durlofsky, Brady & Bossis, 1987. Dynamic simulation of hydro-
         # dynamically interacting particles. Figure 5. This test case considers
         # three particles sedimenting vertically, and looks at their
@@ -53,7 +60,7 @@ def pos_setup(n):
         dumbbell_deltax = np.empty([0, 3])
 
     elif n == 3:
-        # Test case 3
+        # Example case 3
         # Brady, Phillips, Jester, Bossis 1988. Dynamic simulation of hydro-
         # dynamically interacting suspensions. Figure 1. Figure corrected by:
         # Sierou & Brady 2001. Accelerated Stokesian Dynamics simulations.
@@ -71,7 +78,7 @@ def pos_setup(n):
         dumbbell_deltax = np.empty([0, 3])
 
     elif n == 4:
-        # Test case 4
+        # Example case 4
         # Two spheres, two dumbbells
         sphere_sizes = np.array([1, 1])
         sphere_positions = np.array([[0, 0, 0], [4.5, 0, 4.5]])
@@ -83,7 +90,7 @@ def pos_setup(n):
                                     [np.sqrt(2), 0, np.sqrt(2)]])
 
     elif n == 5:
-        # Test case 5
+        # Example case 5
         # Randomly arranged spheres
         num_spheres = 40
         sphere_sizes = np.array([1 for i in range(num_spheres)])
@@ -101,7 +108,7 @@ def pos_setup(n):
         dumbbell_deltax = np.empty([0, 3])
 
     elif n == 6:
-        # Test case 5
+        # Example case 5
         # Two walls of spheres with dumbbells randomly distributed between them.
         num_lid_particles_each_lid = 45
         num_random_dumbbells = 100*2

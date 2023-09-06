@@ -48,8 +48,6 @@ sedimentation_speed = -U[0]*6*np.pi
 side_length = 2*(data1['centres'][0,1,2]-data1['centres'][0,0,2]) # True for 2x2x2 cubic domains
 phi = 8*4/3*np.pi/side_length**3
 
-print (phi, sedimentation_speed)
-
 plt.plot([phi],[sedimentation_speed],'X',markersize=10)
 
 # Data from the paper

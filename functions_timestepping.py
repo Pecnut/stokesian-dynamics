@@ -91,7 +91,10 @@ def euler_timestep_rotation(sphere_positions, sphere_rotations,
         else:
             Otest = (abs(Oa_out[i] / O)).astype('float')
             perp1 = [0, 0, 1] if np.allclose(Otest, [1, 0, 0]) else [1, 0, 0]
-            rot_matrix = np.array([np.cross(Oa_out[i], perp1) / O, np.cross(Oa_out[i], np.cross(Oa_out[i], perp1)) / O ** 2,  Oa_out[i] / O]).transpose()
+            rot_matrix = np.array([np.cross(Oa_out[i], perp1) / O,
+                                   np.cross(Oa_out[i], np.cross(Oa_out[i], perp1)) / O ** 2,
+                                   Oa_out[i] / O]
+                                  ).transpose()
 
         for j in range(2):
             ''' rb0 is the position ("r") of the endpoint of the pointy
@@ -143,7 +146,9 @@ def do_we_have_all_size_ratios(error, element_sizes, lam_range, num_spheres):
 
     lambda_matrix = element_sizes / element_sizes[:, None]
     lam_range_including_reciprocals = np.concatenate([lam_range, 1 / lam_range])
-    do_we_have_it_matrix = np.in1d(lambda_matrix, lam_range_including_reciprocals).reshape([len(element_sizes), len(element_sizes)])
+    do_we_have_it_matrix = np.in1d(
+        lambda_matrix, lam_range_including_reciprocals).reshape(
+        [len(element_sizes), len(element_sizes)])
     offending_elements = np.where(do_we_have_it_matrix == 0)
     if len(offending_elements[0]) > 0:
         offending_lambda_1 = lambda_matrix[offending_elements[0][0], offending_elements[0][1]]
@@ -207,7 +212,7 @@ def generate_output_FTSUOE(
         last_generated_Minfinity_inverse, regenerate_Minfinity, input_form,
         cutoff_factor, printout, use_drag_Minfinity, use_Minfinity_only,
         extract_force_on_wall_due_to_dumbbells, last_velocities,
-        last_velocity_vector, box_bottom_left, box_top_right, 
+        last_velocity_vector, box_bottom_left, box_top_right,
         feed_every_n_timesteps=0):
     """Solve the grand mobility problem: for given force/velocity inputs,
     return all computed velocities/forces.
@@ -232,7 +237,7 @@ def generate_output_FTSUOE(
     # box_bottom_left and box_top_right.
     (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in,
      Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in, input_description,
-     U_infinity, O_infinity, centre_of_background_flow, Ot_infinity, 
+     U_infinity, O_infinity, centre_of_background_flow, Ot_infinity,
      Et_infinity, box_bottom_left, box_top_right, mu) = input_ftsuoe(
         input_number, posdata, frameno, timestep, last_velocities,
         input_form=input_form, skip_computation=True)
@@ -306,7 +311,7 @@ def generate_output_FTSUOE(
             (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in,
              Ua_in, Oa_in, Ea_in, Ea_c_in, Ub_in, HalfDUb_in,
              input_description, U_infinity, O_infinity,
-             centre_of_background_flow, Ot_infinity, Et_infinity, 
+             centre_of_background_flow, Ot_infinity, Et_infinity,
              box_bottom_left, box_top_right, mu) = input_ftsuoe(
                 input_number, posdata, frameno, timestep, last_velocities,
                 input_form=input_form,
@@ -570,14 +575,14 @@ def format_finish_time(timeleft, flags):
     elif (finishtime.date() - now.date()).days < 7:
         return flags + finishtime.strftime("%a %H:%M")
     else:
-        return flags +finishtime.strftime("%d/%m/%y %H:%M")
+        return flags + finishtime.strftime("%d/%m/%y %H:%M")
 
 
 def wrap_around(new_sphere_positions, box_bottom_left, box_top_right,
                 Ot_infinity=np.array([0, 0, 0]),
                 Et_infinity=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])):
     """Return sphere positions modulo the periodic box.
-    
+
     This ideally should just be
         new_sphere_positions = 
             np.mod(new_sphere_positions + np.array([Lx/2.,Ly/2.,Lz/2.]),Lx)
@@ -601,7 +606,7 @@ def wrap_around(new_sphere_positions, box_bottom_left, box_top_right,
     return new_sphere_positions
 
 
-def add_background_flow_spheres(Ua_out_k1, Oa_out_k1, Ea_out_k1, 
+def add_background_flow_spheres(Ua_out_k1, Oa_out_k1, Ea_out_k1,
                                 U_infinity_k1, O_infinity_k1,
                                 sphere_positions, centre_of_background_flow):
     """Return Ua_out and Oa_out + the background flow."""
@@ -622,7 +627,7 @@ def add_background_flow_spheres(Ua_out_k1, Oa_out_k1, Ea_out_k1,
     return Ua_out_plus_infinities_k1, Oa_out_plus_infinities_k1
 
 
-def add_background_flow_dumbbells(Ub_out_k1, HalfDUb_out_k1, Ea_out_k1, 
+def add_background_flow_dumbbells(Ub_out_k1, HalfDUb_out_k1, Ea_out_k1,
                                   U_infinity_k1, O_infinity_k1,
                                   dumbbell_positions, dumbbell_deltax,
                                   centre_of_background_flow):

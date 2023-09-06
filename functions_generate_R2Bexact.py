@@ -328,12 +328,6 @@ def generate_R2Bexact(posdata,
             bead_positions, bead_sizes, cutoff_factor, box_bottom_left,
             box_top_right, Ot_infinity=Ot_infinity, Et_infinity=Et_infinity)
 
-    uv_power = [[1, 2, 2, 1, 1], 
-                [2, 3, 3, 2, 2], 
-                [2, 3, 3, 2, 2], 
-                [1, 2, 2, 1, 1], 
-                [1, 2, 2, 1, 1]]
-
     ii = 0
     for a1_index, a2_index in closer_than_cutoff_pairs_scaled:
         r = displacements_pairs_scaled[ii]  # vector r. Convention is a2-a1
@@ -341,9 +335,20 @@ def generate_R2Bexact(posdata,
         if a1_index != a2_index:
             d = r / s_dash
         lam = size_ratios[ii]  # Convention is a2/a1
-        lam_index = np.where(lam_range_with_reciprocals == lam)[0][0]
-        lam_index_recip = np.where(lam_range_with_reciprocals == 1. / lam)[0][0]
-        largest_size = max(bead_sizes[a1_index], bead_sizes[a2_index])
+        lam_index = np.where(np.isclose(lam_range_with_reciprocals,lam))[0][0]
+        lam_index_recip = np.where(np.isclose(lam_range_with_reciprocals,1/lam))[0][0]
+
+        a1 = bead_sizes[a1_index]
+        scale_A = 6*np.pi*a1
+        scale_B = 4*np.pi*a1**2
+        scale_C = 8*np.pi*a1**3
+        scale_G = 4*np.pi*a1**2
+        scale_H = 8*np.pi*a1**3
+        scale_M = 20/3*np.pi*a1**3
+        a2 = bead_sizes[a2_index]
+        scale_B2 = 4*np.pi*a2**2
+        scale_G2 = 4*np.pi*a2**2
+        scale_H2 = 8*np.pi*a2**3
 
         (A_coords, Bt_coords, Bt_coords_21, Gt_coords, Gt_coords_21,
          C_coords, Ht_coords, Ht_coords_21, M_coords,
@@ -379,19 +384,16 @@ def generate_R2Bexact(posdata,
                 pp = 0
                 for p_index in nearby_beads:
                     lam_p = bead_sizes[p_index] / bead_sizes[a1_index]
-                    largest_size_p = max(bead_sizes[a1_index], bead_sizes[p_index])
-                    if lam_p not in lam_range_with_reciprocals:
-                        throw_error("lambda not in the table of calculated values")
-                    lam_index_p = np.where(lam_range_with_reciprocals == lam_p)[0][0]
+                    lam_index_p = np.where(np.isclose(lam_range_with_reciprocals,lam_p))[0][0]
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
                     d_p = r_p / s_dash_p
-                    A_sum += np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j)*largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
-                    Bt_sum += np.asarray([[Bf(0, d_p, lam_index_p, s_dash_p, j, i)*largest_size_p**uv_power[0][1] for j in range(3)] for i in range(3)])
-                    C_sum += np.asarray([[Cf(0, d_p, lam_index_p, s_dash_p, i, j)*largest_size_p**uv_power[1][1] for j in range(3)] for i in range(3)])
-                    Gt_sum += np.asarray([[con_Gf(0, d_p, lam_index_p, s_dash_p, j, i)*largest_size_p**uv_power[0][2] for j in range(5)] for i in range(3)])
-                    Ht_sum += np.asarray([[con_Hf(0, d_p, lam_index_p, s_dash_p, j, i)*largest_size_p**uv_power[1][2] for j in range(5)] for i in range(3)])
-                    M_sum += np.asarray([[con_Mf(0, d_p, lam_index_p, s_dash_p, i, j)*largest_size_p**uv_power[2][2] for j in range(5)] for i in range(5)])
+                    A_sum += np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j)*scale_A for j in range(3)] for i in range(3)])
+                    Bt_sum += np.asarray([[Bf(0, d_p, lam_index_p, s_dash_p, j, i)*scale_B for j in range(3)] for i in range(3)])
+                    C_sum += np.asarray([[Cf(0, d_p, lam_index_p, s_dash_p, i, j)*scale_C for j in range(3)] for i in range(3)])
+                    Gt_sum += np.asarray([[con_Gf(0, d_p, lam_index_p, s_dash_p, j, i)*scale_G for j in range(5)] for i in range(3)])
+                    Ht_sum += np.asarray([[con_Hf(0, d_p, lam_index_p, s_dash_p, j, i)*scale_H for j in range(5)] for i in range(3)])
+                    M_sum += np.asarray([[con_Mf(0, d_p, lam_index_p, s_dash_p, i, j)*scale_M for j in range(5)] for i in range(5)])
                     pp += 1
                 R2Bexact[A_coords] = A_sum
                 R2Bexact[Bt_coords] = Bt_sum
@@ -401,33 +403,33 @@ def generate_R2Bexact(posdata,
                 R2Bexact[M_coords] = M_sum
 
             else:
-                R2Bexact[A_coords] = [[Af(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
-                R2Bexact[Bt_coords] = [[Bf(1, -d, lam_index_recip, s_dash, j, i)*largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
-                R2Bexact[C_coords] = [[Cf(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[1][1] for j in range(3)] for i in range(3)]
-                R2Bexact[Gt_coords] = [[con_Gf(1, -d, lam_index_recip, s_dash, j, i)*largest_size**uv_power[0][2] for j in range(5)] for i in range(3)]
-                R2Bexact[Ht_coords] = [[con_Hf(1, -d, lam_index_recip, s_dash, j, i)*largest_size**uv_power[1][2] for j in range(5)] for i in range(3)]
-                R2Bexact[M_coords] = [[con_Mf(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[2][2] for j in range(5)] for i in range(5)]
+                R2Bexact[A_coords] = [[Af(1, d, lam_index, s_dash, i, j)*scale_A for j in range(3)] for i in range(3)]
+                R2Bexact[Bt_coords] = [[Bf(1, -d, lam_index_recip, s_dash, j, i)*scale_B2 for j in range(3)] for i in range(3)]
+                R2Bexact[C_coords] = [[Cf(1, d, lam_index, s_dash, i, j)*scale_C for j in range(3)] for i in range(3)]
+                R2Bexact[Gt_coords] = [[con_Gf(1, -d, lam_index_recip, s_dash, j, i)*scale_G2 for j in range(5)] for i in range(3)]
+                R2Bexact[Ht_coords] = [[con_Hf(1, -d, lam_index_recip, s_dash, j, i)*scale_H2 for j in range(5)] for i in range(3)]
+                R2Bexact[M_coords] = [[con_Mf(1, d, lam_index, s_dash, i, j)*scale_M for j in range(5)] for i in range(5)]
                 if lam == 1:
                     R2Bexact[Bt_coords_21] = -R2Bexact[Bt_coords]
                     R2Bexact[Gt_coords_21] = -R2Bexact[Gt_coords]
                     R2Bexact[Ht_coords_21] = R2Bexact[Ht_coords]
                 else:
-                    R2Bexact[Bt_coords_21] = [[Bf(1, d, lam_index, s_dash, j, i)*largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
-                    R2Bexact[Gt_coords_21] = [[con_Gf(1, d, lam_index, s_dash, j, i)*largest_size**uv_power[0][2] for j in range(5)] for i in range(3)]
-                    R2Bexact[Ht_coords_21] = [[con_Hf(1, d, lam_index, s_dash, j, i)*largest_size**uv_power[1][2] for j in range(5)] for i in range(3)]
+                    R2Bexact[Bt_coords_21] = [[Bf(1, d, lam_index, s_dash, j, i)*scale_B for j in range(3)] for i in range(3)]
+                    R2Bexact[Gt_coords_21] = [[con_Gf(1, d, lam_index, s_dash, j, i)*scale_G for j in range(5)] for i in range(3)]
+                    R2Bexact[Ht_coords_21] = [[con_Hf(1, d, lam_index, s_dash, j, i)*scale_H for j in range(5)] for i in range(3)]
 
         elif (is_sphere(a1_index, num_spheres) 
               and is_dumbbell_bead_1(a2_index, num_spheres, num_dumbbells)):
             # Sphere to dumbbell bead 1
-            R2Bexact[R14_coords] = [[Af(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
-            R2Bexact[R24_coords] = [[Bf(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
-            R2Bexact[R34_coords] = [[con_Gf(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][2] for j in range(3)] for i in range(5)]
+            R2Bexact[R14_coords] = [[Af(1, d, lam_index, s_dash, i, j)*scale_A for j in range(3)] for i in range(3)]
+            R2Bexact[R24_coords] = [[Bf(1, d, lam_index, s_dash, i, j)*scale_B for j in range(3)] for i in range(3)]
+            R2Bexact[R34_coords] = [[con_Gf(1, d, lam_index, s_dash, i, j)*scale_G for j in range(3)] for i in range(5)]
 
         elif (is_sphere(a1_index, num_spheres)):
             # Sphere to dumbbell bead 2
-            R2Bexact[R15_coords] = [[Af(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
-            R2Bexact[R25_coords] = [[Bf(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][1] for j in range(3)] for i in range(3)]
-            R2Bexact[R35_coords] = [[con_Gf(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][2] for j in range(3)] for i in range(5)]
+            R2Bexact[R15_coords] = [[Af(1, d, lam_index, s_dash, i, j)*scale_A for j in range(3)] for i in range(3)]
+            R2Bexact[R25_coords] = [[Bf(1, d, lam_index, s_dash, i, j)*scale_B for j in range(3)] for i in range(3)]
+            R2Bexact[R35_coords] = [[con_Gf(1, d, lam_index, s_dash, i, j)*scale_G for j in range(3)] for i in range(5)]
 
         elif (is_dumbbell_bead_1(a1_index, num_spheres, num_dumbbells) 
               and is_dumbbell_bead_1(a2_index, num_spheres, num_dumbbells)):
@@ -454,25 +456,22 @@ def generate_R2Bexact(posdata,
                 pp = 0
                 for p_index in nearby_beads:
                     lam_p = bead_sizes[p_index] / bead_sizes[a1_index]
-                    largest_size_p = max(bead_sizes[a1_index], bead_sizes[p_index])
-                    if lam_p not in lam_range_with_reciprocals:
-                        throw_error("lambda not in the table of calculated values")
-                    lam_index_p = np.where(lam_range_with_reciprocals == lam_p)[0][0]
+                    lam_index_p = np.where(np.isclose(lam_range_with_reciprocals,lam_p))[0][0]
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
                     d_p = r_p / s_dash_p
-                    A_sum += np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j) * largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
+                    A_sum += np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j) * scale_A for j in range(3)] for i in range(3)])
                     pp = pp + 1
                 R2Bexact[R44_coords] = A_sum
             else:
                 if bead_bead_interactions:
-                    R2Bexact[R44_coords] = [[Af(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
+                    R2Bexact[R44_coords] = [[Af(1, d, lam_index, s_dash, i, j)*scale_A for j in range(3)] for i in range(3)]
 
         elif (is_dumbbell_bead_1(a1_index, num_spheres, num_dumbbells) 
               and is_dumbbell_bead_2(a2_index, num_spheres, num_dumbbells)):
             # Dumbbell bead 1 to dumbbell bead 2
             if bead_bead_interactions:
-                R2Bexact[R45_coords] = [[Af(1, d, lam_index, s_dash, i, j)*largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
+                R2Bexact[R45_coords] = [[Af(1, d, lam_index, s_dash, i, j)*scale_A for j in range(3)] for i in range(3)]
 
         else:
             # Dumbbell bead 2 to dumbbell bead 2
@@ -496,23 +495,17 @@ def generate_R2Bexact(posdata,
                 pp = 0
                 for p_index in nearby_beads:
                     lam_p = bead_sizes[p_index] / bead_sizes[a1_index]
-                    largest_size_p = max(bead_sizes[a1_index], bead_sizes[p_index])
-                    if lam_p not in lam_range_with_reciprocals:
-                        throw_error("lambda not in the table of calculated values")
-                    lam_index_p = np.where(lam_range_with_reciprocals == lam_p)[0][0]
+                    lam_index_p = np.where(np.isclose(lam_range_with_reciprocals,lam_p))[0][0]
                     r_p = nearby_beads_displacements[pp]
                     s_dash_p = nearby_beads_distances[pp]
                     d_p = r_p / s_dash_p
-                    A_sum += np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j) * largest_size_p**uv_power[0][0] for j in range(3)] for i in range(3)])
+                    A_sum += np.asarray([[Af(0, d_p, lam_index_p, s_dash_p, i, j) * scale_A for j in range(3)] for i in range(3)])
                     pp = pp + 1
                 R2Bexact[R55_coords] = A_sum
             else:
                 if bead_bead_interactions:
-                    R2Bexact[R55_coords] = [[Af(1, d, lam_index, s_dash, i, j) * largest_size**uv_power[0][0] for j in range(3)] for i in range(3)]
+                    R2Bexact[R55_coords] = [[Af(1, d, lam_index, s_dash, i, j) * scale_A for j in range(3)] for i in range(3)]
         ii = ii + 1
-
-    # Scale by 6pi
-    R2Bexact = R2Bexact * 6 * np.pi
 
     # symmetrise
     R2Bexact = sparse.triu(R2Bexact) + sparse.triu(R2Bexact, k=1).transpose()

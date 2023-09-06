@@ -6,6 +6,7 @@ import numpy as np
 from functions_simulation_tools import empty_vectors
 from functions_shared import posdata_data
 from position_setups import simple_cubic_8
+from test.input_setups import input_ftsuoe_tests
 
 
 def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
@@ -83,28 +84,33 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
     U_infinity = np.array([0, 0, 0])
     O_infinity = np.array([0, 0, 0])
     if input_form == "fte":
-        Fa_in[:] = [[0, 0, 0] for i in range(num_spheres)]
-        Ta_in[:] = [[0, 0, 0] for i in range(num_spheres)]
-        Ea_in[:] = [[[0, 0, 0], [0, 0, 0], [0, 0, 0]] for i in range(num_spheres)]
-        Fb_in[:] = [[0, 0, 0] for i in range(num_dumbbells)]
-        DFb_in[:] = [[0, 0, 0] for i in range(num_dumbbells)]
+        Fa_in[:] = [[0, 0, 0] for _ in range(num_spheres)]
+        Ta_in[:] = [[0, 0, 0] for _ in range(num_spheres)]
+        Ea_in[:] = [[[0, 0, 0], [0, 0, 0], [0, 0, 0]] for _ in range(num_spheres)]
+        Fb_in[:] = [[0, 0, 0] for _ in range(num_dumbbells)]
+        DFb_in[:] = [[0, 0, 0] for _ in range(num_dumbbells)]
     elif input_form == "fts":
-        Fa_in[:] = [[0, 0, 0] for i in range(num_spheres)]
-        Ta_in[:] = [[0, 0, 0] for i in range(num_spheres)]
-        Sa_in[:] = [[[0, 0, 0], [0, 0, 0], [0, 0, 0]] for i in range(num_spheres)]
-        Fb_in[:] = [[0, 0, 0] for i in range(num_dumbbells)]
-        DFb_in[:] = [[0, 0, 0] for i in range(num_dumbbells)]
+        Fa_in[:] = [[0, 0, 0] for _ in range(num_spheres)]
+        Ta_in[:] = [[0, 0, 0] for _ in range(num_spheres)]
+        Sa_in[:] = [[[0, 0, 0], [0, 0, 0], [0, 0, 0]] for _ in range(num_spheres)]
+        Fb_in[:] = [[0, 0, 0] for _ in range(num_dumbbells)]
+        DFb_in[:] = [[0, 0, 0] for _ in range(num_dumbbells)]
     if input_form == "ufte":
-        Ta_in[:] = [[0, 0, 0] for i in range(num_spheres)]
-        Ea_in[:] = [[[0, 0, 0], [0, 0, 0], [0, 0, 0]] for i in range(num_spheres)]
-        Fb_in[:] = [[0, 0, 0] for i in range(num_dumbbells)]
-        DFb_in[:] = [[0, 0, 0] for i in range(num_dumbbells)]
+        Ta_in[:] = [[0, 0, 0] for _ in range(num_spheres)]
+        Ea_in[:] = [[[0, 0, 0], [0, 0, 0], [0, 0, 0]] for _ in range(num_spheres)]
+        Fb_in[:] = [[0, 0, 0] for _ in range(num_dumbbells)]
+        DFb_in[:] = [[0, 0, 0] for _ in range(num_dumbbells)]
     centre_of_background_flow = np.array([0, 0, 0])
     Ot_infinity = np.array([0, 0, 0])
     Et_infinity = np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
     num_sphere_in_each_lid = 0
 
-    if n == 1:
+    if n < 0:
+        # Tests for Pytest
+        (Fa_in, Ta_in, Ea_in) = input_ftsuoe_tests(n, Fa_in, Ta_in, Ea_in)
+        desc = "test"
+
+    elif n == 1:
         # Gravity
         Fa_in[:] = [[0, 0, -1] for i in range(num_spheres)]
         desc = "gravity"

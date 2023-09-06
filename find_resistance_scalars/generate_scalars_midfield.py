@@ -26,6 +26,8 @@ import numpy as np
 from numpy import sqrt
 from functions_general import (resistance_scalars_names,
                                general_resistance_scalars_names,
+                               mobility_scalars_names,
+                               general_mobility_scalars_names,
                                format_seconds, save_human_table)
 import time
 import sys
@@ -48,7 +50,7 @@ def run_fortran(s_dash, lam, case):
     Returns:
         1D array (U O S) in dimensional form (i.e. U ~ 1/(6 pi a) F).
     """
-    s = 0.5 * (1 + lam) * s_dash  # Dimensionalise the distance
+    s = 0.5 * (1 + lam) * s_dash  # Dimensionalise the distance. Assumes a1=1.
     print("  using s = " + str(s) + " and case = " + case)
     if sys.platform == "win32":
         fortran_code_directory = "helen_fortran\\"
@@ -71,12 +73,15 @@ def find_dim_kim_mobility_scalars(s_dash, lam):
         (U O S) = M (F T E),
     for given F, T and E, and sphere separation and size ratio.
 
+    Sphere radii are assumed to be a_1 = 1, a_2 = lam. The Fortran code 
+    requires lam<=1.
+
     Args:
         s_dash: Scaled separation distance s'.
         lam: Size ratio lambda.
 
     Returns:
-        mobility_scalars as array (X11A, X12A, ...) etc.
+        mobility_scalars as array (x11a, x12a, ...) etc.
         and outputs to screen confirmation and timing of each computation for
         each (s,lambda) pair.
     """
@@ -156,10 +161,10 @@ def find_dim_kim_mobility_scalars(s_dash, lam):
     y21c = reordered_UOS[5, 10]
     y22c = reordered_UOS[7, 10]
 
-    x11g = reordered_UOS[0, 12] / ((3 + sqrt(3)) / 6) * -1
-    x12g = reordered_UOS[2, 12] / ((3 + sqrt(3)) / 6) * -1
-    x21g = reordered_UOS[0, 17] / ((3 + sqrt(3)) / 6) * -1
-    x22g = reordered_UOS[2, 17] / ((3 + sqrt(3)) / 6) * -1
+    x11g = reordered_UOS[0, 12] / ((3 + sqrt(3)) / 6)
+    x12g = reordered_UOS[2, 12] / ((3 + sqrt(3)) / 6)
+    x21g = reordered_UOS[0, 17] / ((3 + sqrt(3)) / 6)
+    x22g = reordered_UOS[2, 17] / ((3 + sqrt(3)) / 6)
 
     y11g = reordered_UOS[1, 13] / (sqrt(2))
     y12g = reordered_UOS[3, 13] / (sqrt(2))
@@ -326,18 +331,19 @@ def convert_dim_kim_mobility_to_dim_resistance(mobility_scalars):
     return np.array(resistance_scalars)
 
 
-def nondimensionalise_resistance_scalars(resistance_scalars, scales):
+def nondimensionalise_scalars(scalars, scales):
     '''
-    Convert dimensional resistance scalars into nondimensional resistance 
-    scalars.
+    Convert dimensional resistance/mobility scalars into nondimensional 
+    resistance/mobility scalars.
     '''
-    resistance_scalars[:8] /= scales[0]  # A
-    resistance_scalars[8:12] /= scales[1]  # B
-    resistance_scalars[12:20] /= scales[2]  # C
-    resistance_scalars[20:28] /= scales[3]  # G
-    resistance_scalars[28:32] /= scales[4]  # H
-    resistance_scalars[32:] /= scales[5]  # M
-    return resistance_scalars
+    nd_scalars = scalars
+    nd_scalars[:8] /= scales[0]  # A
+    nd_scalars[8:12] /= scales[1]  # B
+    nd_scalars[12:20] /= scales[2]  # C
+    nd_scalars[20:28] /= scales[3]  # G
+    nd_scalars[28:32] /= scales[4]  # H
+    nd_scalars[32:] /= scales[5]  # M
+    return nd_scalars
 
 
 save_pairs_file_as_well = False
@@ -353,9 +359,14 @@ scalars_length = len(resistance_scalars_names)
 general_scalars_length = len(general_resistance_scalars_names)
 XYZ_table = np.zeros((scalars_length, s_dash_length, lam_length))
 XYZ_human = np.zeros((s_dash_length * lam_length, scalars_length + 2))
+xyz_table = np.zeros((scalars_length, s_dash_length, lam_length))
+xyz_human = np.zeros((s_dash_length * lam_length, scalars_length + 2))
 
 # Now run loop
-scales = [6*np.pi, 4*np.pi, 8*np.pi, 4*np.pi, 8*np.pi, 20/3*np.pi]  # Assume a=1
+# Nondimensionalising scales, where a1=1
+resistance_scales = [6*np.pi, 4*np.pi, 8*np.pi, 4*np.pi, 8*np.pi, 20/3*np.pi]
+mobility_scales = [1/(6*np.pi), 1/(4*np.pi), 1/(8*np.pi), 2, 1, 20/3*np.pi]
+
 for lam_index, lam in enumerate(lam_range):
     for s_dash_index, s_dash in enumerate(s_dash_range):
         print("Running s' = ", str(s_dash), ", lambda = " + str(lam) + " ...")
@@ -363,12 +374,24 @@ for lam_index, lam in enumerate(lam_range):
         dim_mobility_scalars = find_dim_kim_mobility_scalars(s_dash, lam)
         dim_resistance_scalars = convert_dim_kim_mobility_to_dim_resistance(
             dim_mobility_scalars)
-        nondim_resistance_scalars = nondimensionalise_resistance_scalars(
-            dim_resistance_scalars, scales)
+        nondim_mobility_scalars = nondimensionalise_scalars(
+            dim_mobility_scalars, mobility_scales)
+        nondim_resistance_scalars = nondimensionalise_scalars(
+            dim_resistance_scalars, resistance_scales)
         XYZ_table[:, s_dash_index, lam_index] = nondim_resistance_scalars
+        xyz_table[:, s_dash_index, lam_index] = nondim_mobility_scalars
 
-# The XYZ_table give us for (s,lam) the X11A X12A etc. But we need
-# X1A, X2A etc. See PhD thesis section 2.4.2.
+# XYZ_table gives us for (s,lam) the values of X11A, X12A, X21A, etc. Since 
+#   X21A(1/lam) = X12A(lam),  (and similarly for other scalars modulo +/-),
+# we only store _11_ and _12_ for different lams in XYZ_general_table, and call
+# these _1_ and _2_ etc. See PhD thesis section 2.4.2 and A.2.1.
+
+# The minus sign differences for 12/21 are only for B and G, and are
+# represented by 'kappa' in the thesis, which is -1 for B and G, and 1 
+# otherwise. See Kim & Karilla, section 11.3, p. 278.
+minus_in_B_and_G_one_line = np.array([1, 1, -1, 1, 1, -1, -1, 1, 1, 1, 1])
+minus_in_B_and_G = np.tile(minus_in_B_and_G_one_line, (s_dash_length, 1)).T
+
 lam_range_with_reciprocals = np.concatenate(
     (lam_range, [1/l for l in lam_range if 1/l not in lam_range]))
 lam_range_with_reciprocals.sort()
@@ -377,39 +400,67 @@ XYZ_general_table = np.zeros(
     (general_scalars_length, 2, s_dash_length, lam_wr_length))
 XYZ_general_human = np.zeros(
     (s_dash_length * lam_wr_length * 2, general_scalars_length + 3))
-# minus_in_B_and_G: see the Note on notation in my writeup.
-# This represents 'k', which is -1 for B and G, and 1 otherwise.
-minus_in_B_and_G_one_line = np.array([1, 1, -1, 1, 1, -1, -1, 1, 1, 1, 1])
-minus_in_B_and_G = np.tile(minus_in_B_and_G_one_line, (s_dash_length, 1)).T
+xyz_general_table = np.zeros(
+    (general_scalars_length, 2, s_dash_length, lam_wr_length))
+xyz_general_human = np.zeros(
+    (s_dash_length * lam_wr_length * 2, general_scalars_length + 3))
 
 for lam_wr_index, lam in enumerate(lam_range_with_reciprocals):
-    if lam in lam_range:  # x11a, x12a etc
+    if lam in lam_range:  # X11A, X12A, etc.
         lam_index = np.argwhere(lam_range == lam)[0, 0]
         XYZ_general_table[:, 0, :, lam_wr_index] = XYZ_table[
             (0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40), :, lam_index]
         XYZ_general_table[:, 1, :, lam_wr_index] = XYZ_table[
             (1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41), :, lam_index]
-    else:  # x21a, x22a etc
+        xyz_general_table[:, 0, :, lam_wr_index] = xyz_table[
+            (0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40), :, lam_index]
+        xyz_general_table[:, 1, :, lam_wr_index] = xyz_table[
+            (1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41), :, lam_index]
+    else:  
+        # Use X21A(1/lam), X22A(1/lam),... to generate X11A(lam), X12A(lam),...
+
+        # When we generate X12A(lam) from X21A(1/lam), the values in XYZ_table 
+        # are nondimensionalised on a_2 from our perspective (a_1 from their 
+        # perspective, which is set at 1). But we want to nondim on a_1, so we
+        # multiply by (a_2/a_1)^n, i.e. lam^n.
+        lam_scales_one_line_r = np.array([lam, lam, lam**2, lam**3, lam**3, 
+                                          lam**2, lam**2, lam**3, 
+                                          lam**3, lam**3, lam**3])
+        lam_scales_r = np.tile(lam_scales_one_line_r, (s_dash_length, 1)).T
+
+        lam_scales_one_line_m = np.array([1/lam, 1/lam, 1/lam**2, 
+                                          1/lam**3, 1/lam**3, 
+                                          lam, lam, 1, 
+                                          lam**3, lam**3, lam**3])
+        lam_scales_m = np.tile(lam_scales_one_line_m, (s_dash_length, 1)).T
+        
         lam_index = np.argwhere(lam_range == (1 / lam))[0, 0]
         XYZ_general_table[:, 0, :, lam_wr_index] = (XYZ_table[
             (3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43), :, lam_index]
-            * minus_in_B_and_G)
+            * minus_in_B_and_G * lam_scales_r)
         XYZ_general_table[:, 1, :, lam_wr_index] = (XYZ_table[
             (2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42), :, lam_index]
-            * minus_in_B_and_G)
+            * minus_in_B_and_G * lam_scales_r)
+        
+        xyz_general_table[:, 0, :, lam_wr_index] = (xyz_table[
+            (3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43), :, lam_index]
+            * minus_in_B_and_G * lam_scales_m)
+        xyz_general_table[:, 1, :, lam_wr_index] = (xyz_table[
+            (2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42), :, lam_index]
+            * minus_in_B_and_G * lam_scales_m)
 # Time elapsed
 elapsed_time = time.time() - start_time
 elapsed_time_hms = format_seconds(elapsed_time)
 print("Time elapsed " + elapsed_time_hms)
 
-# Write XYZ_table and xyz_table to file (computer readable)
+# Write XYZ_table to file (computer readable)
 if save_pairs_file_as_well:
     with open('scalars_pairs_resistance_midfield.npy', 'wb') as outputfile:
         np.save(outputfile, XYZ_table)
 with open('scalars_general_resistance_midfield.npy', 'wb') as outputfile:
     np.save(outputfile, XYZ_general_table)
 
-# Write XYZ_table and xyz_table to file (human readable)
+# Write XYZ_table to file (human readable)
 for s_dash_index, s_dash in enumerate(s_dash_range):
     s_dash_length = s_dash_range.shape[0]
     lam_length = lam_range.shape[0]
@@ -418,6 +469,9 @@ for s_dash_index, s_dash in enumerate(s_dash_range):
         XYZ_outputline = np.append([s_dash, lam],
                                    XYZ_table[:, s_dash_index, lam_index])
         XYZ_human[lam_index*s_dash_length + s_dash_index, :] = XYZ_outputline
+        xyz_outputline = np.append([s_dash, lam],
+                                   xyz_table[:, s_dash_index, lam_index])
+        xyz_human[lam_index*s_dash_length + s_dash_index, :] = xyz_outputline
     for lam_wr_index, lam in enumerate(lam_range_with_reciprocals):
         for gam in range(2):
             i = (lam_wr_index*s_dash_length + s_dash_index)*2 + gam
@@ -425,17 +479,32 @@ for s_dash_index, s_dash in enumerate(s_dash_range):
                 [s_dash, lam, gam],
                 XYZ_general_table[:, gam, s_dash_index, lam_wr_index])
             XYZ_general_human[i, :] = XYZ_outputline
+            xyz_outputline = np.append(
+                [s_dash, lam, gam],
+                xyz_general_table[:, gam, s_dash_index, lam_wr_index])
+            xyz_general_human[i, :] = xyz_outputline
 
 if save_pairs_file_as_well:
     save_human_table('scalars_pairs_resistance_midfield.txt',
-                     'Resistance scalars',
+                     'Nondimensionalised resistance scalars',
                      elapsed_time_hms,
                      np.append(["s'", "lambda"], resistance_scalars_names),
                      XYZ_human)
+    save_human_table('scalars_pairs_mobility_midfield.txt',
+                     'Nondimensionalised mobility scalars',
+                     elapsed_time_hms,
+                     np.append(["s'", "lambda"], mobility_scalars_names),
+                     xyz_human)
 
 save_human_table('scalars_general_resistance_midfield.txt',
-                 'Resistance scalars',
+                 'Nondimensionalised resistance scalars',
                  elapsed_time_hms,
                  np.append(["s'", "lambda", "gamma"],
                            general_resistance_scalars_names),
                  XYZ_general_human)
+save_human_table('scalars_general_mobility_midfield.txt',
+                 'Nondimensionalised mobility scalars',
+                 elapsed_time_hms,
+                 np.append(["s'", "lambda", "gamma"],
+                           general_mobility_scalars_names),
+                 xyz_general_human)

@@ -29,7 +29,7 @@
 *=====* Set of parameters which may be modified
 *
 *-----* Numerical parameters
-      globalerror = 1.d-6
+      globalerror = 1.d-8
 *     - globalerror controls all error conditions.
       NFUDGE = .TRUE.
 *     - If NFUDGE=.TRUE., a smaller than optimal N is allowed
@@ -81,6 +81,8 @@ c     E1, E3, E4,
             Ff(1,1) = scaling(1)
       case ("F12")
             Ff(1,2) = scaling(1)
+      case ("F13")
+            Ff(1,3) = scaling(1)
       case ("F21")
             Ff(2,1) = scaling(1)
       case ("F22")
@@ -113,6 +115,23 @@ c     E1, E3, E4,
             Ee(2,2,3) = scaling(3)
             Ee(2,3,2) = scaling(3)
       case ("E24")
+            Ee(2,1,2) = scaling(3)
+            Ee(2,2,1) = scaling(3)
+      case ("E1")
+            Ee(1,1,1) = scaling(3)
+            Ee(1,2,2) = -0.5d0*scaling(3)
+            Ee(1,3,3) = -0.5d0*scaling(3)
+            Ee(2,1,1) = scaling(3)
+            Ee(2,2,2) = -0.5d0*scaling(3)
+            Ee(2,3,3) = -0.5d0*scaling(3)            
+      case ("E3")
+            Ee(1,2,3) = scaling(3)
+            Ee(1,3,2) = scaling(3)
+            Ee(2,2,3) = scaling(3)
+            Ee(2,3,2) = scaling(3)            
+      case ("E4")
+            Ee(1,1,2) = scaling(3)
+            Ee(1,2,1) = scaling(3)
             Ee(2,1,2) = scaling(3)
             Ee(2,2,1) = scaling(3)
       end select
@@ -286,15 +305,15 @@ c         close (10)
 
       do i=1,Nspheres
          Hh = H(2,0)
-         D(1,i,3,2,0) = (Ee(i,1,1))/(Hh)
+         D(1,i,3,2,0) = (Ee(i,1,1))/(Hh)*xg_sign
          Hh = H(2,1)
          D(1,i,3,2,1) = Ee(i,1,2)/(3.d0*Hh)
          D(1,i,3,2,-1) = -Ee(i,1,2)/(3.d0*Hh)
          D(2,i,3,2,1) = Ee(i,1,3)/(3.d0*Hh)
          D(2,i,3,2,-1) = Ee(i,1,3)/(3.d0*Hh)
          Hh = H(2,2)
-         D(1,i,3,2,2) = (2.d0*Ee(i,2,2) + Ee(i,1,1))/(12.d0*Hh)
-         D(1,i,3,2,-2) = (2.d0*Ee(i,2,2) + Ee(i,1,1))/(12.d0*Hh)
+         D(1,i,3,2,2) = (2.d0*Ee(i,2,2) + Ee(i,1,1))/(12.d0*Hh)*xg_sign
+         D(1,i,3,2,-2) = (2.d0*Ee(i,2,2) + Ee(i,1,1))/(12.d0*Hh)*xg_sign
          D(2,i,3,2,2) = -Ee(i,2,3)/(6.d0*Hh)
          D(2,i,3,2,-2) = Ee(i,2,3)/(6.d0*Hh)
 c-----------------------------------------------------c
@@ -461,9 +480,10 @@ c--- \bS = \frac{4}{15}\pi\mu a^3\left(- 3a^{-3} \bC + 20\bD + 2a^2\bF\right)
          Oyi = Om(2,i,-1)-Om(2,i,1)
          Ozr = -Om(2,i,1)-Om(2,i,-1)
          Ozi = Om(1,i,1)+Om(1,i,-1)
-         Sxxr = Sst(1,i,0)
+         Sxxr = (Sst(1,i,0))*xg_sign
          Sxxi = Sst(2,i,0)
-         Syyr = -0.5d0*Sst(1,i,0) + 3.d0*(Sst(1,i,-2)+Sst(1,i,2))
+         Syyr = (-0.5d0*Sst(1,i,0) + 3.d0*(Sst(1,i,-2)+Sst(1,i,2))) *
+     +      xg_sign
          Syyi = -0.5d0*Sst(2,i,0) + 3.d0*(Sst(2,i,-2)+Sst(2,i,2))
          Sxyr = 1.5d0*(Sst(1,i,1)-Sst(1,i,-1))
          Sxyi = 1.5d0*(Sst(2,i,1)-Sst(2,i,-1))

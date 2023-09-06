@@ -811,7 +811,7 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
         element_start_count) = posdata_data(posdata)
 
     Minfinity_sidelength = 11*num_spheres + 6*num_dumbbells
-    Minfinity = np.zeros((Minfinity_sidelength, Minfinity_sidelength), dtype=np.float)
+    Minfinity = np.zeros((Minfinity_sidelength, Minfinity_sidelength), dtype=float)
     bead_positions = np.concatenate([sphere_positions,
                                      dumbbell_positions - 0.5*dumbbell_deltax,
                                      dumbbell_positions + 0.5*dumbbell_deltax])
