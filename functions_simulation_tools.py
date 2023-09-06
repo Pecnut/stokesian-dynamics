@@ -8,20 +8,24 @@ from functions_shared import posdata_data, contraction
 
 def empty_vectors(posdata):
     """Initialise all vectors in the left and right-hand sides.
-    
+
     The string Pippa (my dog) serves as a placeholder which will be overwritten
-    by input functions. If you spot her in an error message, she is serving as a 
-    warning that you have not defined enough inputs. 
+    by input functions. If you spot her in an error message, she is serving as 
+    a warning that you have not defined enough inputs.
 
     Args:
         posdata: Position, size and count data for the particles.
 
     Returns:
         An array of placeholder arrays to fit the sizes of
-        [Fa, Ta, Sa, Sa condensed, Fb, DFb, 
+        [Fa, Ta, Sa, Sa condensed, Fb, DFb,
          Ua, Oa, Ea, Ea condensed, Ub, HalfDUb].
     """
-    (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
+    (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, 
+     dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, 
+     element_sizes, element_positions, element_deltax,  num_elements, 
+     num_elements_array, element_type, uv_start, uv_size, 
+     element_start_count) = posdata_data(posdata)
     return (
         [['pippa' for _ in range(3)] for _ in range(num_spheres)],
         [['pippa' for _ in range(3)] for _ in range(num_spheres)],
@@ -46,7 +50,9 @@ def empty_vectors(posdata):
 
 def condense(s_spheres, num_spheres):
     '''Condense 3x3 matrix to 5-element vector for each sphere.'''
-    s_spheres_condensed = [['pippa' for _ in range(5)] for _ in range(num_spheres)]
+    s_spheres_condensed = [
+        ['pippa' for _ in range(5)] for _ in range(num_spheres)
+        ]
     for i in range(num_spheres):
         for j in range(5):
             s_spheres_condensed[i][j] = sum(
@@ -60,15 +66,17 @@ def condense(s_spheres, num_spheres):
 
 def uncondense(e_spheres_condensed, num_spheres):
     '''Uncondense 5-element vector back to 3x3 matrix for each sphere.
-    
+
     Undoes `condense` function.'''
     e_spheres = np.zeros([num_spheres, 3, 3])
     for i in range(num_spheres):
-        e_spheres[i, 0, 0] = (np.sqrt(3)+3)/6. * e_spheres_condensed[i, 0] + (np.sqrt(3)-3)/6. * e_spheres_condensed[i, 2]
+        e_spheres[i, 0, 0] = ((np.sqrt(3)+3)/6. * e_spheres_condensed[i, 0] 
+                              + (np.sqrt(3)-3)/6. * e_spheres_condensed[i, 2])
         e_spheres[i, 0, 1] = e_spheres_condensed[i, 1]/np.sqrt(2)
         e_spheres[i, 0, 2] = e_spheres_condensed[i, 3]/np.sqrt(2)
         e_spheres[i, 1, 0] = e_spheres[i, 0, 1]
-        e_spheres[i, 1, 1] = (np.sqrt(3)-3)/6. * e_spheres_condensed[i, 0] + (np.sqrt(3)+3)/6. * e_spheres_condensed[i, 2]
+        e_spheres[i, 1, 1] = ((np.sqrt(3)-3)/6. * e_spheres_condensed[i, 0] 
+                              + (np.sqrt(3)+3)/6. * e_spheres_condensed[i, 2])
         e_spheres[i, 1, 2] = e_spheres_condensed[i, 4]/np.sqrt(2)
         e_spheres[i, 2, 0] = e_spheres[i, 0, 2]
         e_spheres[i, 2, 1] = e_spheres[i, 1, 2]
@@ -76,13 +84,19 @@ def uncondense(e_spheres_condensed, num_spheres):
     return e_spheres
 
 
-def construct_force_vector_from_fts(posdata, f_spheres, t_spheres, s_spheres, f_dumbbells, deltaf_dumbbells):
-    """Construct a single 'grand' force vector from 'Fa,Ta,Sa condensed,Fb,DFb'.
-    
+def construct_force_vector_from_fts(posdata, f_spheres, t_spheres, s_spheres,
+                                    f_dumbbells, deltaf_dumbbells):
+    """Construct a single 'grand' force vector from 
+    'Fa,Ta,Sa condensed,Fb,DFb'.
+
     Condenses `s_spheres` and then returns the concatenated 
     [f_spheres, t_spheres, s_spheres_dumbbells, f_dumbbells, deltaf_dumbbells]. 
     """
-    (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
+    (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, 
+     dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, 
+     element_sizes, element_positions, element_deltax,  num_elements, 
+     num_elements_array, element_type, uv_start, uv_size, 
+     element_start_count) = posdata_data(posdata)
     s_spheres_condensed = condense(s_spheres, num_spheres)
     if num_spheres == 0 and num_dumbbells == 0:
         force_vector = np.array([])
@@ -93,7 +107,8 @@ def construct_force_vector_from_fts(posdata, f_spheres, t_spheres, s_spheres, f_
         ss = [item for sublist in s_spheres_condensed for item in sublist]
         force_vector = fs + ts + ss
     if num_spheres == 0 and num_dumbbells > 0:
-        force_vector = list(np.array([f_dumbbells, deltaf_dumbbells]).flatten())
+        force_vector = list(np.array([f_dumbbells, 
+                                      deltaf_dumbbells]).flatten())
     if num_spheres > 0 and num_dumbbells > 0:
         fs = [item for sublist in f_spheres for item in sublist]
         ts = [item for sublist in t_spheres for item in sublist]
@@ -105,8 +120,13 @@ def construct_force_vector_from_fts(posdata, f_spheres, t_spheres, s_spheres, f_
 
 
 def deconstruct_velocity_vector_for_fts(posdata, velocity_vector):
-    """Take 'grand' velocity vector and deconstruct into 'Ua,Oa,Ea,Ub,HalfDUb'."""
-    (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
+    """Take 'grand' velocity vector and deconstruct into 
+    'Ua,Oa,Ea,Ub,HalfDUb'."""
+    (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes,
+     dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells,
+     element_sizes, element_positions, element_deltax,  num_elements,
+     num_elements_array, element_type, uv_start, uv_size, 
+     element_start_count) = posdata_data(posdata)
     N1 = 3*num_spheres
     N2 = 6*num_spheres
     N3 = 11*num_spheres
@@ -118,31 +138,34 @@ def deconstruct_velocity_vector_for_fts(posdata, velocity_vector):
     u_dumbbells = velocity_vector[N3:N4].reshape(num_dumbbells, 3)
     half_deltau_dumbbells = velocity_vector[N4:N5].reshape(num_dumbbells, 3)
     e_spheres = uncondense(e_spheres_condensed, num_spheres)
-    return (u_spheres, o_spheres, e_spheres, u_dumbbells, half_deltau_dumbbells)
+    return (u_spheres, o_spheres, e_spheres, u_dumbbells, 
+            half_deltau_dumbbells)
 
 
 def vecmat_mat_vecmat(A, B, C, matrix_size, items_in_vector, starts):
     '''{Vector of matrices} times {matrix} times {vector of matrices}.
-    
+
     For vector of matrices A[i] and vector of matrices C[j], returns
         D[i,j] = (A[i] . B) . C[j].
 
     In context of Townsend (2017) PhD thesis, eq (A.22), this corresponds to
-        [[ gtilde t g,  gtilde t h,  gtilde t m,  gtilde t m34,  gtilde t m35], ...].
+        [[ g~ t g,  g~ t h,  g~ t m,  g~ t m34,  g~ t m35], ...].
         Note that since t = m^-1,
-            gtilde t m = gtilde
+            g~ t m = g~
         which means that M - {this matrix} is now zero for this element of D.
         Hence we add vec_mat_cross afterwards.
     '''
     D = np.zeros([matrix_size, matrix_size])
     for Ai in range(items_in_vector):
         for Ci in range(items_in_vector):
-            D[starts[Ai]:starts[Ai+1], starts[Ci]:starts[Ci+1]] = np.dot(np.dot(A[Ai], B), C[Ci])
+            D[starts[Ai]:starts[Ai+1], starts[Ci]:starts[Ci+1]] = np.dot(
+                np.dot(A[Ai], B), C[Ci])
     return D
 
 
 def vec_mat_cross(A, B, C, matrix_size, items_in_vector, starts, crosspoint):
-    '''{Vector of matrices} times matrix; and matrix times {vector of matrices} in a cross.
+    '''{Vector of matrices} times matrix; and matrix times {vector of matrices}
+    in a cross.
 
     For vectors of matrices A[i] and C[i], returns
         D[i,crosspoint] = B.C[i]    (horizontal of the cross)
@@ -155,27 +178,36 @@ def vec_mat_cross(A, B, C, matrix_size, items_in_vector, starts, crosspoint):
              [tg, th,        -t, t m34, t m35], 
              [ 0,  0,    -m43 t,     0,     0], 
              [ 0,  0,    -m53 t,     0,     0]].
-    
+
     '''
     D = np.zeros([matrix_size, matrix_size])
     for Ai in range(items_in_vector):
         for Ci in range(items_in_vector):
-            if Ai == crosspoint and Ci != crosspoint:  # it's on the horizontal cross but not the meeting point
-                D[starts[Ai]:starts[Ai+1], starts[Ci]:starts[Ci+1]] = np.dot(B, C[Ci])
-            elif Ai != crosspoint and Ci == crosspoint:  # it's on the vertical cross but not the meeting point
-                D[starts[Ai]:starts[Ai+1], starts[Ci]:starts[Ci+1]] = -np.dot(A[Ai], B)
+            if Ai == crosspoint and Ci != crosspoint:  
+                # it's on the horizontal cross but not the meeting point
+                D[starts[Ai]:starts[Ai+1], 
+                  starts[Ci]:starts[Ci+1]] = np.dot(B, C[Ci])
+            elif Ai != crosspoint and Ci == crosspoint:  
+                # it's on the vertical cross but not the meeting point
+                D[starts[Ai]:starts[Ai+1], 
+                  starts[Ci]:starts[Ci+1]] = -np.dot(A[Ai], B)
             elif Ai == crosspoint:  # and Ci == crosspoint:
-                D[starts[Ai]:starts[Ai+1], starts[Ci]:starts[Ci+1]] = -B
+                D[starts[Ai]:starts[Ai+1], 
+                  starts[Ci]:starts[Ci+1]] = -B
     return D
 
 
 def fts_to_fte_matrix(posdata, grand_mobility_matrix):
-    '''Convert mobility matrix expecting to multiply a grand force vector of FTS 
-        form to one expecting FTE form.
-    
+    '''Convert mobility matrix expecting to multiply a grand force vector of 
+    FTS form to one expecting FTE form.
+
     See Townsend (2017) PhD thesis, section A.1.3 for details.
     '''
-    (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
+    (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, 
+     dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, 
+     element_sizes, element_positions, element_deltax,  num_elements, 
+     num_elements_array, element_type, uv_start, uv_size, 
+     element_start_count) = posdata_data(posdata)
     M = grand_mobility_matrix
     C0 = 0
     C1 = 3*num_spheres
@@ -194,7 +226,8 @@ def fts_to_fte_matrix(posdata, grand_mobility_matrix):
     m35 = M[C2:C3, C4:C5]
     m53 = m35.transpose()
 
-    # Not possible to have dumbbells only because this is an FTS to FTE conversion, and E is only there for spheres.
+    # Not possible to have dumbbells only because this is an FTS to FTE 
+    # conversion, and E is only there for spheres.
     items_in_vector = 5 if num_spheres > 0 and num_dumbbells > 0 else 3
     starts = [C0, C1, C2, C3, C4, C5]
 
@@ -217,14 +250,20 @@ def fts_to_fte_matrix(posdata, grand_mobility_matrix):
     )
 
 
-def fte_to_ufte_matrix(num_fixed_velocity_spheres, posdata, grand_mobility_matrix_fte):
-    '''Convert mobility matrix expecting to multiply a grand force vector of FTE 
-        form to one expecting UFTE form.
-    
-    Used for when some spheres are given prescribed velocities, rather than forces.
+def fte_to_ufte_matrix(num_fixed_velocity_spheres, posdata, 
+                       grand_mobility_matrix_fte):
+    '''Convert mobility matrix expecting to multiply a grand force vector of
+    FTE form to one expecting UFTE form.
+
+    Used for when some spheres are given prescribed velocities, rather than
+    forces.
     '''
 
-    (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
+    (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes,
+     dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells,
+     element_sizes, element_positions, element_deltax,  num_elements,
+     num_elements_array, element_type, uv_start, uv_size,
+     element_start_count) = posdata_data(posdata)
     M = grand_mobility_matrix_fte
     C0 = 0
     C05 = 3*num_fixed_velocity_spheres
@@ -234,7 +273,8 @@ def fte_to_ufte_matrix(num_fixed_velocity_spheres, posdata, grand_mobility_matri
     C4 = 11*num_spheres + 3*num_dumbbells
     C5 = 11*num_spheres + 6*num_dumbbells
 
-    # a has been split up into x (fixed velocity particles) and r (free velocity particles)
+    # a has been split up into x (fixed velocity particles) and r (free
+    # velocity particles).
     # M = [axx axr btx gtx m14x m15x]
     #     [arx arr btr gtr m14r m15r]
     #     [bx  br  c   ht  m24  m25 ]
@@ -252,7 +292,8 @@ def fte_to_ufte_matrix(num_fixed_velocity_spheres, posdata, grand_mobility_matri
     m51x = m15x.transpose()  # these don't need a minus sign.
     m41x = m14x.transpose()
 
-    # Not possible to have dumbbells only because this is an FTS to FTE conversion, and E is only there for spheres.
+    # Not possible to have dumbbells only because this is an FTS to FTE
+    # conversion, and E is only there for spheres.
     items_in_vector = 5+1 if num_spheres > 0 and num_dumbbells > 0 else 3+1
     starts = [C0, C05, C1, C2, C3, C4, C5]
 
@@ -277,14 +318,20 @@ def fte_to_ufte_matrix(num_fixed_velocity_spheres, posdata, grand_mobility_matri
     )
 
 
-def ufte_to_ufteu_matrix(num_fixed_velocity_dumbbells, num_fixed_velocity_spheres, posdata, grand_mobility_matrix_ufte):
-    '''Convert mobility matrix expecting to multiply a grand force vector of UFTE 
-        form to one expecting UFTEU form.
-    
+def ufte_to_ufteu_matrix(num_fixed_velocity_dumbbells,
+                         num_fixed_velocity_spheres, posdata, 
+                         grand_mobility_matrix_ufte):
+    '''Convert mobility matrix expecting to multiply a grand force vector of 
+    UFTE form to one expecting UFTEU form.
+
     Used for when some spheres and dumbbells are given prescribed velocities, 
     rather than forces.
     '''
-    (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
+    (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes,
+     dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells,
+     element_sizes, element_positions, element_deltax,  num_elements,
+     num_elements_array, element_type, uv_start, uv_size, 
+     element_start_count) = posdata_data(posdata)
     M = grand_mobility_matrix_ufte
     C0 = 0
     C05 = 3*num_fixed_velocity_spheres
@@ -298,7 +345,9 @@ def ufte_to_ufteu_matrix(num_fixed_velocity_dumbbells, num_fixed_velocity_sphere
 
     starts = [C0, C05, C1, C2, C3, C35, C4, C45, C5]
 
-    # now m44 and m55 have been split up into x (fixed velocity particles) and r (free velocity particles)
+    # now m44 and m55 have been split up into x (fixed velocity particles) and
+    # r (free velocity particles).
+    #
     # M = [axx   axr   btx  gtx  m14xx m14xr m15xx m15xr]
     #     [arx   arr   btr  gtr  m14rx m14rr m15rx m15rr]
     #     [bx    br    c    ht   m24x  m24r  m25x  m25r ]
@@ -324,8 +373,11 @@ def ufte_to_ufteu_matrix(num_fixed_velocity_dumbbells, num_fixed_velocity_sphere
     m54xx = m45xx.transpose()
     m54rx = m45xr.transpose()
 
-    # Currently I haven't put in dumbbells only because there's no point I think. Since this comes from an FTE conversion, and E is only for spheres, that would need dealing with first.
-    # If there are no dumbbells then doing this is pointless, so I am assuming there are dumbbells.
+    # Currently I haven't put in dumbbells only because there's no point I
+    # think. Since this comes from an FTE conversion, and E is only for
+    # spheres, that would need dealing with first.
+    # If there are no dumbbells then doing this is pointless, so I am assuming
+    # there are dumbbells.
     items_in_vector = 7+1
 
     m44xx_inv = np.linalg.inv(m44xx)
@@ -334,7 +386,11 @@ def ufte_to_ufteu_matrix(num_fixed_velocity_dumbbells, num_fixed_velocity_sphere
     vec1 = [m14xx, m14rx, m24x, m34x, m44xx, m44rx, m54xx, m54rx]  # down
     vec2 = [m41xx, m41rx, m42x, m43x, m44xx, m44xr, m45xx, m45xr]  # across
 
-    MUFTEU1 = M - vecmat_mat_vecmat(vec1, m44xx_inv, vec2, C5, items_in_vector, starts) - vec_mat_cross(vec1, m44xx_inv, vec2, C5, items_in_vector, starts, crosspoint)
+    MUFTEU1 = (M 
+               - vecmat_mat_vecmat(vec1, m44xx_inv, vec2, C5, items_in_vector,
+                                   starts) 
+               - vec_mat_cross(vec1, m44xx_inv, vec2, C5, items_in_vector,
+                               starts, crosspoint))
 
     # Step 2. Swap the m55xx row and column
 
@@ -371,14 +427,19 @@ def ufte_to_ufteu_matrix(num_fixed_velocity_dumbbells, num_fixed_velocity_sphere
     )
 
 
-def fts_to_duf_matrix(num_fixed_velocity_dumbbells, posdata, grand_mobility_matrix_fts):
-    '''Convert mobility matrix expecting to multiply a grand force vector of FTS 
-        form to one expecting DUF form.
-    
-    Used for dumbbell-only sims where some dumbbells are given a prescribed velocity,
-    rather than a force.
+def fts_to_duf_matrix(num_fixed_velocity_dumbbells, posdata,
+                      grand_mobility_matrix_fts):
+    '''Convert mobility matrix expecting to multiply a grand force vector of 
+    FTS form to one expecting DUF form.
+
+    Used for dumbbell-only sims where some dumbbells are given a prescribed 
+    velocity, rather than a force.
     '''
-    (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes, dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells, element_sizes, element_positions, element_deltax,  num_elements, num_elements_array, element_type, uv_start, uv_size, element_start_count) = posdata_data(posdata)
+    (sphere_sizes, sphere_positions, sphere_rotations,  dumbbell_sizes,
+     dumbbell_positions, dumbbell_deltax, num_spheres, num_dumbbells,
+     element_sizes, element_positions, element_deltax,  num_elements,
+     num_elements_array, element_type, uv_start, uv_size, 
+     element_start_count) = posdata_data(posdata)
     M = grand_mobility_matrix_fts
     C3 = 0
     C35 = 3*num_fixed_velocity_dumbbells
@@ -388,7 +449,9 @@ def fts_to_duf_matrix(num_fixed_velocity_dumbbells, posdata, grand_mobility_matr
 
     starts = [C3, C35, C4, C45, C5]
 
-    # now m44 and m55 have been split up into x (fixed velocity particles) and r (free velocity particles)
+    # now m44 and m55 have been split up into x (fixed velocity particles) and
+    # r (free velocity particles).
+    #
     # M = [m44xx m44xr m45xx m45xr]
     #     [m44rx m44rr m45rx m45rr]
     #     etc
@@ -403,8 +466,11 @@ def fts_to_duf_matrix(num_fixed_velocity_dumbbells, posdata, grand_mobility_matr
     m54xx = m45xx.transpose()
     m54rx = m45xr.transpose()
 
-    # Currently I haven't put in dumbbells only because there's no point I think. Since this comes from an FTE conversion, and E is only for spheres, that would need dealing with first.
-    # If there are no dumbbells then doing this is pointless, so I am assuming there are dumbbells.
+    # Currently I haven't put in dumbbells only because there's no point I
+    # think. Since this comes from an FTE conversion, and E is only for
+    # spheres, that would need dealing with first.
+    # If there are no dumbbells then doing this is pointless, so I am assuming
+    # there are dumbbells.
     items_in_vector = 4
 
     m44xx_inv = np.linalg.inv(m44xx)
@@ -413,7 +479,11 @@ def fts_to_duf_matrix(num_fixed_velocity_dumbbells, posdata, grand_mobility_matr
     vec1 = [m44xx, m44rx, m54xx, m54rx]  # down
     vec2 = [m44xx, m44xr, m45xx, m45xr]  # across
 
-    MDUF1 = M - vecmat_mat_vecmat(vec1, m44xx_inv, vec2, C5, items_in_vector, starts) - vec_mat_cross(vec1, m44xx_inv, vec2, C5, items_in_vector, starts, crosspoint)
+    MDUF1 = (M 
+             - vecmat_mat_vecmat(vec1, m44xx_inv, vec2, C5, items_in_vector,
+                                 starts) 
+             - vec_mat_cross(vec1, m44xx_inv, vec2, C5, items_in_vector,
+                             starts, crosspoint))
 
     # Step 2. Swap the m55xx row and column
 
