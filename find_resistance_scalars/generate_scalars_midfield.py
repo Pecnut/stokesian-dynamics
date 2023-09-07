@@ -392,9 +392,9 @@ for lam_index, lam in enumerate(lam_range):
 minus_in_B_and_G_one_line = np.array([1, 1, -1, 1, 1, -1, -1, 1, 1, 1, 1])
 minus_in_B_and_G = np.tile(minus_in_B_and_G_one_line, (s_dash_length, 1)).T
 
-lam_range_with_reciprocals = sorted(np.concatenate(
+lam_range_with_reciprocals = np.sort(np.concatenate(
     (lam_range, [1/l for l in lam_range if 1/l not in lam_range])))
-lam_wr_length = len(lam_range_with_reciprocals)
+lam_wr_length = lam_range_with_reciprocals.shape[0]
 XYZ_general_table = np.zeros(
     (general_scalars_length, 2, s_dash_length, lam_wr_length))
 XYZ_general_human = np.zeros(
