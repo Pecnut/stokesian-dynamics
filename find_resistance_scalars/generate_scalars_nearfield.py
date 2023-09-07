@@ -71,7 +71,7 @@ s_dash_length = s_dash_range.shape[0]
 lam_range = np.loadtxt('values_of_lambda.txt', ndmin=1)
 lam_range_with_reciprocals = sorted(np.concatenate(
     (lam_range, [1/l for l in lam_range if 1/l not in lam_range])))
-lam_wr_length = lam_range_with_reciprocals.shape[0]
+lam_wr_length = len(lam_range_with_reciprocals)
 
 scalars_length = len(resistance_scalars_names)
 general_scalars_length = len(general_resistance_scalars_names)

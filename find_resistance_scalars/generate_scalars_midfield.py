@@ -394,7 +394,7 @@ minus_in_B_and_G = np.tile(minus_in_B_and_G_one_line, (s_dash_length, 1)).T
 
 lam_range_with_reciprocals = sorted(np.concatenate(
     (lam_range, [1/l for l in lam_range if 1/l not in lam_range])))
-lam_wr_length = lam_range_with_reciprocals.shape[0]
+lam_wr_length = len(lam_range_with_reciprocals)
 XYZ_general_table = np.zeros(
     (general_scalars_length, 2, s_dash_length, lam_wr_length))
 XYZ_general_human = np.zeros(

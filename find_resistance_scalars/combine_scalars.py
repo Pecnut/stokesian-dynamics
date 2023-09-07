@@ -31,7 +31,7 @@ values_of_s_dash = sorted(np.concatenate((values_of_s_dash_nearfield,
                                           values_of_s_dash_midfield)))
 np.savetxt('values_of_s_dash.txt', values_of_s_dash, fmt="% .8e")
 s_dash_range = values_of_s_dash
-s_dash_length = s_dash_range.shape[0]
+s_dash_length = len(s_dash_range)
 
 lam_range = np.loadtxt('values_of_lambda.txt', ndmin=1)
 lam_length = lam_range.shape[0]
