@@ -158,7 +158,8 @@ def pos_setup(n):
 
 def random_point_in_box(random_box_bottom_left, random_box_top_right):
     """Return random coordinate inside a box."""
-    dimensions = random_box_top_right - random_box_bottom_left
+    dimensions = (np.array(random_box_top_right)
+                  - np.array(random_box_bottom_left))
     return random_box_bottom_left + np.random.rand(3)*dimensions
 
 

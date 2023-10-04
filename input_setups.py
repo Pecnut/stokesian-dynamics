@@ -152,8 +152,8 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
     elif n == 5:
         # Force half the spheres to move to the left with a given velocity,
         #   and force the rest to move to the right.
-        Ua_in[:] = ([[-1, 0, 0] for i in range(num_spheres/2)]
-                    + [[1, 0, 0] for i in range(num_spheres/2, num_spheres)])
+        Ua_in[:] = ([[-1, 0, 0] for i in range(num_spheres//2)]
+                    + [[1, 0, 0] for i in range(num_spheres//2, num_spheres)])
 
     elif n == 6:
         # Constant shear
