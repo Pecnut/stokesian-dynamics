@@ -34,6 +34,12 @@ In the most basic case, Stokes’ law states that a single sphere of radius *a*,
 
 Stokesian Dynamics, at its heart, is an extension of this linear relationship between the force acting on a particle and the velocity at which it travels. As a method, it is adaptable and continues to be used in the field, providing some interesting insight into the behaviour of particle suspensions. Validations with experiments have shown it to provide results within acceptable error.
 
+The Stokesian Dynamics recipe can be summarised as follows:
+
+* Compute long-range interactions between particles. This is done by using a truncated expansion of the boundary integral equation for unbounded Stokes flow. For periodic domains, this is done by using the Ewald summation method.
+* Compute short-range lubrication between particles. This is done by interpolating pre-computed results on a pairwise basis.
+* Combining the two.
+
 It is fully explained (in painful detail) in my [PhD thesis](http://discovery.ucl.ac.uk/1559911/).
 
 ## 2. What can this software do? <a name="s2"></a> ##
@@ -217,7 +223,7 @@ Run `python run_simulation.py 3 2 1 1 fte`.
 
 Follow the instructions in `examples/example-c.py` to produce the following graph, comparing the results from this simulation to the figure in the paper:
 
-![Particle paths over time](examples/images/example-b.png)
+![Sedimentation velocity against concentration](examples/images/example-c.png)
 
 ### (d) Two spheres, two dumbbells in oscillatory background flow
 Arrange two large spheres and two dumbbells in a square, then put in an oscillatory background flow. Set the dumbbell spring constant.
