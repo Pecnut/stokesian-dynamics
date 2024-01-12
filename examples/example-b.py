@@ -11,8 +11,7 @@ This test case considers three horizontally-aligned particles sedimenting
 vertically, and looks at their interesting paths over a large number of
 timesteps. Set
     invert_m_every = 1
-in `inputs.py` (instead of the default of 10), in order to recover the same
-particle paths. Set
+in `inputs.py` in order to recover the same particle paths. Set
     config.DISABLE_JIT = False
 in `inputs.py` for speed.
 

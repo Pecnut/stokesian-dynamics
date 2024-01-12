@@ -10,13 +10,14 @@ This is a Python 3 implementation of [Stokesian Dynamics](http://authors.library
   * [3. What are its limitations?](#s3)
   * [4. System requirements](#s4)
   * [5. How to set up the software](#s5)
-  * [6. How to run your first simulation](#s6)
-  * [7. Reading the output](#s7)
-  * [8. Changing the inputs](#s8)
-  * [9. Examples](#s9)
-  * [10. Increasing the number of particle size ratios available](#s10)
-  * [11. Idiosyncratic usage notes](#s11)
-  * [12. Known issues](#s12)
+  * [6. How to test that the software is working](#s6)
+  * [7. How to run your first simulation](#s7)
+  * [8. Reading the output](#s8)
+  * [9. Changing the inputs](#s9)
+  * [10. Examples and comparisons with the literature](#s10)
+  * [11. Increasing the number of particle size ratios available](#s11)
+  * [12. Idiosyncratic usage notes](#s12)
+  * [13. Known issues](#s13)
 
 
 ## 0. Contact details and how to contribute <a name="s0"></a> ##
@@ -62,19 +63,41 @@ In particular, this software has the following features:
 Speed and memory are the greatest limitations of the software. Loosely speaking, for a concentrated system of *s* spheres and *d* dumbbells, the memory, in bytes, required, is 48(11*s* + 6*d*)².
 
 ## 4. System requirements <a name="s4"></a> ##
-This is an implementation in Python, using Numba for speed. It has been tested with Python 3.9.12 and requires the following Python packages:
+This is an implementation in Python, using Numba for speed. It has been tested with Python 3.9.13 and requires the following Python packages:
 
-* matplotlib, numba, numpy, scipy
+* matplotlib, numba, numpy, pytest, scipy
 
-With the exception of Numba, you probably have most of these installed already. Your best bet is just to try setting up the software and then running the sample program below.
+Section 5 below explains how to install these packages.
 
 ## 5. How to set up the software <a name="s5"></a> ##
+The software does not need to be installed. It can be run directly from the folder it is downloaded into.
 1. Download the software into its own folder. The easiest way to do this is to navigate to the folder in Terminal that you want to download the Stokesian Dynamics folder into, and to type `git clone` followed by the address you find at the top of this page when you change the SSH dropdown to HTTPS (the address you need should look something like `https://github.com/Pecnut/stokesian-dynamics.git`).
+1. Install the required Python packages, or confirm that they are already installed (see section 4), by typing `pip install -r requirements.txt` in Terminal.
 1. **You can speed up the code using Numba.** [Numba](https://numba.readthedocs.io/en/stable/user/5minguide.html) is a Python package which can dramatically speed up functions. It does this by optimising functions which are 'decorated' with the `@njit` label in the code. A number of core functions in this software are decorated with this label. Numba is turned OFF by default; turn it on by changing `config.DISABLE_JIT` in `inputs.py` to `False`. The optimisation happens the first time a function is called, so when Numba is enabled, the first timestep will be slow, but the rest will be very fast. It is therefore worth turning on for most simulations.
 
 The software should now be ready to run.
 
-## 6. How to run your first simulation <a name="s6"></a> ##
+## 6. How to test that the software is working <a name="s6"></a> ##
+The software comes with a number of tests which compare the output of the simulation to pre-computed analytic results for two-particle systems in a non-periodic domain. These are stored in the `test` folder, but you don't need to visit this folder in order to run them. Instead:
+
+* Follow the steps in section 5
+* Navigate to the main folder in Terminal and type `python -m pytest`.
+
+This will run all the tests in the `test` folder. A successful run will output something like:
+
+```
+============================= test session starts ==============================
+platform darwin -- Python 3.9.13, pytest-7.1.2, pluggy-1.0.0
+rootdir: /.../stokesian-dynamics
+plugins: anyio-3.5.0
+collected 1 item
+
+test/test_all.py .                                                       [100%]
+
+============================== 1 passed in 4.34s ===============================
+```
+
+## 7. How to run your first simulation <a name="s7"></a> ##
 
 * Follow the steps in section 5
 * Navigate to the main folder in Terminal and type `python run_simulation.py 2 1 0.5 1`.
@@ -105,7 +128,7 @@ The top box gives a summary of the job that is executing, including an estimate 
 
 After each frame is generated, a list of timings is shown for each part of the process (respectively, creating ***M***<sup>∞</sup>, inverting it, creating ***R***<sup>2B,exact</sup>, solving the mobility formulation, saving the data to disk). Then the maximum memory used in this step is shown. Finally, a countdown to completion and an estimated time of completion is shown.
 
-## 7. Reading the output <a name="s7"></a> ##
+## 8. Reading the output <a name="s8"></a> ##
 
 You can find the outputs of all your simulations in the **output** folder. Output files are named **yymmddhhmm-s407-i700-1fr-t0p005-...npz**, where yymmddhhmm is replaced by the simulation timestamp in that format (so 1712251500 for 3pm on Christmas Day 2017).
 
@@ -123,7 +146,7 @@ particle_stresslets = data1['Sa']
 particle_rotations = data1['sphere_rotations']
 ```
 
-## 8. Changing the inputs <a name="s8"></a> ##
+## 9. Changing the inputs <a name="s9"></a> ##
 
 All possible input choices are contained in **inputs.py**.
 
@@ -154,18 +177,20 @@ Examples:
 
 If you see errors involving 'pippa', it's normally because you have got this wrong.
 
-## 9. Examples <a name="s9"></a> ##
+## 10. Examples and comparisons with the literature <a name="s10"></a> ##
 
 The files **position_setups.py** and **input_setups.py** come with some example setups. In these examples, the 'vertical' direction is the –*z* direction. Set `view_graphics = True` to watch these simulations.
 
 ### (a) Fig. 1 of Durlofsky et al. (1987) (non-periodic)
 [Durlofsky, Brady & Bossis, 1987](https://doi.org/10.1017/S002211208700171X). Dynamic simulation of hydrodynamically interacting particles. *Journal of Fluid Mechanics* **180**, 21–49. Figure 5.
 
-This test case looks at horizontal chains of 5, 9 and 15 spheres sedimenting vertically. The instantaneous drag coefficient, *λ*=*F*/(6π*μaU*), is measured for each sphere in the chain, in each case. Here we set up the chain of length 15. Running for 1 timestep<sup>[[2]](#footnote3)</sup>, reading the velocity *U* and calculating *λ* reproduces this graph.
+This test case looks at horizontal chains of 5, 9 and 15 spheres sedimenting vertically. The instantaneous drag coefficient, *λ*=*F*/(6π*μaU*), is measured for each sphere in the chain, in each case. Here we set up the chain of length 15. Running for 1 timestep<sup>[[2]](#footnote2)</sup>, reading the velocity *U* and calculating *λ* reproduces this graph.
 
 Run `python run_simulation.py 1 1 1 1 fte` (position setup number 1, forces input 1, with a timestep of 1 [arbitrary choice] for 1 timestep, specifying forces, torques and rate of strain).
 
-See `examples/example-a.py` for more.
+Follow the instructions in `examples/example-a.py` to produce the following graph, comparing the results from this simulation to the figure in the paper:
+
+![Graph of drag coefficient vs sphere number](examples/images/example-a.png)
 
 ### (b) Fig. 5 of Durlofsky et al. (1987) (non-periodic)
 [Durlofsky, Brady & Bossis, 1987](https://doi.org/10.1017/S002211208700171X). Dynamic simulation of hydrodynamically interacting particles. *Journal of Fluid Mechanics* **180**, 21–49. Figure 5.
@@ -174,7 +199,10 @@ This test case considers three horizontally-aligned particles sedimenting vertic
 
 Run `python run_simulation.py 2 1 128 100 fte`.
 
-See `examples/example-b.py` for more.
+Follow the instructions in `examples/example-b.py` to produce the following graph, comparing the results from this simulation to the figure in the paper:
+
+![Particle paths over time](examples/images/example-b.png)
+
 
 ### (c) Fig. 1 of Brady et al. (1988) (periodic)
 [Sierou & Brady, 2001](https://doi.org/10.1017/S0022112001005912). Accelerated Stokesian Dynamics simulations. *Journal of Fluid Mechanics*, **448**, 115--146. Figure 9.
@@ -187,7 +215,9 @@ Note that a periodic domain is activated by setting `box_bottom_left` and `box_t
 
 Run `python run_simulation.py 3 2 1 1 fte`.
 
-See `examples/example-c.py` for more.
+Follow the instructions in `examples/example-c.py` to produce the following graph, comparing the results from this simulation to the figure in the paper:
+
+![Particle paths over time](examples/images/example-b.png)
 
 ### (d) Two spheres, two dumbbells in oscillatory background flow
 Arrange two large spheres and two dumbbells in a square, then put in an oscillatory background flow. Set the dumbbell spring constant.
@@ -211,7 +241,7 @@ Use the function `same_setup_as('FILENAME', frameno=0)` in **position_setups.py*
 
 Run `python run_simulation.py 7 1 1 1 fte`.
 
-## 10. Increasing the number of particle size ratios available <a name="s10"></a> ##
+## 11. Increasing the number of particle size ratios available <a name="s11"></a> ##
 By default, the software comes with the precomputed resistance data for particles of size ratio 1:1, 1:10 and 1:100. To increase this:
 
 * Open the folder **find_resistance_scalars**
@@ -222,10 +252,10 @@ This last step requires you to compile some Fortran code and run a Mathematica s
 
 The method is from:
 
-* [Townsend, 2018](https://arxiv.org/abs/1802.08226). Generating, from scratch, the near-field asymptotic forms of scalar resistance functions for two unequal rigid spheres in low-Reynolds-number flow, *arXiv:1802.08226 [physics.flu-dyn]*
+* [Townsend, 2023](https://doi.org/10.1063/5.0175697). Generating, from scratch, the near-field asymptotic forms of scalar resistance functions for two unequal rigid spheres in low Reynolds number flow, *Physics of Fluids* **35**(12), 127126.
 * [Wilson, 2013](http://www.ucl.ac.uk/~ucahhwi/publist/papers/2013-W.pdf). Stokes flow past three spheres, *Journal of Computational Physics* **245**, 302–316.
 
-## 11. Known issues <a name="s11"></a> ##
+## 12. Known issues <a name="s12"></a> ##
 
 ### (a) "RuntimeError: Invalid DISPLAY variable" error
 
@@ -252,4 +282,4 @@ The normal cause of this error is that `view_graphics = True`, but despite this,
 
 <a name="footnote1">[1]</a> This means it solves the [Stokes equation](https://en.wikipedia.org/wiki/Stokes_flow#Stokes_equations) rather than the [Navier–Stokes equation](https://en.wikipedia.org/wiki/Navier%E2%80%93Stokes_equations#General_continuum_equations).
 
-<a name="footnote3">[2]</a> Euler timestep: make sure `timestepping_scheme = 'euler'` in **inputs.py**
+<a name="footnote2">[2]</a> Euler timestep: make sure `timestepping_scheme = 'euler'` in **inputs.py**

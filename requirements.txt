@@ -1,4 +1,5 @@
 matplotlib
 numba
 numpy
+pytest
 scipy
