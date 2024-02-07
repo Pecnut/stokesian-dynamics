@@ -69,7 +69,7 @@ In particular, this software has the following features:
 Speed and memory are the greatest limitations of the software. Loosely speaking, for a concentrated system of *s* spheres and *d* dumbbells, the memory, in bytes, required, is 48(11*s* + 6*d*)².
 
 ## 4. System requirements <a name="s4"></a> ##
-This is an implementation in Python, using Numba for speed. It has been tested with Python 3.9.13 and requires the following Python packages:
+This is an implementation in Python, using Numba for speed. It has been tested with Python 3.9 and requires the following Python packages:
 
 * matplotlib, numba, numpy, pytest, scipy
 
