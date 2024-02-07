@@ -13,12 +13,11 @@ by passing them in as arguments from the command line."""
 
 import numpy as np
 import time
-import platform
 import sys
 import os
 import socket
 import datetime
-import resource
+import psutil
 import numba
 from functions_email import send_email
 from functions_shared import (posdata_data, format_elapsed_time, throw_error,
@@ -35,7 +34,7 @@ from inputs import (
     cutoff_factor, num_frames, view_graphics, viewbox_bottomleft_topright,
     printout, setup_number, posdata, setup_description, s_dash_range,
     lam_range_with_reciprocals, view_labels, viewing_angle, timestep,
-    trace_paths, two_d_plot,
+    trace_paths, two_d_plot, email_on_completion,
     save_positions_every_n_timesteps, save_forces_every_n_timesteps,
     save_forces_and_positions_to_temp_file_as_well,
     save_to_temp_file_every_n_timesteps, use_drag_Minfinity,
@@ -78,8 +77,8 @@ legion_random_id = ""
 
 # Pictures initialise
 if view_graphics:
-    rcParams.update({'font.size': 12})
-    rcParams.update({'figure.dpi': 120, 'figure.figsize': [8, 8],
+    rcParams.update({'font.size': 11})
+    rcParams.update({'figure.dpi': 120, 'figure.figsize': [6, 6],
                      'savefig.dpi': 140})
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -102,7 +101,7 @@ if view_graphics:
     ax.set_xlim3d(v[0, 0], v[0, 1])
     ax.set_ylim3d(v[1, 0], v[1, 1])
     ax.set_zlim3d(v[2, 0], v[2, 1])
-    ax.set_box_aspect((1, 1, 1), zoom=1.4)
+    ax.set_box_aspect((1, 1, 1), zoom=1.35)
     if two_d_plot == 1:
         ax.set_proj_type('ortho')
         ax.set_yticks([])
@@ -715,27 +714,20 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
             ax.set_title("  frame "
                          + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno + 1)
                          + "/" + str(num_frames),
-                         loc='left', y=0.97)
+                         loc='left', y=0.97, fontsize=11)
             ax.set_title("$t$ = "
-                         + ("{:" + str(len(str(num_frames * timestep))) + ".2f}").format(frameno * timestep)
-                         + "/" + "{:.2f}".format((num_frames - 1) * timestep)
+                         + ("{:" + str(len(str(num_frames * timestep))) + ".2f}").format((frameno+1) * timestep)
+                         + "/" + "{:.2f}".format((num_frames) * timestep)
                          + "  ",
-                         loc='right', y=0.97)
-            ax.set_title("Setup " + str(setup_number)
+                         loc='right', y=0.97, fontsize=11)
+            ax.set_title("setup " + str(setup_number)
                          + ", input " + str(input_number),
-                         loc='center', y=1.05)
+                         loc='center', y=1.055, fontsize=11)
         posdata = posdata_final
 
         # Maximum memory the program has used since starting.
-        # Note that on Linux you have to multiply by 1024 (because RUSAGE_SELF
-        # is in KB on these systems)
-        # whereas on the Mac, you do not want to do this (because RUSAGE_SELF
-        # is in bytes).
-        if platform.system() == "Darwin":  # Darwin=Mac, Linux=Linux, Windows=Windows
-            multiply_by = 1
-        else:
-            multiply_by = 1024
-        print("[ " + sizeof_fmt(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * multiply_by) + "]", end=" ")
+        memory_used_bytes = psutil.Process(os.getpid()).memory_info().rss
+        print("[ " + sizeof_fmt(memory_used_bytes) + "]", end=" ")
 
         elapsed_time = time.time() - time_start
         print("[[" + "\033[1m" + format_elapsed_time(elapsed_time) + "\033[0m" + "]]", end=" ")
@@ -953,11 +945,11 @@ if error == 0:
     total_elapsed_time = time.time() - total_time_start
     print("[Total time to run " + format_elapsed_time(total_elapsed_time) + "]")
     print("[Complete: " + filename + "]")
-    if send_email:
+    if email_on_completion:
         send_email("SD job on " + socket.gethostname() + " complete",
                    ("The job on " + socket.gethostname() + ", with filename\n\n"
                    + filename + ",\n\n which started on\n\n" +
-                   datetime.datetime.fromtimestamp(total_time_start).strftime('%A %-d %B %Y, %H:%M')
+                   datetime.datetime.fromtimestamp(total_time_start).strftime('%A %d %B %Y, %H:%M')
                    + ",\n\nis now complete. It took "
                    + format_elapsed_time(total_elapsed_time) + "."))
     print("")

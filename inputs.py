@@ -152,7 +152,7 @@ how_far_to_reproduce_gridpoints = 2
 printout = 0
 
 # Send email on completion? Set this up in functions_email.py.
-send_email = False
+email_on_completion = False
 
 # View graphics? (Note: doesn't save a video. To do that, use
 # plot_particle_positions_video.py after the fact.)
@@ -197,7 +197,7 @@ use_full_Minfinity_scalars_with_drag_Minfinity = False
 # VIDEO-RELATED INPUTS
 
 # If generating video, what should we be able to see?
-viewbox_bottomleft_topright = np.array([[-1.5, 0, -1.5], [1.5, 1, 1.5]])
+viewbox_bottomleft_topright = np.array([[-15, 0, -15], [15, 1, 15]])
 
 # Viewing angle on video, (elev,azim).
 # e.g. (0,-90) = x-z plane; (30,-60) = default

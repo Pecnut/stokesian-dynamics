@@ -92,11 +92,11 @@ def pos_setup(n):
     elif n == 5:
         # Example case 5
         # Randomly arranged spheres
-        num_spheres = 40
+        num_spheres = 41
         sphere_sizes = np.array([1 for i in range(num_spheres)])
         # L is how wide you want to box for all the particles to fit inside
         # (not just putting the centres inside this box)
-        L = 17
+        L = 16.2
         # This will put the centres in a given box size
         sphere_positions = randomise_spheres(
             [-L/2.+1, 0, -L/2.+1], [L/2.-1, 0, L/2.-1], sphere_sizes,

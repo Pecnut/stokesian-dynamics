@@ -166,7 +166,7 @@ When creating new setup_number and input_number cases, use the existing cases as
 
 The other variables are (hopefully) explained in the comments of **inputs.py**.
 
-**Note**: as received, the software is only able to perform simulations with particles of size ratio 1:1, 1:10 and 1:100. To increase this, see section 10.
+**Note**: as received, the software is only able to perform simulations with particles of size ratio 1:1, 1:10 and 1:100. To increase this, see section 11.
 
 ### Types of behaviour you can impose
 
@@ -192,7 +192,11 @@ The files **position_setups.py** and **input_setups.py** come with some example 
 
 This test case looks at horizontal chains of 5, 9 and 15 spheres sedimenting vertically. The instantaneous drag coefficient, *λ*=*F*/(6π*μaU*), is measured for each sphere in the chain, in each case. Here we set up the chain of length 15. Running for 1 timestep<sup>[[2]](#footnote2)</sup>, reading the velocity *U* and calculating *λ* reproduces this graph.
 
+Set `view_graphics = True` and `viewbox_bottomleft_topright = np.array([[-4, 0, -30], [60, 1, 30]])` in **inputs.py** to see the whole chain. As we will run for only 1 timestep, the chain will not move far from its initial position.
+
 Run `python run_simulation.py 1 1 1 1 fte` (position setup number 1, forces input 1, with a timestep of 1 [arbitrary choice] for 1 timestep, specifying forces, torques and rate of strain).
+
+![Simulation displayed on the screen: 15 spheres in a horizontal line](examples/images/example-a-sim.png)
 
 Follow the instructions in `examples/example-a.py` to produce the following graph, comparing the results from this simulation to the figure in the paper:
 
@@ -203,7 +207,11 @@ Follow the instructions in `examples/example-a.py` to produce the following grap
 
 This test case considers three horizontally-aligned particles sedimenting vertically, and looks at their interesting paths over a large number of timesteps. Use RK4 timestepping (set `timestepping_scheme = 'rk4'`) and ensure `invert_m_every` is set to 1, in order to recover the same particle paths.
 
+Set `view_graphics = True` and `viewbox_bottomleft_topright = np.array([[-25, 0, -900], [35, 1, 10]])` in **inputs.py** to watch the spheres fall. As this view box is not square, the spheres will appear to be squashed.
+
 Run `python run_simulation.py 2 1 128 100 fte`.
+
+![Video of simulation displayed on the screen: 3 falling spheres](examples/images/example-b-sim.gif)
 
 Follow the instructions in `examples/example-b.py` to produce the following graph, comparing the results from this simulation to the figure in the paper:
 
@@ -219,7 +227,11 @@ A simple cubic array sediments vertically under a constant force. The velocity i
 
 Note that a periodic domain is activated by setting `box_bottom_left` and `box_top_right` to be different in **input_setups.py**. Make sure `how_far_to_reproduce_gridpoints` ≥ 2 for accurate results.
 
+Set `view_graphics = True` and `viewbox_bottomleft_topright = np.array([[-15, 0, -15], [15, 1, 15]])` (the default) in **inputs.py** to see the unrepeated cubic array in the *xz*-plane. As we will run for only 1 timestep, the array will not move far from its initial position.
+
 Run `python run_simulation.py 3 2 1 1 fte`.
+
+![Simulation displayed on the screen: 4 spheres in a square](examples/images/example-c-sim.png)
 
 Follow the instructions in `examples/example-c.py` to produce the following graph, comparing the results from this simulation to the figure in the paper:
 
@@ -228,19 +240,31 @@ Follow the instructions in `examples/example-c.py` to produce the following grap
 ### (d) Two spheres, two dumbbells in oscillatory background flow
 Arrange two large spheres and two dumbbells in a square, then put in an oscillatory background flow. Set the dumbbell spring constant.
 
+Set `view_graphics = True` and `viewbox_bottomleft_topright = np.array([[-15, 0, -15], [15, 1, 15]])` (the default) in **inputs.py** to see the motion of the particles in the *xz*-plane.
+
 Run `python run_simulation.py 4 3 1 100 fte`.
+
+![Video of simulation displayed on the screen: 2 spheres and 2 dumbbells in oscillatory flow](examples/images/example-d-sim.gif)
 
 ### (e) Randomly arranged spheres, with repulsive forces between them
 Randomly arrange spheres in a 2D box in the *xz*-plane. Place a repulsive force between them so that they spread out.
 
-Run `python run_simulation.py 5 4 1 1 fte`.
+Set `view_graphics = True` and `viewbox_bottomleft_topright = np.array([[-15, 0, -15], [15, 1, 15]])` (the default) in **inputs.py** to see the motion of the particles in the *xz*-plane. The spheres change colour from red to blue as the total force acting on them reduces.
+
+Run `python run_simulation.py 5 4 1 10 fte`.
+
+![Video of simulation displayed on the screen: Randomly arranged spheres](examples/images/example-e-sim.gif)
 
 ### (f) Randomly arranged dumbbells between two walls of spheres which have a specified velocity
 Create two walls of spheres, with dumbbells randomly arranged between them. Then force the walls to move at given speeds. Observe what happens to the dumbbells.
 
 This time we need the `ufte` flag because we are specifying velocities.
 
-Run `python run_simulation.py 6 5 1 1 ufte`.
+Set `view_graphics = True` and `viewbox_bottomleft_topright = np.array([[-15, 0, -15], [15, 1, 15]])` (the default) in **inputs.py** to see the motion of the particles in the *xz*-plane.
+
+Run `python run_simulation.py 6 5 1 10 ufte`.
+
+![Video of simulation displayed on the screen: Randomly arranged dumbbells between two walls of spheres as the walls move in opposite directions](examples/images/example-f-sim.gif)
 
 ### (g) Replicating an existing output file
 Use the function `same_setup_as('FILENAME', frameno=0)` in **position_setups.py** to copy the setup from a certain file, starting at a given frame number.

@@ -1,5 +1,6 @@
 *.npz
 *.mp4
+*.mov
 *.pyc
 *.so
 *.c

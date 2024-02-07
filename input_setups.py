@@ -136,7 +136,7 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
         # amplitude is amplitude at z = 1
         (Ea_in, U_infinity, O_infinity, centre_of_background_flow,
          Ot_infinity, Et_infinity) = oscillatory_shear(
-            amplitude=1/3, period=1, frameno=frameno, timestep=timestep,
+            amplitude=1/3, period=10, frameno=frameno, timestep=timestep,
             phase=0, centre_of_background_flow=np.array([2.25, 0, 2.25]),
             num_spheres=num_spheres)
         desc = "oscillatory-background-flow"
@@ -144,7 +144,7 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
     elif n == 4:
         # Repulsive force
         (Fa_in, Fb_in, DFb_in) = repulsion_forces(
-            100, 20, num_spheres, num_dumbbells, sphere_positions,
+            50, 20, num_spheres, num_dumbbells, sphere_positions,
             dumbbell_positions, dumbbell_deltax, sphere_sizes,
             dumbbell_sizes, num_sphere_in_each_lid, Fa_in, Fb_in, DFb_in)
         desc = "repulsion"
@@ -164,9 +164,9 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
         desc = "constant-shear"
 
     elif n == 7:
-        # Gravity
+        # Gravity on the second particle only
         Fa_in[1] = [0, 0, -1]
-        desc = "gravity"
+        desc = "gravity-second-particle-only"
 
     else:
         # Just something to flag up on the other side that there's a problem

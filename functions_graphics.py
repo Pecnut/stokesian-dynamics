@@ -138,9 +138,9 @@ def plot_sphere(ax, frameno, viewbox_bottomleft_topright, position,
         pos2 = pos1
         pos3 = pos1
     line1 = plt.plot((pos1[0], pos2[0]), (pos1[1], pos2[1]),
-                     (pos1[2], pos2[2]),sh2, linewidth=2, zorder=500)[0]
+                     (pos1[2], pos2[2]),sh2, linewidth=1, zorder=500)[0]
     line2 = plt.plot((pos1[0], pos3[0]), (pos1[1], pos3[1]),
-                     (pos1[2], pos3[2]), sh3, linewidth=2, zorder=500)[0]
+                     (pos1[2], pos3[2]), sh3, linewidth=1, zorder=500)[0]
 
     linetrace = None
     if trace_paths > 0 and frameno % trace_paths == 0:
