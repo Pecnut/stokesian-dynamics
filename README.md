@@ -196,7 +196,7 @@ Set `view_graphics = True` and `viewbox_bottomleft_topright = np.array([[-4, 0, 
 
 Run `python run_simulation.py 1 1 1 1 fte` (position setup number 1, forces input 1, with a timestep of 1 [arbitrary choice] for 1 timestep, specifying forces, torques and rate of strain).
 
-![Simulation displayed on the screen: 15 spheres in a horizontal line](examples/images/example-a-sim.png)
+<img src='examples/images/example-a-sim.png' width='640' alt='Simulation displayed on the screen: 15 spheres in a horizontal line'>
 
 Follow the instructions in `examples/example-a.py` to produce the following graph, comparing the results from this simulation to the figure in the paper:
 
@@ -211,7 +211,7 @@ Set `view_graphics = True` and `viewbox_bottomleft_topright = np.array([[-25, 0,
 
 Run `python run_simulation.py 2 1 128 100 fte`.
 
-![Video of simulation displayed on the screen: 3 falling spheres](examples/images/example-b-sim.gif)
+<img src='examples/images/example-b-sim.gif' width='640' alt='Video of simulation displayed on the screen: 3 falling spheres'>
 
 Follow the instructions in `examples/example-b.py` to produce the following graph, comparing the results from this simulation to the figure in the paper:
 
@@ -231,7 +231,7 @@ Set `view_graphics = True` and `viewbox_bottomleft_topright = np.array([[-15, 0,
 
 Run `python run_simulation.py 3 2 1 1 fte`.
 
-![Simulation displayed on the screen: 4 spheres in a square](examples/images/example-c-sim.png)
+<img src='examples/images/example-c-sim.png' width='640' alt='Simulation displayed on the screen: 4 spheres in a square'>
 
 Follow the instructions in `examples/example-c.py` to produce the following graph, comparing the results from this simulation to the figure in the paper:
 
@@ -244,7 +244,7 @@ Set `view_graphics = True` and `viewbox_bottomleft_topright = np.array([[-15, 0,
 
 Run `python run_simulation.py 4 3 1 100 fte`.
 
-![Video of simulation displayed on the screen: 2 spheres and 2 dumbbells in oscillatory flow](examples/images/example-d-sim.gif)
+<img src='examples/images/example-d-sim.gif' width='640' alt='Video of simulation displayed on the screen: 2 spheres and 2 dumbbells in oscillatory flow'>
 
 ### (e) Randomly arranged spheres, with repulsive forces between them
 Randomly arrange spheres in a 2D box in the *xz*-plane. Place a repulsive force between them so that they spread out.
@@ -253,7 +253,7 @@ Set `view_graphics = True` and `viewbox_bottomleft_topright = np.array([[-15, 0,
 
 Run `python run_simulation.py 5 4 1 10 fte`.
 
-![Video of simulation displayed on the screen: Randomly arranged spheres](examples/images/example-e-sim.gif)
+<img src='examples/images/example-e-sim.gif' width='640' alt='Video of simulation displayed on the screen: Randomly arranged spheres'>
 
 ### (f) Randomly arranged dumbbells between two walls of spheres which have a specified velocity
 Create two walls of spheres, with dumbbells randomly arranged between them. Then force the walls to move at given speeds. Observe what happens to the dumbbells.
@@ -264,7 +264,7 @@ Set `view_graphics = True` and `viewbox_bottomleft_topright = np.array([[-15, 0,
 
 Run `python run_simulation.py 6 5 1 10 ufte`.
 
-![Video of simulation displayed on the screen: Randomly arranged dumbbells between two walls of spheres as the walls move in opposite directions](examples/images/example-f-sim.gif)
+<img src='examples/images/example-f-sim.gif' width='640' alt='Video of simulation displayed on the screen: Randomly arranged dumbbells between two walls of spheres as the walls move in opposite directions'>
 
 ### (g) Replicating an existing output file
 Use the function `same_setup_as('FILENAME', frameno=0)` in **position_setups.py** to copy the setup from a certain file, starting at a given frame number.
