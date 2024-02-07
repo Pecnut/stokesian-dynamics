@@ -3,7 +3,7 @@
 # Adam Townsend, adam@adamtownsend.com, 17/10/2014
 
 import numpy as np
-from functions_shared import posdata_data, contraction
+from functions.shared import posdata_data, contraction
 
 
 def empty_vectors(posdata):

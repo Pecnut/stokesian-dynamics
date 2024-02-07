@@ -19,17 +19,17 @@ import socket
 import datetime
 import psutil
 import numba
-from functions_email import send_email
-from functions_shared import (posdata_data, format_elapsed_time, throw_error,
+from functions.email import send_email
+from functions.shared import (posdata_data, format_elapsed_time, throw_error,
                               throw_warning, feed_particles_from_bottom,
                               sizeof_fmt)
-from functions_timestepping import (
+from functions.timestepping import (
     euler_timestep, ab2_timestep, did_something_go_wrong_with_dumbells,
     euler_timestep_rotation, ab2_timestep_rotation, do_we_have_all_size_ratios,
     generate_output_FTSUOE, are_some_of_the_particles_too_close,
     calculate_time_left, format_time_left, format_finish_time,
     wrap_around, add_background_flow_spheres, add_background_flow_dumbbells)
-from input_setups import input_ftsuoe
+from setups.inputs import input_ftsuoe
 from inputs import (
     cutoff_factor, num_frames, view_graphics, viewbox_bottomleft_topright,
     printout, setup_number, posdata, setup_description, s_dash_range,
@@ -60,7 +60,7 @@ if view_graphics:
     import matplotlib.pyplot as plt
     from matplotlib import animation
     from matplotlib import rcParams
-    from functions_graphics import (plot_all_spheres, plot_all_dumbbells,
+    from functions.graphics import (plot_all_spheres, plot_all_dumbbells,
                                     plot_all_force_lines)
 
 

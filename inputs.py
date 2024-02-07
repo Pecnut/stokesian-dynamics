@@ -6,8 +6,8 @@ import sys  # Overrides from command line at the bottom of this script
 import glob
 import numpy as np
 from numba import config
-from position_setups import pos_setup
-from functions_shared import add_sphere_rotations_to_positions, throw_error
+from setups.positions import pos_setup
+from functions.shared import add_sphere_rotations_to_positions, throw_error
 
 
 # --------------------
@@ -151,7 +151,7 @@ how_far_to_reproduce_gridpoints = 2
 # and velocities, 2 = matrices, 3 = individual calculations
 printout = 0
 
-# Send email on completion? Set this up in functions_email.py.
+# Send email on completion? Set this up in functions/email.py.
 email_on_completion = False
 
 # View graphics? (Note: doesn't save a video. To do that, use

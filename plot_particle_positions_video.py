@@ -12,11 +12,11 @@ import glob
 import os
 import sys
 import time
-from input_setups import input_ftsuoe
-from position_setups import pos_setup
-from functions_shared import shear_basis_vectors, format_elapsed_time
-from functions_timestepping import format_time_left
-from functions_graphics import (plot_all_spheres, plot_all_dumbbells,
+from setups.inputs import input_ftsuoe
+from setups.positions import pos_setup
+from functions.shared import shear_basis_vectors, format_elapsed_time
+from functions.timestepping import format_time_left
+from functions.graphics import (plot_all_spheres, plot_all_dumbbells,
                                 plot_all_torque_lines, plot_all_velocity_lines,
                                 plot_all_angular_velocity_lines,
                                 plot_all_force_lines)

@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# Adam Townsend, adam@adamtownsend.com, 07/02/2024
+
+"""Numbered list of all input forces/velocities used in the tests in the 
+/test/ folder."""
+
 import numpy as np
 
 

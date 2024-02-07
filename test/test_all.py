@@ -1,9 +1,9 @@
 # content of test_sample.py
 import numpy as np
-from functions_timestepping import generate_output_FTSUOE
+from functions.timestepping import generate_output_FTSUOE
 from inputs import cutoff_factor, printout, timestep
-from test.position_setups import pos_setup_tests
-from functions_simulation_tools import condense, uncondense
+from setups.test.positions import pos_setup_tests
+from functions.simulation_tools import condense, uncondense
 
 
 def fte_mobility_solve_nonperiodic(setup_number, input_number):

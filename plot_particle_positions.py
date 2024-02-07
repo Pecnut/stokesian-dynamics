@@ -12,10 +12,10 @@ plot_particle_positions_video.py.
 import numpy as np
 import matplotlib.pyplot as plt
 from pylab import rcParams
-from functions_graphics import (plot_all_spheres, plot_all_dumbbells,
+from functions.graphics import (plot_all_spheres, plot_all_dumbbells,
                                 plot_all_torque_lines, plot_all_velocity_lines,
                                 plot_all_angular_velocity_lines)
-from functions_shared import add_sphere_rotations_to_positions
+from functions.shared import add_sphere_rotations_to_positions
 
 rcParams['figure.figsize'] = 5, 5
 filename = 'filename'

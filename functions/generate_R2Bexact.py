@@ -7,7 +7,7 @@
 # section 7.2 of Kim & Karrila, 2005. Microhydrodynamics.
 
 import numpy as np
-from functions_shared import (posdata_data, levi, close_particles, s2, s3,
+from functions.shared import (posdata_data, levi, close_particles, s2, s3,
                               submatrix_coords, is_sphere, is_dumbbell_bead_1,
                               is_dumbbell_bead_2)
 from scipy import sparse
@@ -278,7 +278,7 @@ def XYZ(scalar_index, gamma, s_dash, lam_index):
     """
     interp_y = XYZ_raw[scalar_index, gamma, :, lam_index]
     if s_dash > s_dash_range[-1]:
-        print("S DASH OUT OF RANGE, functions_generate_R2Bexact.py")
+        print("S DASH OUT OF RANGE, functions/generate_R2Bexact.py")
     return np.interp(s_dash, s_dash_range, interp_y)
     # Numba only has a version of interp for the first three arguments.
     # Originally from non-periodic:

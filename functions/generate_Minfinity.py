@@ -7,7 +7,7 @@
 
 import numpy as np
 from numpy import pi
-from functions_shared import (posdata_data, levi, norm, s2, s3,
+from functions.shared import (posdata_data, levi, norm, s2, s3,
                               submatrix_coords, is_sphere, is_dumbbell_bead_1,
                               is_dumbbell_bead_2)
 from inputs import bead_bead_interactions

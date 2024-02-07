@@ -15,8 +15,8 @@ called from this folder.
 
 import numpy as np
 import time
-from functions_generate_Minfinity import generate_Minfinity
-from functions_shared import add_sphere_rotations_to_positions, sqrt
+from functions.generate_Minfinity import generate_Minfinity
+from functions.shared import add_sphere_rotations_to_positions, sqrt
 
 looper_start_time = time.time()
 

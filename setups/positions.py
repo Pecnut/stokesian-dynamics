@@ -9,9 +9,9 @@ Create a new setup by adding one to the list of 'if' statements in pos_setup.
 """
 
 import numpy as np
-from functions_shared import add_sphere_rotations_to_positions, same_setup_as
+from functions.shared import add_sphere_rotations_to_positions, same_setup_as
 from os import sys
-from test.position_setups import pos_setup_tests
+from setups.test.positions import pos_setup_tests
 
 
 def pos_setup(n):

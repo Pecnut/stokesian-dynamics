@@ -4,10 +4,10 @@
 
 import numpy as np
 import time
-from functions_generate_Minfinity import generate_Minfinity
-from functions_generate_R2Bexact import generate_R2Bexact
-from functions_generate_Minfinity_periodic import generate_Minfinity_periodic
-from functions_shared import save_matrix, posdata_data
+from functions.generate_Minfinity import generate_Minfinity
+from functions.generate_R2Bexact import generate_R2Bexact
+from functions.generate_Minfinity_periodic import generate_Minfinity_periodic
+from functions.shared import save_matrix, posdata_data
 
 
 def generate_grand_resistance_matrix(

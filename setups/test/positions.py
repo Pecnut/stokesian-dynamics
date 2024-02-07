@@ -1,5 +1,12 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# Adam Townsend, adam@adamtownsend.com, 07/02/2024
+
+"""Numbered list of all positions data used in the tests in the /test/ 
+folder."""
+
 import numpy as np
-from functions_shared import add_sphere_rotations_to_positions
+from functions.shared import add_sphere_rotations_to_positions
 
 
 def pos_setup_tests(n):

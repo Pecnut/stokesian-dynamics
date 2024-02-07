@@ -3,10 +3,10 @@
 # Adam Townsend, adam@adamtownsend.com, 25/05/2017
 
 import numpy as np
-from functions_simulation_tools import empty_vectors
-from functions_shared import posdata_data
-from position_setups import simple_cubic_8
-from test.input_setups import input_ftsuoe_tests
+from functions.simulation_tools import empty_vectors
+from functions.shared import posdata_data
+from setups.positions import simple_cubic_8
+from setups.test.inputs import input_ftsuoe_tests
 
 
 def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,

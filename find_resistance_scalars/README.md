@@ -6,7 +6,7 @@ This code forms part of a [Python 3 implementation of Stokesian Dynamics](http:/
 
 This code generates nondimensionalised lubrication resistance functions for two unequal rigid particles which are both close (near-field) and quite close (mid-field). These functions are commonly notated *X*<sub>11</sub><sup>*A*</sup>, *X*<sub>12</sub><sup>*A*</sup>, *Y*<sub>11</sub><sup>*A*</sup>, etc.
 
- The near-field resistance functions were first given analytically in [Jeffrey & Onishi (1984)](https://doi.org/10.1017/S0022112084000355) and [Jeffrey (1992)](https://doi.org/10.1063/1.858494). The expressions in these articles have been completely corrected in [Townsend (2018)](https://arxiv.org/abs/1802.08226), and these corrected expressions are used here. The mid-field resistance functions are computed using a version of Lamb's method described in [Wilson (2013)](http://www.ucl.ac.uk/~ucahhwi/publist/papers/2013-W.pdf).
+ The near-field resistance functions were first given analytically in [Jeffrey & Onishi (1984)](https://doi.org/10.1017/S0022112084000355) and [Jeffrey (1992)](https://doi.org/10.1063/1.858494). The expressions in these articles have been completely corrected in [Townsend (2023)](https://doi.org/10.1063/5.0175697), and these corrected expressions are used here. The mid-field resistance functions are computed using a version of Lamb's method described in [Wilson (2013)](http://www.ucl.ac.uk/~ucahhwi/publist/papers/2013-W.pdf).
 
 ## 0. Contact details and how to contribute <a name="s0"></a> ##
 
@@ -96,6 +96,6 @@ For the mid-field, we also generate the mobility scalars. As they are computed a
 
 ## 4. References ##
 
-* [Townsend, 2018](https://arxiv.org/abs/1802.08226). Generating, from scratch, the near-field asymptotic forms of scalar resistance functions for two unequal rigid spheres in low-Reynolds-number flow, *arXiv:1802.08226 [physics.flu-dyn]*
+* [Townsend, 2023](https://doi.org/10.1063/5.0175697). Generating, from scratch, the near-field asymptotic forms of scalar resistance functions for two unequal rigid spheres in low-Reynolds-number flow, *Physics of Fluids* **35**(12), 127126.
 * [Wilson, 2013](http://www.ucl.ac.uk/~ucahhwi/publist/papers/2013-W.pdf). Stokes flow past three spheres, *Journal of Computational Physics* **245**, 302–316.
 * Kim & Karilla, 2005. Microhydrodynamics.
