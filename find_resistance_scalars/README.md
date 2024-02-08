@@ -78,7 +78,7 @@ For the mid-field, we also generate the mobility scalars. As they are computed a
 
 * **scalars_general_resistance_d.npy**: Numpy NPY data file of the above table: this is the data file used by the Stokesian Dynamics code by default.
 
-* **scalars_pairs_resistance_midfield.txt**: More verbose version of **scalars_general_resistance.txt** for midfield values of *s*' only (if requsted).
+* **scalars_pairs_resistance_midfield.txt**: More verbose version of **scalars_general_resistance.txt** for midfield values of *s*' only (if requested).
 
 * **scalars_pairs_mobility_midfield.txt**: Verbose list of the nondimensionalised mobility scalars x11a, x12a etc. for midfield values of *s*' only (if requested).
 

@@ -219,7 +219,7 @@ two_d_plot = 1
 # -----------
 # DATA INPUTS
 
-resistance_scalars_folder = "find_resistance_scalars/"
+resistance_scalars_folder = "find_resistance_scalars"
 
 # IMPORTANT NOTE: if you change s_range or lam_range, you must rerun
 # find_resistance_scalars_looper().
