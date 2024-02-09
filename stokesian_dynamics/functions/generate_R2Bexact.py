@@ -12,7 +12,7 @@ from functions.shared import (posdata_data, levi, close_particles, s2, s3,
                               is_dumbbell_bead_2)
 from scipy import sparse
 from settings import bead_bead_interactions
-from resistance_scalars.data import (s_dash_range, lam_range_with_reciprocals, 
+from resistance_scalars.data import (s_dash_range, lam_range_with_reciprocals,
                                      XYZ_raw)
 from numba import njit
 

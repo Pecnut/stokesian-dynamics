@@ -9,22 +9,24 @@ Video is created in the output_videos folder.
 """
 
 import glob
+import matplotlib
+import numpy as np
+import matplotlib.pyplot as plt
 import os
 import time
 import sys
+from matplotlib import animation, rcParams
+
 sys.path.append("..")  # Allows importing from SD directory
-from setups.inputs import input_ftsuoe
-from setups.positions import pos_setup
-from functions.shared import shear_basis_vectors, format_elapsed_time
-from functions.timestepping import format_time_left
 from functions.graphics import (plot_all_spheres, plot_all_dumbbells,
                                 plot_all_torque_lines, plot_all_velocity_lines,
                                 plot_all_angular_velocity_lines,
-                                plot_all_force_lines)
-from matplotlib import animation, rcParams
-import matplotlib.pyplot as plt
-import numpy as np
-import matplotlib
+                                plot_all_force_lines) #NOQA
+from functions.timestepping import format_time_left
+from functions.shared import shear_basis_vectors, format_elapsed_time
+from setups.positions import pos_setup
+from setups.inputs import input_ftsuoe
+
 
 
 matplotlib.use('Agg')

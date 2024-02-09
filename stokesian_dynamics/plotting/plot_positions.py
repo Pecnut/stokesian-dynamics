@@ -9,16 +9,17 @@ Does not plot any periodic copies. If you want to do this, see the code in
 plot_particle_positions_video.py.
 """
 
-from pylab import rcParams
+import matplotlib.pyplot as plt
+import numpy as np
 import os
 import sys
+from pylab import rcParams
+
 sys.path.append("..")  # Allows importing from SD directory
-from functions.shared import add_sphere_rotations_to_positions
 from functions.graphics import (plot_all_spheres, plot_all_dumbbells,
                                 plot_all_torque_lines, plot_all_velocity_lines,
                                 plot_all_angular_velocity_lines)
-import numpy as np
-import matplotlib.pyplot as plt
+from functions.shared import add_sphere_rotations_to_positions
 
 
 filename = 'filename_here'

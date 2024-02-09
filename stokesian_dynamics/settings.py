@@ -76,7 +76,7 @@ cutoff_factor = 2
 timestepping_scheme = 'euler'
 
 # If using RK4, do you want to generate Minfinity for each of the 4 stages
-# (True), or just for the initial stage (False)? In the absence of R2Bexact, 
+# (True), or just for the initial stage (False)? In the absence of R2Bexact,
 # choosing False makes the timestep equivalent to Euler; but if
 # R2Bexact is present, and invert_m_every>1, this might be an OK approximation.
 rk4_generate_minfinity_for_each_stage = True
