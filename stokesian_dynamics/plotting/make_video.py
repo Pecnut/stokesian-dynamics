@@ -16,12 +16,11 @@ import os
 import time
 import sys
 from matplotlib import animation, rcParams
-
 sys.path.append("..")  # Allows importing from SD directory
 from functions.graphics import (plot_all_spheres, plot_all_dumbbells,
                                 plot_all_torque_lines, plot_all_velocity_lines,
                                 plot_all_angular_velocity_lines,
-                                plot_all_force_lines) #NOQA
+                                plot_all_force_lines)
 from functions.timestepping import format_time_left
 from functions.shared import shear_basis_vectors, format_elapsed_time
 from setups.positions import pos_setup

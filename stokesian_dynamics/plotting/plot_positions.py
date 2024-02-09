@@ -14,7 +14,6 @@ import numpy as np
 import os
 import sys
 from pylab import rcParams
-
 sys.path.append("..")  # Allows importing from SD directory
 from functions.graphics import (plot_all_spheres, plot_all_dumbbells,
                                 plot_all_torque_lines, plot_all_velocity_lines,

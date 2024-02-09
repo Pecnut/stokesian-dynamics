@@ -5,7 +5,7 @@
 """Reads in resistance scalars from
     scalars_general_resistance.npy
 and subtracts the pairwise R2Binfinity term away from it. Then it saves it to
-    scalars_general_resistance_d_drag.npy  and  .txt 
+    scalars_general_resistance_d_drag.npy  and  .txt
 This speeds up computation later on.
 
 Note that the 'd_drag' form means R2Binfinity is just the inverse of Minfinity
@@ -17,7 +17,7 @@ drag, only).
 import numpy as np
 import time
 import sys
-sys.path.append("../stokesian_dynamics") # Allows for importing from parent directory
+sys.path.append("../stokesian_dynamics")  # Allows for importing from parent directory
 from functions.shared import add_sphere_rotations_to_positions
 
 looper_start_time = time.time()

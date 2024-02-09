@@ -5,14 +5,14 @@
 """Reads in resistance scalars from
     scalars_general_resistance.npy
 and subtracts the pairwise R2Binfinity term away from it. Then it saves it to
-    scalars_general_resistance_d.npy  and  .txt 
+    scalars_general_resistance_d.npy  and  .txt
 This speeds up computation later on.
 """
 
 import numpy as np
 import time
 import sys
-sys.path.append("../stokesian_dynamics") # Allows importing from SD directory
+sys.path.append("../stokesian_dynamics")  # Allows importing from SD directory
 from functions.generate_Minfinity import generate_Minfinity
 from functions.shared import add_sphere_rotations_to_positions
 

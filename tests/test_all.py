@@ -1,10 +1,11 @@
 import numpy as np
 import sys
-sys.path.append("stokesian_dynamics") # Allows importing from SD directory
+sys.path.append("stokesian_dynamics")  # Allows import from SD directory
 from functions.timestepping import generate_output_FTSUOE
 from settings import cutoff_factor, printout, timestep
 from setups.tests.positions import pos_setup_tests
 from functions.simulation_tools import condense, uncondense
+
 
 def fte_mobility_solve_nonperiodic(setup_number, input_number):
     frameno = 0

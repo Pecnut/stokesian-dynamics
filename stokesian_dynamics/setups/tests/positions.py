@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Adam Townsend, adam@adamtownsend.com, 07/02/2024
 
-"""Numbered list of all positions data used in the tests in the /test/ 
+"""Numbered list of all positions data used in the tests in the /test/
 folder."""
 
 import numpy as np

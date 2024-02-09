@@ -4,12 +4,12 @@
 
 """Settings for a Stokesian Dynamics simulation.
 
-See docs/settings.md for a full explanation of each setting. 
+See docs/settings.md for a full explanation of each setting.
 
 This file is imported by all other scripts in the Stokesian Dynamics package,
-so it is the place to set up your simulation. You can override the inputs 
+so it is the place to set up your simulation. You can override the inputs
     setup_number, input_number, timestep, num_frames
-by passing them in as arguments to run_simulation.py from the command line. 
+by passing them in as arguments to run_simulation.py from the command line.
 See the README for more information.
 """
 
