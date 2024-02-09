@@ -5,11 +5,10 @@
 *.so
 *.c
 *.exe
-output/*
-!output/README.md
-output_videos/*
-plot_XYZ.py
-plan.txt
+stokesian_dynamics/output/*
+!stokesian_dynamics/output/README.md
+stokesian_dynamics/output_videos/*
+stokesian_dynamics/plotting/plot_XYZ.py
 .DS_Store
 */build/*
 */__pycache__/*

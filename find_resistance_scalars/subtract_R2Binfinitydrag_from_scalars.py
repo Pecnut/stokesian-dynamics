@@ -3,32 +3,31 @@
 # Adam Townsend, adam@adamtownsend.com, 24/08/2016
 
 """Reads in resistance scalars from
-    find_resistance_scalars/scalars_general_resistance.npy
-and converts them to their 'd' form, i.e. with the R2binfinity term already
-subtracted away from it. Then it saves it to
-    find_resistance_scalars/scalars_general_resistance_dnominf.npy  and  .txt
+    scalars_general_resistance.npy
+and subtracts the pairwise R2Binfinity term away from it. Then it saves it to
+    scalars_general_resistance_d_drag.npy  and  .txt 
+This speeds up computation later on.
 
-Note that the 'dnominf' form means R2binfinity is just the inverse of Minfinity
+Note that the 'd_drag' form means R2Binfinity is just the inverse of Minfinity
 with diagonal entries only. This is good for when you want to "turn Minfinity
-off", which means just make Minfinity a diagonal matrix (so self terms only).
-
-It's in the main folder because otherwise it's a pain to import
-generate_Minfinity and then use the scripts which it call which expect to be
-called from this folder.
+off", which means just make Minfinity a diagonal matrix (so self terms, i.e.
+drag, only).
 """
 
 import numpy as np
 import time
-from functions.shared import add_sphere_rotations_to_positions, sqrt
+import sys
+sys.path.append("../stokesian_dynamics") # Allows for importing from parent directory
+from functions.shared import add_sphere_rotations_to_positions
 
 looper_start_time = time.time()
 
-with open('find_resistance_scalars/scalars_general_resistance.npy', 'rb') as inputfile:
+with open('scalars_general_resistance.npy', 'rb') as inputfile:
     XYZ_raw = np.load(inputfile)
 XYZd_raw = np.copy(XYZ_raw)
 
-s_dash_range = np.loadtxt('find_resistance_scalars/values_of_s_dash.txt')
-lam_range = np.loadtxt('find_resistance_scalars/values_of_lambda.txt')
+s_dash_range = np.loadtxt('values_of_s_dash.txt')
+lam_range = np.loadtxt('values_of_lambda.txt')
 lam_range_with_reciprocals = np.copy(lam_range)
 for lam in lam_range:
     if 1/lam not in lam_range_with_reciprocals:
@@ -38,10 +37,7 @@ lam_range_with_reciprocals.sort()
 
 for lam_index, lam in enumerate(lam_range_with_reciprocals):
     for s_dash_index, s_dash in enumerate(s_dash_range):
-        # if lam <= 1:
         sphere_sizes = np.array([1, lam])
-        # else:
-        #     sphere_sizes = np.array([1/lam, 1])
         a1 = sphere_sizes[0]
         a2 = sphere_sizes[1]
         # s = (a1+a2)/2 * s'
@@ -70,8 +66,8 @@ for lam_index, lam in enumerate(lam_range_with_reciprocals):
         scale_H = 8*np.pi*a1**3
         scale_M = 20/3*np.pi*a1**3
 
-        R = (sqrt(3)+3)/6
-        S = sqrt(2)
+        R = (3**0.5 + 3)/6
+        S = 2**0.5
         XA0 = Rinfinity[0, 0]/scale_A
         XA1 = Rinfinity[0, 3]/scale_A
         YA0 = Rinfinity[1, 1]/scale_A
@@ -119,7 +115,7 @@ for lam_index, lam in enumerate(lam_range_with_reciprocals):
         XYZd_raw[10, 1, s_dash_index, lam_index] = XYZ_raw[10, 1, s_dash_index, lam_index] - ZM1
 
 # computer readable
-with open('find_resistance_scalars/scalars_general_resistance_dnominf.npy', 'wb') as outputfile:
+with open('scalars_general_resistance_d_drag.npy', 'wb') as outputfile:
     np.save(outputfile, XYZd_raw)
 
 # human readable
@@ -138,8 +134,8 @@ for s_dash_index, s_dash in enumerate(s_dash_range):
             XYZ_outputline = np.append(
                 [s_dash, lam, gam], XYZd_raw[:, gam, s_dash_index, lam_wr_index])
             XYZ_general_human[(lam_wr_index*s_dash_length + s_dash_index)*2 + gam, :] = XYZ_outputline
-with open('find_resistance_scalars/scalars_general_resistance_dnominf.txt', 'a') as outputfile:
-    heading = ("'D'-form nondimensionalised resistance scalars, generated "
+with open('scalars_general_resistance_d_drag.txt', 'a') as outputfile:
+    heading = ("Nondimensionalised resistance scalars with drag-only R2Binfinity subtracted off, generated "
                + time.strftime("%d/%m/%Y %H:%M:%S"))
     np.savetxt(outputfile, np.array([heading]), fmt="%s")
     np.savetxt(outputfile,
@@ -151,8 +147,9 @@ with open('find_resistance_scalars/scalars_general_resistance_dnominf.txt', 'a')
 
 # Time elapsed
 looper_elapsed_time = time.time() - looper_start_time
-let_m, let_s = divmod(looper_elapsed_time, 60)
-let_h, let_m = divmod(let_m, 60)
-looper_elapsed_time_hms = "%dh%02dm%02ds" % (let_h, let_m, let_s)
-print("Resistance scalars successfully converted to 'dnominf' form.")
-print("Time elapsed " + looper_elapsed_time_hms)
+looper_elapsed_time_sec = f"{looper_elapsed_time:0.2f}s"
+print("Drag-only R2Binfinity successfully substracted from resistance scalars.")
+print("New scalars saved to:")
+print(" --> scalars_general_resistance_d_drag.npy")
+print(" --> scalars_general_resistance_d_drag.txt")
+print("Time elapsed " + looper_elapsed_time_sec)

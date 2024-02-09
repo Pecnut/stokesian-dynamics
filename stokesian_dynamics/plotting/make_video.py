@@ -10,8 +10,9 @@ Video is created in the output_videos folder.
 
 import glob
 import os
-import sys
 import time
+import sys
+sys.path.append("..")  # Allows importing from SD directory
 from setups.inputs import input_ftsuoe
 from setups.positions import pos_setup
 from functions.shared import shear_basis_vectors, format_elapsed_time
@@ -24,10 +25,18 @@ from matplotlib import animation, rcParams
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib
+
+
 matplotlib.use('Agg')
+
+# Naming the folders like this means you can run this script from any directory
+this_folder = os.path.dirname(os.path.abspath(__file__))
+output_folder = this_folder + "/../output/"
+video_folder = this_folder + "/../output_videos/"
+
 # Use newest file
-newest = max(glob.iglob('output/*.[Nn][Pp][Zz]'), key=os.path.getctime)
-filename = newest[len("output/"):-len(".npz")]
+newest = max(glob.iglob(output_folder + '*.[Nn][Pp][Zz]'), key=os.path.getctime)
+filename = newest[len(output_folder):-len(".npz")]
 # Overwrite filename here if you want a specific file
 
 timestep = float(filename.split('-')[4][1:].replace('p', '.'))
@@ -46,13 +55,13 @@ display_every_n_frames = 1
 
 viewing_angle = (0, -90)
 viewbox_bottomleft_topright = np.array([[-10, -10, -10], [10, 10, 10]])
-two_d_plot = 0
-view_labels = 0
+two_d_plot = False
+view_labels = False
 
 # Fixed inputs
 trace_paths = 0
 
-data1 = np.load("output/" + filename + ".npz")
+data1 = np.load(output_folder + filename + ".npz")
 positions_centres = data1['centres']
 positions_deltax = data1['deltax']
 Fa_out = data1['Fa']
@@ -97,7 +106,7 @@ ax.set_xlim3d(v[0, 0], v[0, 1])
 ax.set_ylim3d(v[1, 0], v[1, 1])
 ax.set_zlim3d(v[2, 0], v[2, 1])
 ax.set_box_aspect((1, 1, 1), zoom=1.4)
-if two_d_plot == 1:
+if two_d_plot:
     ax.set_proj_type('ortho')
     ax.set_yticks([])
 else:
@@ -125,7 +134,7 @@ if viewbox_bottomleft_topright.size == 0:
 
 
 def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]),
-                   view_labels=1, timestep=0.1, trace_paths=0,
+                   view_labels=False, timestep=0.1, trace_paths=0,
                    num_frames_override_start=0):
     global posdata, previous_step_posdata, sphere_sizes, dumbbell_sizes
     global spheres, dumbbell_lines, sphere_lines, sphere_trace_lines
@@ -272,7 +281,7 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]),
             dumbbell_trace_lines, FbX, DFbX, max_DFb_out=max_DFb_out,
             no_line=no_line)
 
-    if view_labels == 1:
+    if view_labels:
         (force_lines, force_text) = plot_all_force_lines(
             ax, viewbox_bottomleft_topright, posdata, Fa_out, force_lines)
         torque_lines = plot_all_torque_lines(
@@ -285,8 +294,8 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]),
             angular_velocity_lines)  # Ang vel in white with green edging
 
     ax.set_title("  frame "
-                 + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno + 1)
-                 + "/" + str(num_frames),
+                 + ("{:" + str(len(str(num_frames-1))) + ".0f}").format(frameno)
+                 + "/" + str(num_frames-1),
                  loc='left', y=0.97)
     ax.set_title(filename, loc='center', y=1.05)
 
@@ -309,7 +318,7 @@ ani = animation.FuncAnimation(fig, generate_frame, frames=num_frames,
                               interval=200, save_count=num_frames)
 mywriter = animation.FFMpegWriter(fps=8)
 try:
-    ani.save('output_videos/' + filename + '.mp4', writer=mywriter)
+    ani.save(video_folder + filename + '.mp4', writer=mywriter)
 except FileNotFoundError as e:
     print(e)
     print("ERROR: You need to install FFMPEG.")

@@ -7,7 +7,7 @@ import math
 from functions.shared import (posdata_data, norm, s2, s3, submatrix_coords,
                               is_sphere, is_dumbbell_bead_1, is_dumbbell_bead_2,
                               shear_basis_vectors)
-from inputs import how_far_to_reproduce_gridpoints, bead_bead_interactions
+from settings import how_far_to_reproduce_gridpoints, bead_bead_interactions
 from scipy.sparse import coo_matrix
 from math import erfc, pi, exp
 from numba import njit

@@ -1,3 +1,6 @@
 {
-    "fortran.fortls.disabled": true
+    "fortran.fortls.disabled": true,
+    "python.analysis.extraPaths": [
+        "./stokesian_dynamics"
+    ]
 }

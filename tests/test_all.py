@@ -1,10 +1,10 @@
-# content of test_sample.py
 import numpy as np
+import sys
+sys.path.append("stokesian_dynamics") # Allows importing from SD directory
 from functions.timestepping import generate_output_FTSUOE
-from inputs import cutoff_factor, printout, timestep
-from setups.test.positions import pos_setup_tests
+from settings import cutoff_factor, printout, timestep
+from setups.tests.positions import pos_setup_tests
 from functions.simulation_tools import condense, uncondense
-
 
 def fte_mobility_solve_nonperiodic(setup_number, input_number):
     frameno = 0
@@ -65,7 +65,7 @@ def test_against_lamb():
     setup_numbers = range(-1, -9, -1)
     input_numbers = range(-1, -12, -1)
     num_wrong_values = 0
-    with open('test/lambs_solution_compare_with.txt') as f:
+    with open('tests/lambs_solution_compare_with.txt') as f:
         for i, line in enumerate(f.readlines()[1:]):
             line = line.split()
             setup_number = setup_numbers[i // 11]

@@ -92,7 +92,17 @@ For the mid-field, we also generate the mobility scalars. As they are computed a
 
 4.  Run **combine_scalars.py** to combine these two results. This is quick!
 
-5.  Run **../convert_resistance_scalars_to_d_form.py** to convert these results into a form where the mobility interaction is already subtracted off (for unclear reasons called 'd' form). This is also quick!
+5.  Run **subtract_R2Binfinity_from_scalars.py** to convert these results into a form where the mobility interaction is already subtracted off (indicated by the letter 'd' in the output files). This is also quick!
+
+6. To prevent accidents, the output from this process is not directly copied into the main Stokesian Dynamics code. To use these scalars in the main Stokesian Dynamics code, copy the files:
+    *  **scalars_general_resistance.npy**
+    *  **scalars_general_resistance.txt** (human-readable version, optional)
+    *  **scalars_general_resistance_d.npy**
+    *  **scalars_general_resistance_d.txt** (human-readable version, optional)
+    *  **values_of_lambda.txt**
+    *  **values_of_s_dash.txt**
+
+    to the **stokesian_dynamics/resistance_scalars** directory of the Stokesian Dynamics code.
 
 ## 4. References ##
 

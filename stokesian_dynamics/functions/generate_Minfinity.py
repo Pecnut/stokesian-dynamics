@@ -10,7 +10,7 @@ from numpy import pi
 from functions.shared import (posdata_data, levi, norm, s2, s3,
                               submatrix_coords, is_sphere, is_dumbbell_bead_1,
                               is_dumbbell_bead_2)
-from inputs import bead_bead_interactions
+from settings import bead_bead_interactions
 from scipy.sparse import coo_matrix
 from numba import njit
 

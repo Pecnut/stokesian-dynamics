@@ -30,19 +30,22 @@ from functions.timestepping import (
     calculate_time_left, format_time_left, format_finish_time,
     wrap_around, add_background_flow_spheres, add_background_flow_dumbbells)
 from setups.inputs import input_ftsuoe
-from inputs import (
+from setups.positions import (posdata, setup_description, checkpoint_filename,
+                              checkpoint_start_from_frame)
+from settings import (
     cutoff_factor, num_frames, view_graphics, viewbox_bottomleft_topright,
-    printout, setup_number, posdata, setup_description, s_dash_range,
-    lam_range_with_reciprocals, view_labels, viewing_angle, timestep,
+    printout, setup_number,
+    view_labels, viewing_angle, timestep,
     trace_paths, two_d_plot, email_on_completion,
     save_positions_every_n_timesteps, save_forces_every_n_timesteps,
     save_forces_and_positions_to_temp_file_as_well,
     save_to_temp_file_every_n_timesteps, use_drag_Minfinity,
     use_Minfinity_only, input_form, invert_m_every, explosion_protection,
-    input_number, extract_force_on_wall_due_to_dumbbells, checkpoint_filename,
-    checkpoint_start_from_frame, feed_every_n_timesteps, feed_from_file,
+    input_number, extract_force_on_wall_due_to_dumbbells,
+    feed_every_n_timesteps, feed_from_file,
     timestepping_scheme, bead_bead_interactions, fully_2d_problem,
     start_saving_after_first_n_timesteps, rk4_generate_minfinity_for_each_stage)
+from resistance_scalars.data import s_dash_range, lam_range_with_reciprocals
 
 
 # Input description of simulation
@@ -102,7 +105,7 @@ if view_graphics:
     ax.set_ylim3d(v[1, 0], v[1, 1])
     ax.set_zlim3d(v[2, 0], v[2, 1])
     ax.set_box_aspect((1, 1, 1), zoom=1.35)
-    if two_d_plot == 1:
+    if two_d_plot:
         ax.set_proj_type('ortho')
         ax.set_yticks([])
     else:
@@ -135,7 +138,7 @@ def initialise_frame():
 
 def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                    cutoff_factor=2, viewbox_bottomleft_topright=np.array([]),
-                   printout=0, view_labels=1, timestep=0.1, trace_paths=0,
+                   printout=0, view_labels=False, timestep=0.1, trace_paths=0,
                    input_form='general', filename='', output_folder='output',
                    legion_random_id='', box_bottom_left=np.array([0, 0, 0]),
                    box_top_right=np.array([0, 0, 0])):
@@ -696,7 +699,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                     previous_step_posdata, trace_paths, dumbbell_spheres,
                     dumbbell_lines, dumbbell_trace_lines, Fb_out, DFb_out,
                     no_line=no_line)
-            if view_labels == 1:
+            if view_labels:
                 (force_lines, force_text) = plot_all_force_lines(
                     ax, viewbox_bottomleft_topright, posdata_final, Fa_out,
                     force_lines)

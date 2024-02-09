@@ -6,9 +6,9 @@ Functions file for generate_scalars_nearfield.py.
 
 Contains functions which generate X11A, X12A, Y11A, etc.
 
-Reference: Townsend 2018, 'Generating, from scratch, the near-field asymptotic
+Reference: Townsend 2023, 'Generating, from scratch, the near-field asymptotic
 forms of scalar resistance functions for two unequal rigid spheres in
-low-Reynolds-number flow.' arXiv:1802.08226[physics.flu-dyn]
+low-Reynolds-number flow.' Physics of Fluids 35 (12), 127126.
 
 Formulae are based on Jeffrey & Onishi 1984, Jeffrey 1992, and Ichiki et al.
 2013 but have been corrected in the document referenced above.
