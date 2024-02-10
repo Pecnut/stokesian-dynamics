@@ -114,12 +114,12 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
 
     elif n == 1:
         # Gravity
-        Fa_in[:] = [[0, 0, -1] for i in range(num_spheres)]
+        Fa_in[:] = [[0, 0, -1] for _ in range(num_spheres)]
         desc = "gravity"
 
     elif n == 2:
         # Gravity in periodic domain
-        Fa_in[:] = [[0, 0, -1] for i in range(num_spheres)]
+        Fa_in[:] = [[0, 0, -1] for _ in range(num_spheres)]
         sphere_positions, box_bottom_left, box_top_right = simple_cubic_8(8)
         # sphere_positions is ignored inside input_ftsuoe, but to activate
         #   periodicity, you have to set box_bottom_left and box_top_right.
@@ -152,23 +152,36 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
         desc = "repulsion"
 
     elif n == 5:
-        # Force half the spheres to move to the left with a given velocity,
-        #   and force the rest to move to the right.
-        Ua_in[:] = ([[-1, 0, 0] for i in range(num_spheres//2)]
-                    + [[1, 0, 0] for i in range(num_spheres//2, num_spheres)])
+        # Make half the spheres move to the left with a given velocity,
+        #   and make the rest move to the right.
+        Ua_in[:] = ([[-1, 0, 0] for _ in range(num_spheres//2)]
+                    + [[1, 0, 0] for _ in range(num_spheres//2, num_spheres)])
 
     elif n == 6:
+        # An example mixing prescribed forces and velocities.
+        # Make half the wall spheres move to the left with a given velocity,
+        #  and make the rest move to the right.
+        # Give the remaining, non-wall spheres a force to the right.
+        # Notice how Ua_in and Fa_in both have length 99. The software works
+        #  out how many spheres have prescribed velocities, rather than forces,
+        #  by counting how many of Ua_in have been filled in.
+        # The fixed-velocity spheres must be numbered first.
+        num_wall_spheres = 90
+        num_other_spheres = 9
+        Ua_in[:num_wall_spheres] = (
+            [[-1, 0, 0] for _ in range(num_wall_spheres//2)]
+            + [[1, 0, 0] for _ in range(num_wall_spheres//2,
+                                        num_wall_spheres)])
+        Fa_in[num_wall_spheres:] = [[10, 0, 0]
+                                     for _ in range(num_other_spheres)]
+
+    elif n == 7:
         # Constant shear
         (Ea_in, U_infinity, O_infinity, centre_of_background_flow,
          Ot_infinity, Et_infinity) = constant_shear(
             gammadot=1, frameno=frameno, timestep=timestep,
             num_spheres=num_spheres)
         desc = "constant-shear"
-
-    elif n == 7:
-        # Gravity on the second particle only
-        Fa_in[1] = [0, 0, -1]
-        desc = "gravity-second-particle-only"
 
     else:
         # Just something to flag up on the other side that there's a problem

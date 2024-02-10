@@ -286,7 +286,7 @@ Run `python run_simulation.py 5 4 1 10 fte`.
 <img src='docs/images/example-e-sim.gif' width='640' alt='Video of simulation displayed on the screen: Randomly arranged spheres'>
 
 ### (f) Randomly arranged dumbbells between two walls of spheres which have a specified velocity
-Create two walls of spheres, with dumbbells randomly arranged between them. Then force the walls to move at given speeds. Observe what happens to the dumbbells.
+Create two walls of spheres, with dumbbells randomly arranged between them. Specify the velocity of the walls. Observe what happens to the dumbbells.
 
 This time we need the `ufte` flag because we are specifying velocities.
 
@@ -296,10 +296,23 @@ Run `python run_simulation.py 6 5 1 10 ufte`.
 
 <img src='docs/images/example-f-sim.gif' width='640' alt='Video of simulation displayed on the screen: Randomly arranged dumbbells between two walls of spheres as the walls move in opposite directions'>
 
-### (g) Replicating an existing output file
+### (g) An array of forced spheres between two walls of spheres which have a specified velocity
+Create two walls of spheres, with a 3×3 array of spheres between them. Specify the velocity of the walls, but also give the spheres in the middle a force to the right.
+
+We need the `ufte` flag because we are specifying velocities.
+
+Set `view_graphics = True` and `viewbox_bottomleft_topright = np.array([[-15, 0, -15], [15, 1, 15]])` (the default) in **settings.py** to see the motion of the particles in the *xz*-plane.
+
+Run `python run_simulation.py 7 6 1 10 ufte`.
+
+<img src='docs/images/example-g-sim.gif' width='640' alt='Video of simulation displayed on the screen: An array of spheres shears and moves to the right between two horizontal walls of spheres that move in opposite directions'>
+
+When specifying forces for some spheres and velocities for other spheres, be careful that every sphere is given either a force or a velocity.
+
+### (h) Replicating an existing output file
 Use the function `same_setup_as('FILENAME', frameno=0)` in **setups/positions.py** to copy the setup from a certain file, starting at a given frame number.
 
-Run `python run_simulation.py 7 1 1 1 fte`.
+Run `python run_simulation.py 8 1 1 1 fte`.
 
 ## 12. Increasing the number of particle size ratios available <a name="s12"></a> ##
 By default, the software comes with the precomputed resistance data for particles of size ratio 1:1, 1:10 and 1:100. To increase this:

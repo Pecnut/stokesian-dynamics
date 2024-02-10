@@ -32,7 +32,7 @@ def pos_setup(n):
         return posdata, desc
 
     if n == 1:
-        # Example case 1
+        # Example (a)
         # Durlofsky, Brady & Bossis, 1987. Dynamic simulation of hydro-
         # dynamically interacting particles. Figure 1. This test case looks at
         # horizontal chains of 5, 9 and 15 spheres sedimenting vertically.
@@ -49,7 +49,7 @@ def pos_setup(n):
         dumbbell_deltax = np.empty([0, 3])
 
     elif n == 2:
-        # Example case 2
+        # Example (b)
         # Durlofsky, Brady & Bossis, 1987. Dynamic simulation of hydro-
         # dynamically interacting particles. Figure 5. This test case considers
         # three particles sedimenting vertically, and looks at their
@@ -63,7 +63,7 @@ def pos_setup(n):
         dumbbell_deltax = np.empty([0, 3])
 
     elif n == 3:
-        # Example case 3
+        # Example (c)
         # Brady, Phillips, Jester, Bossis 1988. Dynamic simulation of hydro-
         # dynamically interacting suspensions. Figure 1. Figure corrected by:
         # Sierou & Brady 2001. Accelerated Stokesian Dynamics simulations.
@@ -81,7 +81,7 @@ def pos_setup(n):
         dumbbell_deltax = np.empty([0, 3])
 
     elif n == 4:
-        # Example case 4
+        # Example (d)
         # Two spheres, two dumbbells
         sphere_sizes = np.array([1, 1])
         sphere_positions = np.array([[0, 0, 0], [4.5, 0, 4.5]])
@@ -93,7 +93,7 @@ def pos_setup(n):
                                     [np.sqrt(2), 0, np.sqrt(2)]])
 
     elif n == 5:
-        # Example case 5
+        # Example (e)
         # Randomly arranged spheres
         num_spheres = 41
         sphere_sizes = np.array([1 for i in range(num_spheres)])
@@ -102,7 +102,7 @@ def pos_setup(n):
         L = 16.2
         # This will put the centres in a given box size
         sphere_positions = randomise_spheres(
-            [-L/2.+1, 0, -L/2.+1], [L/2.-1, 0, L/2.-1], sphere_sizes,
+            [-L/2+1, 0, -L/2+1], [L/2-1, 0, L/2-1], sphere_sizes,
             np.array([]), np.empty([0, 3]))
         sphere_rotations = add_sphere_rotations_to_positions(
             sphere_positions, sphere_sizes, np.array([[1, 0, 0], [0, 0, 1]]))
@@ -111,18 +111,18 @@ def pos_setup(n):
         dumbbell_deltax = np.empty([0, 3])
 
     elif n == 6:
-        # Example case 5
+        # Example (f)
         # Two walls of spheres with dumbbells randomly distributed between them.
-        num_lid_particles_each_lid = 45
+        num_spheres_per_wall = 45
         num_random_dumbbells = 100*2
 
-        sphere_sizes = np.array([1 for _ in range(num_lid_particles_each_lid*2)])
+        sphere_sizes = np.array([1 for _ in range(num_spheres_per_wall*2)])
         sep = 2.00001
         sphere_positions = np.array(
-            [[sep*i-(num_lid_particles_each_lid//2)*sep, 0, 0]
-             for i in range(num_lid_particles_each_lid)]
-            + [[sep*i-(num_lid_particles_each_lid//2)*sep, 0, 11]
-               for i in range(num_lid_particles_each_lid)])
+            [[sep*i-(num_spheres_per_wall//2)*sep, 0, 0]
+             for i in range(num_spheres_per_wall)]
+            + [[sep*i-(num_spheres_per_wall//2)*sep, 0, 11]
+               for i in range(num_spheres_per_wall)])
         sphere_rotations = add_sphere_rotations_to_positions(
             sphere_positions, sphere_sizes, np.array([[1, 0, 0], [0, 0, 1]]))
         dumbbell_sizes = np.array([0.1 for n in range(num_random_dumbbells)])
@@ -134,20 +134,44 @@ def pos_setup(n):
             phi=0)
 
     elif n == 7:
+        # Example (g)
+        # Two walls of spheres with an array of spheres between them.
+        # Spheres which will be prescribed velocities, rather than forces,
+        # must come first in sphere_sizes, sphere_positions and
+        # sphere_rotations.
+        num_spheres_per_wall = 45
+        num_middle_spheres = 9
+        random_sphere_sizes = np.array([1 for _ in range(num_middle_spheres)])
+
+        num_spheres = num_spheres_per_wall*2 + num_middle_spheres
+        sphere_sizes = np.array([1 for _ in range(num_spheres)])
+
+        sep = 2.00001
+        wall_sphere_positions = np.array(
+            [[sep*i-(num_spheres_per_wall//2)*sep, 0, -5]
+             for i in range(num_spheres_per_wall)]
+            + [[sep*i-(num_spheres_per_wall//2)*sep, 0, 5]
+               for i in range(num_spheres_per_wall)])
+
+        middle_sphere_positions = np.array([
+            [i,0,j] for i in [-4,0,4] for j in [-2.5,0,2.5]])
+
+        sphere_positions = np.concatenate(
+            (wall_sphere_positions, middle_sphere_positions))
+        sphere_rotations = add_sphere_rotations_to_positions(
+            sphere_positions, sphere_sizes, np.array([[1, 0, 0], [0, 0, 1]]))
+
+        dumbbell_sizes = np.array([])
+        dumbbell_positions = np.empty([0, 3])
+        dumbbell_deltax = np.empty([0, 3])
+
+    elif n == 8:
+        # Example (h)
         # To replicate setup of an existing output file
         (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
          dumbbell_positions, dumbbell_deltax) = same_setup_as('FILENAME',
                                                               frameno=0)
 
-    elif n == 8:
-        # Two sphere
-        sphere_sizes = np.array([1, 1])
-        sphere_positions = np.array([[-1.1, 0, 0], [1.1, 0, 0]])
-        sphere_rotations = add_sphere_rotations_to_positions(
-            sphere_positions, sphere_sizes, np.array([[1, 0, 0], [0, 0, 1]]))
-        dumbbell_sizes = np.array([])
-        dumbbell_positions = np.empty([0, 3])
-        dumbbell_deltax = np.empty([0, 3])
 
     try:
         sphere_sizes
