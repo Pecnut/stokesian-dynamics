@@ -141,9 +141,8 @@ def pos_setup(n):
         # sphere_rotations.
         num_spheres_per_wall = 45
         num_middle_spheres = 9
-        random_sphere_sizes = np.array([1 for _ in range(num_middle_spheres)])
-
         num_spheres = num_spheres_per_wall*2 + num_middle_spheres
+
         sphere_sizes = np.array([1 for _ in range(num_spheres)])
 
         sep = 2.00001

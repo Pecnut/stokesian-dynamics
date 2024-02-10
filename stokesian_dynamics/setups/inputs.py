@@ -173,7 +173,7 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
             + [[1, 0, 0] for _ in range(num_wall_spheres//2,
                                         num_wall_spheres)])
         Fa_in[num_wall_spheres:] = [[10, 0, 0]
-                                     for _ in range(num_other_spheres)]
+                                    for _ in range(num_other_spheres)]
 
     elif n == 7:
         # Constant shear
