@@ -28,7 +28,7 @@ This is a Python 3 implementation of [Stokesian Dynamics](http://authors.library
 
 ## 1. What is Stokesian Dynamics? <a name="s1"></a> ##
 
-Stokesian Dynamics is a microhydrodynamic, low Reynolds number approach<sup>[[1]](#footnote1)</sup> to modelling the movement of suspensions of particles in fluids which considers the interaction of particles with each other against a Newtonian background solvent. It is typically chosen for its suitability for three-dimensional simulation with low calculation and time penalty.
+Stokesian Dynamics is a microhydrodynamic, low Reynolds number approach to modelling the movement of suspensions of particles in fluids which considers the interaction of particles with each other against a Newtonian background solvent. The fluid is modelled using the [Stokes equations](https://en.wikipedia.org/wiki/Stokes_flow#Stokes_equations). It is typically chosen for its suitability for three-dimensional simulation with low calculation and time penalty.
 
 In the most basic case, Stokes’ law states that a single sphere of radius *a*, travelling with a velocity ***U*** in an unbounded Newtonian fluid of viscosity *μ*, in a low Reynolds number regime, experiences a drag force, ***F***, of ***F*** = −6*πμa*__*U*__.
 
@@ -72,7 +72,7 @@ Speed and memory are the greatest limitations of the software. Loosely speaking,
 
 This is an implementation in Python, using Numba for speed. It has been tested with Python 3.9 and requires the following Python packages:
 
-* matplotlib, numba, numpy, pytest, scipy
+* matplotlib, numba, numpy, psutil, pytest, scipy
 
 Section 5 below explains how to install these packages.
 
@@ -220,7 +220,7 @@ Within the **stokesian_dynamics** folder, the files **setups/positions.py** and 
 ### (a) Fig. 1 of Durlofsky et al. (1987) (non-periodic)
 [Durlofsky, Brady & Bossis, 1987](https://doi.org/10.1017/S002211208700171X). Dynamic simulation of hydrodynamically interacting particles. *Journal of Fluid Mechanics* **180**, 21–49. Figure 5.
 
-This test case looks at horizontal chains of 5, 9 and 15 spheres sedimenting vertically. The instantaneous drag coefficient, *λ*=*F*/(6π*μaU*), is measured for each sphere in the chain, in each case. Here we set up the chain of length 15. Running for 1 timestep<sup>[[2]](#footnote2)</sup>, reading the velocity *U* and calculating *λ* reproduces this graph.
+This test case looks at horizontal chains of 5, 9 and 15 spheres sedimenting vertically. The instantaneous drag coefficient, *λ*=*F*/(6π*μaU*), is measured for each sphere in the chain, in each case. Here we set up the chain of length 15. We can reproduce the figure in the paper by running this simulation for 1 timestep with Euler timestepping (set `timestepping_scheme = 'euler'` in **settings.py**). We just need to read the velocity *U* of each sphere and calculate *λ*.
 
 Set `view_graphics = True` and `viewbox_bottomleft_topright = np.array([[-4, 0, -30], [60, 1, 30]])` in **settings.py** to see the whole chain. As we will run for only 1 timestep, the chain will not move far from its initial position.
 
@@ -349,10 +349,3 @@ This error occurs when the main body of the code (`generate_frame`) has not been
 **Reason:** If `view_graphics = True`, the timesteps are looped over using `animation.FuncAnimation`, which allows you to see what's going on in the simulation in 'real time'. If `view_graphics = False`, then the timesteps are looped over just with a for loop, bypassing the plotting functionality completely.
 
 The normal cause of this error is that `view_graphics = True`, but despite this, `animation.FuncAnimation` has not functioned correctly. This happens if you change the matplotlib backend to a backend such as `Agg` which does not require a working display: see [the Agg backend is not compatible with animation.FuncAnimation](https://github.com/matplotlib/matplotlib/issues/2552/).
-
-
-<hr>
-
-<a name="footnote1">[1]</a> This means it solves the [Stokes equation](https://en.wikipedia.org/wiki/Stokes_flow#Stokes_equations) rather than the [Navier–Stokes equation](https://en.wikipedia.org/wiki/Navier%E2%80%93Stokes_equations#General_continuum_equations).
-
-<a name="footnote2">[2]</a> Euler timestep: make sure `timestepping_scheme = 'euler'` in **settings.py**
