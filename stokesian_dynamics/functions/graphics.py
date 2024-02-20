@@ -92,9 +92,8 @@ def between0and1(num):
         return num
 
 
-def plot_sphere(ax, frameno, viewbox_bottomleft_topright, position,
-                previous_position, trace_paths, radius, sphere_rotations,
-                dumbbell=0, sphere_colour='b'):
+def plot_sphere(ax, frameno, position, previous_position, trace_paths, radius,
+                sphere_rotations, dumbbell=0, sphere_colour='b'):
     n = normal(ax)
 
     if dumbbell == 0:
@@ -151,8 +150,7 @@ def plot_sphere(ax, frameno, viewbox_bottomleft_topright, position,
     return (p, line1, line2, linetrace)
 
 
-def plot_dumbbell(ax, viewbox_bottomleft_topright, position, trace_paths,
-                  radius, dx, rot_theta=0, rot_phi=0,
+def plot_dumbbell(ax, position, trace_paths, radius, dx, rot_theta=0, rot_phi=0,
                   dumbbell_colour=['b', 'b'], no_line=False):
     pos1 = position - 0.5*dx
     pos2 = position + 0.5*dx
@@ -185,9 +183,8 @@ def plot_dumbbell(ax, viewbox_bottomleft_topright, position, trace_paths,
     return (p1, p2) if no_line else (p1, p2, line)
 
 
-def plot_all_spheres(ax, frameno, viewbox_bottomleft_topright, posdata,
-                     previous_step_posdata, trace_paths, sphere_trace_lines,
-                     f_spheres):
+def plot_all_spheres(ax, frameno, posdata, previous_step_posdata, trace_paths,
+                     sphere_trace_lines, f_spheres):
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
      dumbbell_positions, dumbbell_deltax) = posdata
     (previous_sphere_sizes, previous_sphere_positions,
@@ -200,7 +197,7 @@ def plot_all_spheres(ax, frameno, viewbox_bottomleft_topright, posdata,
         C = between0and1(np.linalg.norm(np.array(f_spheres[i], float)))
         sphere_colour = [C, 0, 1-C]
         (p, l1, l2, ltrace) = plot_sphere(
-            ax, frameno, viewbox_bottomleft_topright, sphere_positions[i, :],
+            ax, frameno, sphere_positions[i, :],
             previous_sphere_positions[i, :], trace_paths, sphere_sizes[i],
             sphere_rotations[i], sphere_colour=sphere_colour)
         spheres.append(p)
@@ -210,10 +207,8 @@ def plot_all_spheres(ax, frameno, viewbox_bottomleft_topright, posdata,
     return spheres, sphere_lines, sphere_trace_lines
 
 
-def plot_all_dumbbells(ax, frameno, viewbox_bottomleft_topright, posdata,
-                       previous_step_posdata, trace_paths,
-                       dumbbell_trace_lines, f_dumbbells, deltaf_dumbbells,
-                       max_DFb_out=1, no_line=False):
+def plot_all_dumbbells(ax, posdata, trace_paths, dumbbell_trace_lines,
+                       f_dumbbells, deltaf_dumbbells, no_line=False):
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
      dumbbell_positions, dumbbell_deltax) = posdata
     dumbbell_lines = []
@@ -242,14 +237,14 @@ def plot_all_dumbbells(ax, frameno, viewbox_bottomleft_topright, posdata,
         dumbbell_colour = [dumbbell_colour1, dumbbell_colour2]
         if no_line:
             sphere1, sphere2 = plot_dumbbell(
-                ax, viewbox_bottomleft_topright, dumbbell_positions[i, :],
-                trace_paths, dumbbell_sizes[i], dumbbell_deltax[i, :],
-                dumbbell_colour=dumbbell_colour, no_line=no_line)
+                ax, dumbbell_positions[i, :], trace_paths, dumbbell_sizes[i],
+                dumbbell_deltax[i, :], dumbbell_colour=dumbbell_colour,
+                no_line=no_line)
         else:
             sphere1, sphere2, line = plot_dumbbell(
-                ax, viewbox_bottomleft_topright, dumbbell_positions[i, :],
-                trace_paths, dumbbell_sizes[i], dumbbell_deltax[i, :],
-                dumbbell_colour=dumbbell_colour, no_line=no_line)
+                ax, dumbbell_positions[i, :], trace_paths, dumbbell_sizes[i],
+                dumbbell_deltax[i, :], dumbbell_colour=dumbbell_colour,
+                no_line=no_line)
             dumbbell_lines.append(line)
         dumbbell_spheres.extend((sphere1, sphere2))
         # NOTE: CURRENTLY, DUMBBELL TRACE LINES ARE NOT IMPLEMENTED
@@ -257,7 +252,7 @@ def plot_all_dumbbells(ax, frameno, viewbox_bottomleft_topright, posdata,
     return dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines
 
 
-def plot_all_force_lines(ax, viewbox_bottomleft_topright, posdata, f_spheres):
+def plot_all_force_lines(ax, posdata, f_spheres):
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
      dumbbell_positions, dumbbell_deltax) = posdata
     force_lines = force_text = []
@@ -287,7 +282,7 @@ def plot_all_force_lines(ax, viewbox_bottomleft_topright, posdata, f_spheres):
     return force_lines, force_text
 
 
-def plot_all_torque_lines(ax, viewbox_bottomleft_topright, posdata, t_spheres):
+def plot_all_torque_lines(ax, posdata, t_spheres):
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
      dumbbell_positions, dumbbell_deltax) = posdata
     torque_lines = []
@@ -306,8 +301,7 @@ def plot_all_torque_lines(ax, viewbox_bottomleft_topright, posdata, t_spheres):
     return torque_lines
 
 
-def plot_all_velocity_lines(ax, viewbox_bottomleft_topright, posdata,
-                            u_spheres):
+def plot_all_velocity_lines(ax, posdata, u_spheres):
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
      dumbbell_positions, dumbbell_deltax) = posdata
     velocity_lines = velocity_text = sphere_labels = []
@@ -344,8 +338,7 @@ def plot_all_velocity_lines(ax, viewbox_bottomleft_topright, posdata,
     return velocity_lines, velocity_text, sphere_labels
 
 
-def plot_all_angular_velocity_lines(ax, viewbox_bottomleft_topright, posdata,
-                                    o_spheres):
+def plot_all_angular_velocity_lines(ax, posdata, o_spheres):
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
      dumbbell_positions, dumbbell_deltax) = posdata
     angular_velocity_lines = []

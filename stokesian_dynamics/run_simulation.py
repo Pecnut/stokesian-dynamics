@@ -687,28 +687,26 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 viewbox_bottomleft_topright = np.array([[-m, -m, -m], [m, m, m]])
             if num_spheres > 0:
                 (spheres, sphere_lines, sphere_trace_lines) = plot_all_spheres(
-                    ax, frameno, viewbox_bottomleft_topright, posdata_final,
-                    previous_step_posdata, trace_paths, sphere_trace_lines,
-                    Fa_out)
+                    ax, frameno, posdata_final, previous_step_posdata,
+                    trace_paths, sphere_trace_lines, Fa_out)
 
             no_line = True
             if num_dumbbells > 0:
                 (dumbbell_spheres, dumbbell_lines,
                  dumbbell_trace_lines) = plot_all_dumbbells(
-                    ax, frameno, viewbox_bottomleft_topright, posdata_final,
-                    previous_step_posdata, trace_paths, dumbbell_trace_lines,
+                    ax, posdata_final, trace_paths, dumbbell_trace_lines,
                     Fb_out, DFb_out, no_line=no_line)
             if view_labels:
                 (force_lines, force_text) = plot_all_force_lines(
-                    ax, viewbox_bottomleft_topright, posdata_final, Fa_out)
+                    ax, posdata_final, Fa_out)
                 # torque_lines = plot_all_torque_lines(
-                #     ax, viewbox_bottomleft_topright, posdata_final, Ta_out)
+                #     ax, posdata_final, Ta_out)
                 # (velocity_lines, velocity_text,
                 #  sphere_labels) = plot_all_velocity_lines(
-                #     ax, viewbox_bottomleft_topright, posdata_final, Ua_out)
+                #     ax, posdata_final, Ua_out)
                 # Velocity in green
                 # angular_velocity_lines = plot_all_angular_velocity_lines(
-                #     ax, viewbox_bottomleft_topright, posdata_final, Oa_out)
+                #     ax, posdata_final, Oa_out)
                 # Ang vel in white with green edging
 
             ax.set_title("  frame "

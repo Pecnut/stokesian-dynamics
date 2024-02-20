@@ -272,25 +272,22 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]),
 
     if num_spheres > 0:
         (spheres, sphere_lines, sphere_trace_lines) = plot_all_spheres(
-            ax, real_frameno, viewbox_bottomleft_topright, posdata,
-            previous_step_posdata, trace_paths, sphere_trace_lines, FaX)
+            ax, real_frameno, posdata, previous_step_posdata, trace_paths,
+            sphere_trace_lines, FaX)
     if num_dumbbells > 0:
         (dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines) = plot_all_dumbbells(
-            ax, real_frameno, viewbox_bottomleft_topright, posdata,
-            previous_step_posdata, trace_paths, dumbbell_trace_lines,
-            FbX, DFbX, max_DFb_out=max_DFb_out, no_line=no_line)
+            ax, real_frameno, posdata, trace_paths,
+            dumbbell_trace_lines, FbX, DFbX, no_line=no_line)
 
     if view_labels:
-        (force_lines, force_text) = plot_all_force_lines(
-            ax, viewbox_bottomleft_topright, posdata, Fa_out)
-        torque_lines = plot_all_torque_lines(
-            ax, viewbox_bottomleft_topright, posdata, Ta_out)
+        (force_lines, force_text) = plot_all_force_lines(ax, posdata, Fa_out)
+        torque_lines = plot_all_torque_lines(ax, posdata, Ta_out)
         # Velocity in green
         (velocity_lines, velocity_text, sphere_labels) = plot_all_velocity_lines(
-            ax, viewbox_bottomleft_topright, posdata, Ua_out)
+            ax, posdata, Ua_out)
         # Angular velocity in white with green edging
         angular_velocity_lines = plot_all_angular_velocity_lines(
-            ax, viewbox_bottomleft_topright, posdata, Oa_out)
+            ax, posdata, Oa_out)
 
     ax.set_title("  frame "
                  + ("{:" + str(len(str(num_frames-1))) + ".0f}").format(frameno)

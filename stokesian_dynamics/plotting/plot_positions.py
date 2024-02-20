@@ -111,21 +111,18 @@ if viewbox_bottomleft_topright.size == 0:
 
 if num_spheres > 0:
     (spheres, sphere_lines, sphere_trace_lines) = plot_all_spheres(
-        ax, frameno, viewbox_bottomleft_topright, posdata, previous_step_posdata,
-        trace_paths, sphere_trace_lines, Fa_out[frameno])
+        ax, frameno, posdata, previous_step_posdata, trace_paths,
+        sphere_trace_lines, Fa_out[frameno])
 if num_dumbbells > 0:
     (dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines) = plot_all_dumbbells(
-        ax, frameno, viewbox_bottomleft_topright, posdata, previous_step_posdata,
-        trace_paths, dumbbell_trace_lines, Fb_out[frameno], DFb_out[frameno])
+        ax, frameno, posdata, trace_paths, dumbbell_trace_lines,
+        Fb_out[frameno], DFb_out[frameno])
 if view_labels:
-    torque_lines = plot_all_torque_lines(ax, viewbox_bottomleft_topright,
-                                         posdata, Ta_out)
-    # Velocity in green
+    torque_lines = plot_all_torque_lines(ax, posdata, Ta_out)
     (velocity_lines, velocity_text, sphere_labels) = plot_all_velocity_lines(
-        ax, viewbox_bottomleft_topright, posdata, Ua_out)
-    # Angular velocity in white with green edging
+        ax, posdata, Ua_out)  # Velocity in green
     angular_velocity_lines = plot_all_angular_velocity_lines(
-        ax, viewbox_bottomleft_topright, posdata, Oa_out)
+        ax, posdata, Oa_out)  # Angular velocity in white with green edging
 
 for q in (dumbbell_lines):
     q.remove()
