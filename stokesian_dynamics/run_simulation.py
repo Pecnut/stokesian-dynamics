@@ -224,7 +224,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
             Ub_blank = np.array([[0, 0, 0] for _ in range(num_dumbbells)])
             DUb_blank = np.array([[0, 0, 0] for _ in range(num_dumbbells)])
             last_velocities = [Ua_blank, Ub_blank, DUb_blank, Ua_blank]  # Oa_blank at the end there
-            last_velocity_vector = [0 for i in range(11*num_spheres + 6*num_dumbbells)]
+            last_velocity_vector = [0 for _ in range(11*num_spheres + 6*num_dumbbells)]
 
         if num_spheres == 0:
             new_sphere_positions = np.copy(sphere_positions)
@@ -673,18 +673,6 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                       + angular_velocity_lines + sphere_lines + dumbbell_lines
                       + dumbbell_spheres):
                 q.remove()
-            if viewbox_bottomleft_topright.size == 0:
-                if num_spheres > 0 and num_dumbbells > 0:
-                    m = np.array([abs(sphere_positions).max(),
-                                  abs(dumbbell_positions).max()]).max()
-                elif num_spheres > 0 and num_dumbbells == 0:
-                    m = abs(sphere_positions).max()
-                elif num_dumbbells > 0 and num_spheres == 0:
-                    m = abs(dumbbell_positions).max()
-                else:
-                    print("PROBLEM")
-                    m = 3
-                viewbox_bottomleft_topright = np.array([[-m, -m, -m], [m, m, m]])
             if num_spheres > 0:
                 (spheres, sphere_lines, sphere_trace_lines) = plot_all_spheres(
                     ax, frameno, posdata_final, previous_step_posdata,

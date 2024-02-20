@@ -150,8 +150,8 @@ def plot_sphere(ax, frameno, position, previous_position, trace_paths, radius,
     return (p, line1, line2, linetrace)
 
 
-def plot_dumbbell(ax, position, trace_paths, radius, dx, rot_theta=0, rot_phi=0,
-                  dumbbell_colour=['b', 'b'], no_line=False):
+def plot_dumbbell(ax, position, radius, dx, dumbbell_colour=['b', 'b'],
+                  no_line=False):
     pos1 = position - 0.5*dx
     pos2 = position + 0.5*dx
 
@@ -209,6 +209,8 @@ def plot_all_spheres(ax, frameno, posdata, previous_step_posdata, trace_paths,
 
 def plot_all_dumbbells(ax, posdata, trace_paths, dumbbell_trace_lines,
                        f_dumbbells, deltaf_dumbbells, no_line=False):
+    # NOTE: Dumbbell traces lines are not implemented.
+
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
      dumbbell_positions, dumbbell_deltax) = posdata
     dumbbell_lines = []
@@ -237,17 +239,16 @@ def plot_all_dumbbells(ax, posdata, trace_paths, dumbbell_trace_lines,
         dumbbell_colour = [dumbbell_colour1, dumbbell_colour2]
         if no_line:
             sphere1, sphere2 = plot_dumbbell(
-                ax, dumbbell_positions[i, :], trace_paths, dumbbell_sizes[i],
+                ax, dumbbell_positions[i, :], dumbbell_sizes[i],
                 dumbbell_deltax[i, :], dumbbell_colour=dumbbell_colour,
                 no_line=no_line)
         else:
             sphere1, sphere2, line = plot_dumbbell(
-                ax, dumbbell_positions[i, :], trace_paths, dumbbell_sizes[i],
+                ax, dumbbell_positions[i, :], dumbbell_sizes[i],
                 dumbbell_deltax[i, :], dumbbell_colour=dumbbell_colour,
                 no_line=no_line)
             dumbbell_lines.append(line)
         dumbbell_spheres.extend((sphere1, sphere2))
-        # NOTE: CURRENTLY, DUMBBELL TRACE LINES ARE NOT IMPLEMENTED
 
     return dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines
 
