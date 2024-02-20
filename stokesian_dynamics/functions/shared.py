@@ -235,7 +235,7 @@ def same_setup_as(filename, frameno=0, sphere_size=1, dumbbell_size=0.1,
     if local:
         data1 = np.load("output/" + filename + ".npz")
     else:
-        data1 = np.load("output/" + filename + ".npz")
+        data1 = np.load("your_external_location/output/" + filename + ".npz")
     positions_centres = data1['centres']
     positions_deltax = data1['deltax']
     num_particles = positions_centres.shape[1]
