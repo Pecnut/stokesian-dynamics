@@ -229,8 +229,7 @@ def generate_output_FTSUOE(
         last_generated_Minfinity_inverse, regenerate_Minfinity, input_form,
         cutoff_factor, printout, use_drag_Minfinity, use_Minfinity_only,
         extract_force_on_wall_due_to_dumbbells, last_velocities,
-        last_velocity_vector, box_bottom_left, box_top_right,
-        feed_every_n_timesteps=0):
+        last_velocity_vector, feed_every_n_timesteps=0):
     """Solve the grand mobility problem: for given force/velocity inputs,
     return all computed velocities/forces.
 

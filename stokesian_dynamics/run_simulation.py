@@ -248,8 +248,8 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 last_generated_Minfinity_inverse, regenerate_Minfinity,
                 input_form, cutoff_factor, printout, use_drag_Minfinity,
                 use_Minfinity_only, extract_force_on_wall_due_to_dumbbells,
-                last_velocities, last_velocity_vector, box_bottom_left,
-                box_top_right, feed_every_n_timesteps=feed_every_n_timesteps)
+                last_velocities, last_velocity_vector,
+                feed_every_n_timesteps=feed_every_n_timesteps)
             # Euler/AB2 timestepping k1
             if (num_spheres > 0):
                 Ua_out_plus_infinities_k1, Oa_out_plus_infinities_k1 = add_background_flow_spheres(
@@ -345,8 +345,8 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 last_generated_Minfinity_inverse, regenerate_Minfinity,
                 input_form, cutoff_factor, printout, use_drag_Minfinity,
                 use_Minfinity_only, extract_force_on_wall_due_to_dumbbells,
-                last_velocities, last_velocity_vector, box_bottom_left,
-                box_top_right, feed_every_n_timesteps=feed_every_n_timesteps)
+                last_velocities, last_velocity_vector,
+                feed_every_n_timesteps=feed_every_n_timesteps)
             # Euler timestepping k1
             if (num_spheres > 0):
                 Ua_out_plus_infinities_k1, Oa_out_plus_infinities_k1 = add_background_flow_spheres(
@@ -398,8 +398,8 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 last_generated_Minfinity_inverse, regenerate_Minfinity,
                 input_form, cutoff_factor, printout, use_drag_Minfinity,
                 use_Minfinity_only, extract_force_on_wall_due_to_dumbbells,
-                last_velocities, last_velocity_vector, box_bottom_left,
-                box_top_right, feed_every_n_timesteps=feed_every_n_timesteps)
+                last_velocities, last_velocity_vector,
+                feed_every_n_timesteps=feed_every_n_timesteps)
             # Euler timestepping k2
             if (num_spheres > 0):
                 Ua_out_plus_infinities_k2, Oa_out_plus_infinities_k2 = add_background_flow_spheres(
@@ -448,8 +448,8 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 last_generated_Minfinity_inverse, regenerate_Minfinity,
                 input_form, cutoff_factor, printout, use_drag_Minfinity,
                 use_Minfinity_only, extract_force_on_wall_due_to_dumbbells,
-                last_velocities, last_velocity_vector, box_bottom_left,
-                box_top_right, feed_every_n_timesteps=feed_every_n_timesteps)
+                last_velocities, last_velocity_vector,
+                feed_every_n_timesteps=feed_every_n_timesteps)
             # Euler timestepping k3
             if (num_spheres > 0):
                 Ua_out_plus_infinities_k3, Oa_out_plus_infinities_k3 = add_background_flow_spheres(
@@ -498,8 +498,8 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 last_generated_Minfinity_inverse, regenerate_Minfinity,
                 input_form, cutoff_factor, printout, use_drag_Minfinity,
                 use_Minfinity_only, extract_force_on_wall_due_to_dumbbells,
-                last_velocities, last_velocity_vector, box_bottom_left,
-                box_top_right, feed_every_n_timesteps=feed_every_n_timesteps)
+                last_velocities, last_velocity_vector,
+                feed_every_n_timesteps=feed_every_n_timesteps)
             if (num_spheres > 0):
                 Ua_out_plus_infinities_k4, Oa_out_plus_infinities_k4 = add_background_flow_spheres(
                     Ua_out_k4, Oa_out_k4, Ea_out_k4, U_infinity_k4, O_infinity_k4,
@@ -702,15 +702,14 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 (force_lines, force_text) = plot_all_force_lines(
                     ax, viewbox_bottomleft_topright, posdata_final, Fa_out)
                 # torque_lines = plot_all_torque_lines(
-                #     ax, viewbox_bottomleft_topright, posdata_final,
-                #     Ta_out, torque_lines)
+                #     ax, viewbox_bottomleft_topright, posdata_final, Ta_out)
                 # (velocity_lines, velocity_text,
                 #  sphere_labels) = plot_all_velocity_lines(
-                #     ax, viewbox_bottomleft_topright, posdata_final, Ua_out,
-                #     velocity_lines)  # Velocity in green
+                #     ax, viewbox_bottomleft_topright, posdata_final, Ua_out)
+                # Velocity in green
                 # angular_velocity_lines = plot_all_angular_velocity_lines(
-                #     ax, viewbox_bottomleft_topright, posdata_final, Oa_out,
-                #     angular_velocity_lines)  # Ang vel in white with green edging
+                #     ax, viewbox_bottomleft_topright, posdata_final, Oa_out)
+                # Ang vel in white with green edging
 
             ax.set_title("  frame "
                          + ("{:" + str(len(str(num_frames))) + ".0f}").format(frameno + 1)

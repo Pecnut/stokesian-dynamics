@@ -11,8 +11,6 @@ def fte_mobility_solve_nonperiodic(setup_number, input_number):
     frameno = 0
     regenerate_Minfinity = True
     last_velocities = []
-    box_bottom_left = [0, 0, 0]
-    box_top_right = [0, 0, 0]
     last_generated_Minfinity_inverse = []
     last_velocity_vector = []
 
@@ -28,9 +26,7 @@ def fte_mobility_solve_nonperiodic(setup_number, input_number):
         posdata, frameno, timestep, input_number,
         last_generated_Minfinity_inverse, regenerate_Minfinity, 'fte',
         cutoff_factor, printout, False, False,
-        False, last_velocities,
-        last_velocity_vector, box_bottom_left, box_top_right,
-        feed_every_n_timesteps=0)
+        False, last_velocities, last_velocity_vector, feed_every_n_timesteps=0)
 
     return (Ua_out, Oa_out, Sa_out)
 
