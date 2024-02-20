@@ -48,9 +48,9 @@ def rotation_matrix(d):
 
 def pathpatch_2d_to_3d(pathpatch, z=0, normal='z'):
     """
-    Transform a 2D Patch to a 3D patch using the given normal vector.
+    Transform a 2D patch to a 3D patch using the given normal vector.
 
-    The patch is projected into they XY plane, rotated about the origin
+    The patch is projected into the XY plane, rotated about the origin
     and finally translated by z.
     """
     if isinstance(normal, str):  # Translate strings to normal vectors
@@ -66,7 +66,7 @@ def pathpatch_2d_to_3d(pathpatch, z=0, normal='z'):
 
     pathpatch.__class__ = art3d.PathPatch3D  # Change the class
     pathpatch._code3d = path.codes  # Copy the codes
-    pathpatch._facecolor3d = pathpatch.get_facecolor  # Get the face color
+    pathpatch._facecolor3d = pathpatch.get_facecolor  # Get the face colour
 
     verts = path.vertices  # Get the vertices in 2D
 
