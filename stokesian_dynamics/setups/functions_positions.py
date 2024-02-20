@@ -39,7 +39,7 @@ def randomise_spheres(random_box_bottom_left, random_box_top_right,
     print("Randomly distributing " + str(len(random_sphere_sizes))
           + " spheres (using a naive method in Python)... ", end=" ")
     for i in range(len(random_sphere_sizes)):
-        while 1 == 1:
+        while True:
             proposed_sphere_position = random_point_in_box(
                 random_box_bottom_left, random_box_top_right)
             too_close = 0
@@ -101,7 +101,7 @@ def randomise_dumbbells(random_box_bottom_left, random_box_top_right,
           + " dumbbells... ", end=" ")
 
     for i in range(len(dumbbell_sizes)):
-        while 1 == 1:
+        while True:
             proposed_bead1_position = random_point_in_box(
                 random_box_bottom_left, random_box_top_right)
             too_close = 0
@@ -208,7 +208,7 @@ def randomise_dumbbells_periodic(random_box_bottom_left, random_box_top_right,
           + " dumbbells... ", end=" ")
 
     for i in range(len(dumbbell_sizes)):
-        while 1 == 1:
+        while True:
             proposed_bead1_position = random_point_in_box(
                 random_box_bottom_left, random_box_top_right)
             too_close = 0
