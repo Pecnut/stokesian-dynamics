@@ -700,8 +700,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                     Fb_out, DFb_out, no_line=no_line)
             if view_labels:
                 (force_lines, force_text) = plot_all_force_lines(
-                    ax, viewbox_bottomleft_topright, posdata_final, Fa_out,
-                    force_lines)
+                    ax, viewbox_bottomleft_topright, posdata_final, Fa_out)
                 # torque_lines = plot_all_torque_lines(
                 #     ax, viewbox_bottomleft_topright, posdata_final,
                 #     Ta_out, torque_lines)

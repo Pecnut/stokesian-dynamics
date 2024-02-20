@@ -257,8 +257,7 @@ def plot_all_dumbbells(ax, frameno, viewbox_bottomleft_topright, posdata,
     return dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines
 
 
-def plot_all_force_lines(ax, viewbox_bottomleft_topright, posdata, f_spheres,
-                         force_lines):
+def plot_all_force_lines(ax, viewbox_bottomleft_topright, posdata, f_spheres):
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
      dumbbell_positions, dumbbell_deltax) = posdata
     force_lines = force_text = []
@@ -288,8 +287,7 @@ def plot_all_force_lines(ax, viewbox_bottomleft_topright, posdata, f_spheres,
     return force_lines, force_text
 
 
-def plot_all_torque_lines(ax, viewbox_bottomleft_topright, posdata, t_spheres,
-                          torque_lines):
+def plot_all_torque_lines(ax, viewbox_bottomleft_topright, posdata, t_spheres):
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
      dumbbell_positions, dumbbell_deltax) = posdata
     torque_lines = []
@@ -309,7 +307,7 @@ def plot_all_torque_lines(ax, viewbox_bottomleft_topright, posdata, t_spheres,
 
 
 def plot_all_velocity_lines(ax, viewbox_bottomleft_topright, posdata,
-                            u_spheres, velocity_lines):
+                            u_spheres):
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
      dumbbell_positions, dumbbell_deltax) = posdata
     velocity_lines = velocity_text = sphere_labels = []
@@ -347,7 +345,7 @@ def plot_all_velocity_lines(ax, viewbox_bottomleft_topright, posdata,
 
 
 def plot_all_angular_velocity_lines(ax, viewbox_bottomleft_topright, posdata,
-                                    o_spheres, angular_velocity_lines):
+                                    o_spheres):
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
      dumbbell_positions, dumbbell_deltax) = posdata
     angular_velocity_lines = []

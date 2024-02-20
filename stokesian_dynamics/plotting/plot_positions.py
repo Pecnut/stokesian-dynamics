@@ -119,13 +119,13 @@ if num_dumbbells > 0:
         trace_paths, dumbbell_trace_lines, Fb_out[frameno], DFb_out[frameno])
 if view_labels:
     torque_lines = plot_all_torque_lines(ax, viewbox_bottomleft_topright,
-                                         posdata, Ta_out, torque_lines)
+                                         posdata, Ta_out)
+    # Velocity in green
     (velocity_lines, velocity_text, sphere_labels) = plot_all_velocity_lines(
-        ax, viewbox_bottomleft_topright, posdata, Ua_out,
-        velocity_lines)   # Velocity in green
+        ax, viewbox_bottomleft_topright, posdata, Ua_out)
+    # Angular velocity in white with green edging
     angular_velocity_lines = plot_all_angular_velocity_lines(
-        ax, viewbox_bottomleft_topright, posdata, Oa_out,
-        angular_velocity_lines)  # Ang vel in white with green edging
+        ax, viewbox_bottomleft_topright, posdata, Oa_out)
 
 for q in (dumbbell_lines):
     q.remove()

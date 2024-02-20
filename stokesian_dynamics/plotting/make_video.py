@@ -282,15 +282,15 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]),
 
     if view_labels:
         (force_lines, force_text) = plot_all_force_lines(
-            ax, viewbox_bottomleft_topright, posdata, Fa_out, force_lines)
+            ax, viewbox_bottomleft_topright, posdata, Fa_out)
         torque_lines = plot_all_torque_lines(
-            ax, viewbox_bottomleft_topright, posdata, Ta_out, torque_lines)
+            ax, viewbox_bottomleft_topright, posdata, Ta_out)
+        # Velocity in green
         (velocity_lines, velocity_text, sphere_labels) = plot_all_velocity_lines(
-            ax, viewbox_bottomleft_topright, posdata, Ua_out,
-            velocity_lines)   # Velocity in green
+            ax, viewbox_bottomleft_topright, posdata, Ua_out)
+        # Angular velocity in white with green edging
         angular_velocity_lines = plot_all_angular_velocity_lines(
-            ax, viewbox_bottomleft_topright, posdata, Oa_out,
-            angular_velocity_lines)  # Ang vel in white with green edging
+            ax, viewbox_bottomleft_topright, posdata, Oa_out)
 
     ax.set_title("  frame "
                  + ("{:" + str(len(str(num_frames-1))) + ".0f}").format(frameno)
