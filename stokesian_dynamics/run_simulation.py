@@ -248,8 +248,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 last_generated_Minfinity_inverse, regenerate_Minfinity,
                 input_form, cutoff_factor, printout, use_drag_Minfinity,
                 use_Minfinity_only, extract_force_on_wall_due_to_dumbbells,
-                last_velocities, last_velocity_vector,
-                feed_every_n_timesteps=feed_every_n_timesteps)
+                last_velocities, last_velocity_vector)
             # Euler/AB2 timestepping k1
             if (num_spheres > 0):
                 Ua_out_plus_infinities_k1, Oa_out_plus_infinities_k1 = add_background_flow_spheres(
@@ -345,8 +344,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 last_generated_Minfinity_inverse, regenerate_Minfinity,
                 input_form, cutoff_factor, printout, use_drag_Minfinity,
                 use_Minfinity_only, extract_force_on_wall_due_to_dumbbells,
-                last_velocities, last_velocity_vector,
-                feed_every_n_timesteps=feed_every_n_timesteps)
+                last_velocities, last_velocity_vector)
             # Euler timestepping k1
             if (num_spheres > 0):
                 Ua_out_plus_infinities_k1, Oa_out_plus_infinities_k1 = add_background_flow_spheres(
@@ -398,8 +396,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 last_generated_Minfinity_inverse, regenerate_Minfinity,
                 input_form, cutoff_factor, printout, use_drag_Minfinity,
                 use_Minfinity_only, extract_force_on_wall_due_to_dumbbells,
-                last_velocities, last_velocity_vector,
-                feed_every_n_timesteps=feed_every_n_timesteps)
+                last_velocities, last_velocity_vector)
             # Euler timestepping k2
             if (num_spheres > 0):
                 Ua_out_plus_infinities_k2, Oa_out_plus_infinities_k2 = add_background_flow_spheres(
@@ -448,8 +445,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 last_generated_Minfinity_inverse, regenerate_Minfinity,
                 input_form, cutoff_factor, printout, use_drag_Minfinity,
                 use_Minfinity_only, extract_force_on_wall_due_to_dumbbells,
-                last_velocities, last_velocity_vector,
-                feed_every_n_timesteps=feed_every_n_timesteps)
+                last_velocities, last_velocity_vector)
             # Euler timestepping k3
             if (num_spheres > 0):
                 Ua_out_plus_infinities_k3, Oa_out_plus_infinities_k3 = add_background_flow_spheres(
@@ -498,8 +494,7 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
                 last_generated_Minfinity_inverse, regenerate_Minfinity,
                 input_form, cutoff_factor, printout, use_drag_Minfinity,
                 use_Minfinity_only, extract_force_on_wall_due_to_dumbbells,
-                last_velocities, last_velocity_vector,
-                feed_every_n_timesteps=feed_every_n_timesteps)
+                last_velocities, last_velocity_vector)
             if (num_spheres > 0):
                 Ua_out_plus_infinities_k4, Oa_out_plus_infinities_k4 = add_background_flow_spheres(
                     Ua_out_k4, Oa_out_k4, Ea_out_k4, U_infinity_k4, O_infinity_k4,

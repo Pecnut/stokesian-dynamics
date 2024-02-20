@@ -26,7 +26,7 @@ def fte_mobility_solve_nonperiodic(setup_number, input_number):
         posdata, frameno, timestep, input_number,
         last_generated_Minfinity_inverse, regenerate_Minfinity, 'fte',
         cutoff_factor, printout, False, False,
-        False, last_velocities, last_velocity_vector, feed_every_n_timesteps=0)
+        False, last_velocities, last_velocity_vector)
 
     return (Ua_out, Oa_out, Sa_out)
 
