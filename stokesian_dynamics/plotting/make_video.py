@@ -273,8 +273,7 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]),
     if num_spheres > 0:
         (spheres, sphere_lines, sphere_trace_lines) = plot_all_spheres(
             ax, real_frameno, viewbox_bottomleft_topright, posdata,
-            previous_step_posdata, trace_paths, spheres, sphere_lines,
-            sphere_trace_lines, FaX)
+            previous_step_posdata, trace_paths, sphere_trace_lines, FaX)
     if num_dumbbells > 0:
         (dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines) = plot_all_dumbbells(
             ax, real_frameno, viewbox_bottomleft_topright, posdata,

@@ -186,8 +186,8 @@ def plot_dumbbell(ax, viewbox_bottomleft_topright, position, trace_paths,
 
 
 def plot_all_spheres(ax, frameno, viewbox_bottomleft_topright, posdata,
-                     previous_step_posdata, trace_paths, spheres, sphere_lines,
-                     sphere_trace_lines, f_spheres):
+                     previous_step_posdata, trace_paths, sphere_trace_lines,
+                     f_spheres):
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
      dumbbell_positions, dumbbell_deltax) = posdata
     (previous_sphere_sizes, previous_sphere_positions,

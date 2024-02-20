@@ -112,7 +112,7 @@ if viewbox_bottomleft_topright.size == 0:
 if num_spheres > 0:
     (spheres, sphere_lines, sphere_trace_lines) = plot_all_spheres(
         ax, frameno, viewbox_bottomleft_topright, posdata, previous_step_posdata,
-        trace_paths, spheres, sphere_lines, sphere_trace_lines, Fa_out[frameno])
+        trace_paths, sphere_trace_lines, Fa_out[frameno])
 if num_dumbbells > 0:
     (dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines) = plot_all_dumbbells(
         ax, frameno, viewbox_bottomleft_topright, posdata, previous_step_posdata,
