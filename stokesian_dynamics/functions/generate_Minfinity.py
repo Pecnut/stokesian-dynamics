@@ -87,11 +87,6 @@ def D_J(r, ss, l, i, j):
 def DD_J(r, ss, m, l, i, j):
     """2nd derivative of Oseen tensor, D_m D_l J_ij. See PhD thesis section
     A.2.3."""
-    # return ((-(i==j)*(l==m) + (i==l)*(j==m) + (j==l)*(i==m))/ss**3
-    #         - 3*(-(i==j)*r[l]*r[m] + (i==l)*r[j]*r[m] + (j==l)*r[i]*r[m]
-    #              + (i==m)*r[j]*r[l] + r[i]*(j==m)*r[l]
-    #              + r[i]*r[j]*(l==m))/ss**5
-    #         + 15*r[i]*r[j]*r[l]*r[m]/ss**7)
     return ((-kronkronmatrix[i][j][l][m]
              + kronkronmatrix[i][l][j][m]
              + kronkronmatrix[j][l][i][m])/ss**3
@@ -437,9 +432,9 @@ def generate_Minfinity(posdata, printout=0, frameno=0, mu=1):
     Lcol = np.array([i for i in range(11*num_spheres + 6*num_dumbbells)]
                     + [i + 11*num_spheres + 3*num_dumbbells for i in range(3*num_dumbbells)]
                     + [i + 11*num_spheres for i in range(3*num_dumbbells)])
-    Ldata = np.array([1 for i in range(11*num_spheres)]
-                     + [0.5 for i in range(9*num_dumbbells)]
-                     + [-0.5 for i in range(3*num_dumbbells)])
+    Ldata = np.array([1 for _ in range(11*num_spheres)]
+                     + [0.5 for _ in range(9*num_dumbbells)]
+                     + [-0.5 for _ in range(3*num_dumbbells)])
     L = coo_matrix((Ldata, (Lrow, Lcol)),
                    shape=(11*num_spheres+6*num_dumbbells,
                           11*num_spheres+6*num_dumbbells))

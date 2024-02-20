@@ -116,7 +116,7 @@ def randomise_dumbbells(random_box_bottom_left, random_box_top_right,
                         too_close = too_close + 1
             if too_close == 0:
                 bingo = 0
-                for tries in range(100):
+                for _ in range(100):
                     if random_theta:
                         theta = np.random.rand()*np.pi*2
                     if random_phi:
@@ -230,7 +230,7 @@ def randomise_dumbbells_periodic(random_box_bottom_left, random_box_top_right,
                                 too_close = too_close + 1
             if too_close == 0:
                 bingo = 0
-                for tries in range(100):
+                for _ in range(100):
                     if random_theta:
                         theta = np.random.rand()*np.pi*2
                     if random_phi:
@@ -389,13 +389,11 @@ def point_inside_polygon(x, y, poly):
     p1x, p1y = poly[0]
     for i in range(n+1):
         p2x, p2y = poly[i % n]
-        if y > min(p1y, p2y):
-            if y <= max(p1y, p2y):
-                if x <= max(p1x, p2x):
-                    if p1y != p2y:
-                        xinters = (y-p1y)*(p2x-p1x)/(p2y-p1y)+p1x
-                    if p1x == p2x or x <= xinters:
-                        inside = not inside
+        if y > min(p1y, p2y) and y <= max(p1y, p2y) and x <= max(p1x, p2x):
+            if p1y != p2y:
+                xinters = (y-p1y)*(p2x-p1x)/(p2y-p1y)+p1x
+            if p1x == p2x or x <= xinters:
+                inside = not inside
         p1x, p1y = p2x, p2y
 
     return inside

@@ -40,7 +40,7 @@ def pos_setup(n):
         # each sphere in the chain, in each case, i.e. it runs for 1 timestep.
         # Here we set up the chain of length 15.
         num_spheres = 15
-        sphere_sizes = np.array([1 for i in range(num_spheres)])
+        sphere_sizes = np.array([1 for _ in range(num_spheres)])
         sphere_positions = np.array([[4*i, 0, 0] for i in range(num_spheres)])
         sphere_rotations = add_sphere_rotations_to_positions(
             sphere_positions, sphere_sizes, np.array([[1, 0, 0], [0, 0, 1]]))
@@ -71,7 +71,7 @@ def pos_setup(n):
         # sedimenting, simple cubic array for different particle concentrations.
         num_spheres = 8
         cube_side_length = 8
-        sphere_sizes = np.array([1 for i in range(num_spheres)])
+        sphere_sizes = np.array([1 for _ in range(num_spheres)])
         (sphere_positions, box_bottom_left,
             box_top_right) = simple_cubic_8(cube_side_length)
         sphere_rotations = add_sphere_rotations_to_positions(
@@ -96,7 +96,7 @@ def pos_setup(n):
         # Example (e)
         # Randomly arranged spheres
         num_spheres = 41
-        sphere_sizes = np.array([1 for i in range(num_spheres)])
+        sphere_sizes = np.array([1 for _ in range(num_spheres)])
         # L is how wide you want to box for all the particles to fit inside
         # (not just putting the centres inside this box)
         L = 16.2

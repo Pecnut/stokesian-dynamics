@@ -952,12 +952,10 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
               and is_dumbbell_bead_1(a2_index, num_spheres, num_dumbbells)):
             # Sphere to dumbbell bead 1
             mr = [-r[0], -r[1], -r[2]]
-            a2_index_d = a2_index-num_spheres
 
             # Strictly only needed if s > 1e-10 but an 'if' statement here is
             # slower for Numba
             s_lmn = np.linalg.norm(r + X_lmn, axis=1)
-            erfcs_lmn = np.array([generate_erfcs(S, lamb) for S in s_lmn])
             m_s_lmn = np.linalg.norm(mr + X_lmn, axis=1)
             m_erfcs_lmn = np.array([generate_erfcs(S, lamb) for S in s_lmn])
 
@@ -978,7 +976,6 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
         elif is_sphere(a1_index, num_spheres):
             # Sphere to dumbbell bead 2
             mr = [-r[0], -r[1], -r[2]]
-            a2_index_d = a2_index-num_spheres-num_dumbbells
 
             # Strictly only needed if s > 1e-10 but an 'if' statement here is
             # slower for Numba
@@ -1071,9 +1068,9 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
     Lcol = np.array([i for i in range(11*num_spheres + 6*num_dumbbells)]
                     + [i + 11*num_spheres + 3*num_dumbbells for i in range(3*num_dumbbells)]
                     + [i + 11*num_spheres for i in range(3*num_dumbbells)])
-    Ldata = np.array([1 for i in range(11*num_spheres)]
-                     + [0.5 for i in range(9*num_dumbbells)]
-                     + [-0.5 for i in range(3*num_dumbbells)])
+    Ldata = np.array([1 for _ in range(11*num_spheres)]
+                     + [0.5 for _ in range(9*num_dumbbells)]
+                     + [-0.5 for _ in range(3*num_dumbbells)])
     L = coo_matrix((Ldata, (Lrow, Lcol)),
                    shape=(11*num_spheres+6*num_dumbbells, 11*num_spheres+6*num_dumbbells))
     R = L.transpose()
