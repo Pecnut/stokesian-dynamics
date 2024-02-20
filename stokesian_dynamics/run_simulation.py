@@ -688,17 +688,16 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
             if num_spheres > 0:
                 (spheres, sphere_lines, sphere_trace_lines) = plot_all_spheres(
                     ax, frameno, viewbox_bottomleft_topright, posdata_final,
-                    previous_step_posdata, trace_paths, spheres, sphere_lines,
-                    sphere_trace_lines, Fa_out)
+                    previous_step_posdata, trace_paths, sphere_trace_lines,
+                    Fa_out)
 
             no_line = True
             if num_dumbbells > 0:
                 (dumbbell_spheres, dumbbell_lines,
                  dumbbell_trace_lines) = plot_all_dumbbells(
                     ax, frameno, viewbox_bottomleft_topright, posdata_final,
-                    previous_step_posdata, trace_paths, dumbbell_spheres,
-                    dumbbell_lines, dumbbell_trace_lines, Fb_out, DFb_out,
-                    no_line=no_line)
+                    previous_step_posdata, trace_paths, dumbbell_trace_lines,
+                    Fb_out, DFb_out, no_line=no_line)
             if view_labels:
                 (force_lines, force_text) = plot_all_force_lines(
                     ax, viewbox_bottomleft_topright, posdata_final, Fa_out,

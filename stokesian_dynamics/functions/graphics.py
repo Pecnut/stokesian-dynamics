@@ -211,15 +211,11 @@ def plot_all_spheres(ax, frameno, viewbox_bottomleft_topright, posdata,
 
 
 def plot_all_dumbbells(ax, frameno, viewbox_bottomleft_topright, posdata,
-                       previous_step_posdata, trace_paths, dumbbell_spheres,
-                       dumbbell_lines, dumbbell_trace_lines, f_dumbbells,
-                       deltaf_dumbbells, max_DFb_out=1, no_line=False):
+                       previous_step_posdata, trace_paths,
+                       dumbbell_trace_lines, f_dumbbells, deltaf_dumbbells,
+                       max_DFb_out=1, no_line=False):
     (sphere_sizes, sphere_positions, sphere_rotations, dumbbell_sizes,
      dumbbell_positions, dumbbell_deltax) = posdata
-    (previous_sphere_sizes, previous_sphere_positions,
-     previous_sphere_rotations, previous_dumbbell_sizes,
-     previous_dumbbell_positions,
-     previous_dumbbell_deltax) = previous_step_posdata
     dumbbell_lines = []
     dumbbell_spheres = []
 

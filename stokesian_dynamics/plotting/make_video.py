@@ -277,9 +277,8 @@ def generate_frame(frameno, viewbox_bottomleft_topright=np.array([]),
     if num_dumbbells > 0:
         (dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines) = plot_all_dumbbells(
             ax, real_frameno, viewbox_bottomleft_topright, posdata,
-            previous_step_posdata, trace_paths, dumbbell_spheres, dumbbell_lines,
-            dumbbell_trace_lines, FbX, DFbX, max_DFb_out=max_DFb_out,
-            no_line=no_line)
+            previous_step_posdata, trace_paths, dumbbell_trace_lines,
+            FbX, DFbX, max_DFb_out=max_DFb_out, no_line=no_line)
 
     if view_labels:
         (force_lines, force_text) = plot_all_force_lines(

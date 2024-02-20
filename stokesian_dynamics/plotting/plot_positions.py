@@ -116,8 +116,7 @@ if num_spheres > 0:
 if num_dumbbells > 0:
     (dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines) = plot_all_dumbbells(
         ax, frameno, viewbox_bottomleft_topright, posdata, previous_step_posdata,
-        trace_paths, dumbbell_spheres, dumbbell_lines, dumbbell_trace_lines,
-        Fb_out[frameno], DFb_out[frameno])
+        trace_paths, dumbbell_trace_lines, Fb_out[frameno], DFb_out[frameno])
 if view_labels:
     torque_lines = plot_all_torque_lines(ax, viewbox_bottomleft_topright,
                                          posdata, Ta_out, torque_lines)
