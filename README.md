@@ -1,6 +1,6 @@
 # Stokesian Dynamics in Python: Readme #
 
-[![DOI](https://zenodo.org/badge/165248852.svg)](https://zenodo.org/doi/10.5281/zenodo.10685222)[![status](https://joss.theoj.org/papers/02b1f1534aa9d721f7cfa1e67a582ef4/status.svg)](https://joss.theoj.org/papers/02b1f1534aa9d721f7cfa1e67a582ef4)
+[![status](https://joss.theoj.org/papers/02b1f1534aa9d721f7cfa1e67a582ef4/status.svg)](https://joss.theoj.org/papers/02b1f1534aa9d721f7cfa1e67a582ef4)
 
 This is a Python 3 implementation of [Stokesian Dynamics](http://authors.library.caltech.edu/1600/1/BRAarfm88.pdf) for spherical particles of different sizes.
 
