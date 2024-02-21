@@ -21,7 +21,7 @@ bibliography: paper.bib
 
 # Summary
 
-Stokesian Dynamics [@Brady:1988] is a microhydrodynamic, [low Reynolds number approach](https://en.wikipedia.org/wiki/Stokes_flow#Stokes_equations) to modelling the movement of suspensions of particles in fluids, which considers the interaction of particles with each other against a Newtonian background solvent. It is typically chosen for its suitability for three-dimensional simulation with low calculation and time penalty.
+Stokesian Dynamics [@Brady:1988a] is a microhydrodynamic, [low Reynolds number approach](https://en.wikipedia.org/wiki/Stokes_flow#Stokes_equations) to modelling the movement of suspensions of particles in fluids, which considers the interaction of particles with each other against a Newtonian background solvent. It is typically chosen for its suitability for three-dimensional simulation with low calculation and time penalty.
 
 In the most basic case, Stokes’ law states that a single sphere of radius $a$, travelling with a velocity $U$ in an unbounded Newtonian fluid of viscosity $\mu$, in a low Reynolds number regime, experiences a drag force, $F$, of $F=-6 \pi \mu a U$.
 
@@ -29,7 +29,7 @@ Stokesian Dynamics, at its heart, is an extension of this linear relationship be
 
 The Stokesian Dynamics recipe can be summarised as follows:
 
-* Compute long-range interactions between particles. This is done using a truncated expansion of the boundary integral equation for unbounded Stokes flow (@Ladyzhenskaya:1964, @Durlofsky:1987). For periodic domains, this is done using the Ewald summation method (@Ewald:1921, @Brady:1988).
+* Compute long-range interactions between particles. This is done using a truncated expansion of the boundary integral equation for unbounded Stokes flow (@Ladyzhenskaya:1964, @Durlofsky:1987). For periodic domains, this is done using the Ewald summation method (@Ewald:1921, @Brady:1988b).
 * Compute short-range lubrication between particles. This is done by interpolating pre-computed results on a pairwise basis (@Jeffrey:1984, @Jeffrey:1992, @Kim:2005, @Wilson:2013, @Townsend:2023).
 * Combining the two.
 
