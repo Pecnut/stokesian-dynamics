@@ -31,7 +31,7 @@ The Stokesian Dynamics recipe can be summarised as follows:
 
 * Compute long-range interactions between particles. This is done using a truncated expansion of the boundary integral equation for unbounded Stokes flow (@Ladyzhenskaya:1964, @Durlofsky:1987). For periodic domains, this is done using the Ewald summation method (@Ewald:1921, @Brady:1988b).
 * Compute short-range lubrication between particles. This is done by interpolating pre-computed results on a pairwise basis (@Jeffrey:1984, @Jeffrey:1992, @Kim:2005, @Wilson:2013, @Townsend:2023).
-* Combining the two.
+* Combine the two.
 
 The method is explained and described in detail in Chapter 2 of @Townsend:2017.
 
