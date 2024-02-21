@@ -125,7 +125,7 @@ def pos_setup(n):
                for i in range(num_spheres_per_wall)])
         sphere_rotations = add_sphere_rotations_to_positions(
             sphere_positions, sphere_sizes, np.array([[1, 0, 0], [0, 0, 1]]))
-        dumbbell_sizes = np.array([0.1 for n in range(num_random_dumbbells)])
+        dumbbell_sizes = np.array([0.1 for _ in range(num_random_dumbbells)])
 
         random_box_bottom_left = [-17, 0, 1+2*dumbbell_sizes[0]]
         random_box_top_right = [17, 0, 10-2*dumbbell_sizes[0]]

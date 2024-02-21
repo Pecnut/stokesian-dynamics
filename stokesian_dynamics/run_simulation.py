@@ -215,9 +215,8 @@ def generate_frame(frameno, grand_mobility_matrix, view_graphics=True,
         else:
             regenerate_Minfinity = False
 
-        if trace_paths > 0:
-            if frameno % trace_paths == 0:
-                previous_step_posdata = posdata
+        if trace_paths > 0 and frameno % trace_paths == 0:
+            previous_step_posdata = posdata
 
         if frameno == 0 or frameno == checkpoint_start_from_frame:
             Ua_blank = np.array([[0, 0, 0] for _ in range(num_spheres)])
@@ -759,10 +758,9 @@ if num_spheres > 0 and input_form in ["fts"]:
  box_bottom_left, box_top_right, mu) = input_ftsuoe(
      input_number, posdata, 0, 0.1, [[], [], [], []],
      skip_computation=True, input_form=input_form)
-if Fa_in != []:
-    if (Fa_in[0][0] == 99999):
-        error = throw_error("Input number not recognised (you probably haven't"
-                            + " uploaded input_setups.py recently enough)")
+if Fa_in != [] and Fa_in[0][0] == 99999:
+    error = throw_error("Input number not recognised (you probably haven't"
+                        + " uploaded input_setups.py recently enough)")
 
 # Are all size ratios in the XYZ table for R2Bexact?
 sphere_sizes_unique = list(set(sphere_sizes))

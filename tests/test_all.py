@@ -14,7 +14,7 @@ def fte_mobility_solve_nonperiodic(setup_number, input_number):
     last_generated_Minfinity_inverse = []
     last_velocity_vector = []
 
-    posdata, setup_description = pos_setup_tests(setup_number)
+    posdata, _ = pos_setup_tests(setup_number)
 
     (Fa_out, Ta_out, Sa_out, Fb_out, DFb_out,
      Ua_out, Oa_out, Ea_out, Ub_out, HalfDUb_out,
