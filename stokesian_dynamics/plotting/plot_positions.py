@@ -96,19 +96,6 @@ ax.set_zlabel("$z$")
 fig.tight_layout()
 
 # Pictures
-if viewbox_bottomleft_topright.size == 0:
-    if num_spheres > 0 and num_dumbbells > 0:
-        m = np.array([abs(sphere_positions).max(),
-                      abs(dumbbell_positions).max()]).max()
-    elif num_spheres > 0 and num_dumbbells == 0:
-        m = abs(sphere_positions).max()
-    elif num_dumbbells > 0 and num_spheres == 0:
-        m = abs(dumbbell_positions).max()
-    else:
-        print("PROBLEM")
-        m = 3
-    viewbox_bottomleft_topright = np.array([[-m, -m, -m], [m, m, m]])
-
 if num_spheres > 0:
     (spheres, sphere_lines, sphere_trace_lines) = plot_all_spheres(
         ax, frameno, posdata, previous_step_posdata, trace_paths,
