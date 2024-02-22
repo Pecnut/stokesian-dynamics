@@ -1,0 +1,26 @@
+cff-version: "1.2.0"
+authors:
+- family-names: Townsend
+  given-names: Adam K.
+  orcid: "https://orcid.org/0000-0003-1700-2873"
+doi: 10.5281/zenodo.10685546
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - family-names: Townsend
+    given-names: Adam K.
+    orcid: "https://orcid.org/0000-0003-1700-2873"
+  date-published: 2024-02-22
+  doi: 10.21105/joss.06011
+  issn: 2475-9066
+  issue: 94
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 6011
+  title: Stokesian Dynamics in Python
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.06011"
+  volume: 9
+title: Stokesian Dynamics in Python
