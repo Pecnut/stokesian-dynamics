@@ -21,7 +21,7 @@ bibliography: paper.bib
 
 # Summary
 
-Stokesian Dynamics [@Brady:1988a] is a microhydrodynamic, [low Reynolds number approach](https://en.wikipedia.org/wiki/Stokes_flow#Stokes_equations) to modelling the movement of suspensions of particles in fluids, which considers the interaction of particles with each other against a Newtonian background solvent. It is typically chosen for its suitability for three-dimensional simulation with low calculation and time penalty.
+Stokesian Dynamics [@Brady:1988a] is a microhydrodynamic, low Reynolds number approach to modelling the movement of suspensions of particles in fluids, which considers the interaction of particles with each other against a Newtonian background solvent. It is typically chosen for its suitability for three-dimensional simulation with low calculation and time penalty.
 
 In the most basic case, Stokes’ law states that a single sphere of radius $a$, travelling with a velocity $U$ in an unbounded Newtonian fluid of viscosity $\mu$, in a low Reynolds number regime, experiences a drag force, $F$, of $F=-6 \pi \mu a U$.
 
@@ -29,8 +29,8 @@ Stokesian Dynamics, at its heart, is an extension of this linear relationship be
 
 The Stokesian Dynamics recipe can be summarised as follows:
 
-* Compute long-range interactions between particles. This is done using a truncated expansion of the boundary integral equation for unbounded Stokes flow (@Ladyzhenskaya:1964, @Durlofsky:1987). For periodic domains, this is done using the Ewald summation method (@Ewald:1921, @Brady:1988b).
-* Compute short-range lubrication between particles. This is done by interpolating pre-computed results on a pairwise basis (@Jeffrey:1984, @Jeffrey:1992, @Kim:2005, @Wilson:2013, @Townsend:2023).
+* Compute long-range interactions between particles. This is done using a truncated expansion of the boundary integral equation for unbounded Stokes flow [@Ladyzhenskaya:1964; @Durlofsky:1987]. For periodic domains, this is done using the Ewald summation method [@Ewald:1921; @Brady:1988b].
+* Compute short-range lubrication between particles. This is done by interpolating pre-computed results on a pairwise basis [@Jeffrey:1984; @Jeffrey:1992; @Kim:2005; @Wilson:2013; @Townsend:2023].
 * Combine the two.
 
 The method is explained and described in detail in Chapter 2 of @Townsend:2017.
@@ -47,7 +47,7 @@ This software is aimed at researchers in low Reynolds number fluid dynamics who 
 
 # Description of the software
 
-This software allows you to place spherical particles in a fluid, apply some forces, and see how they move. You can also move the fluid and see how the particles react. [A Javascript 2D implementation by the Swan group at MIT](http://web.mit.edu/swangroup/sd-game.shtml) shows how it is done.
+This software allows you to place spherical particles in a fluid, apply some forces, and see how they move. You can also move the fluid and see how the particles react. A Javascript 2D implementation by the Swan group at MIT [@Swan:2013] shows how it is done.
 
 In particular, this software has the following features:
 
@@ -71,10 +71,10 @@ In particular, this software has the following features:
 
 # Related software
 
-* [Hydrolib](https://doi.org/10.1016/0010-4655(95)00029-F) is a Fortran 77 implementation of Stokesian Dynamics from 1995. It solves the resistance and mobility problem in $\mathbfit{F}$ or $\mathbfit{FT}$ form for monodisperse particles in an infinite or cubically-periodic domain. It can additionally handle fixed particles and rigid body configurations. It continues to receive some citations in recent literature but lacks the flexibility or onboarding of more modern implementations.
-* [libstokes](https://github.com/kichiki/libstokes) is a C implementation of Stokesian Dynamics from 1999, last updated 2013. It contains functions which solve the resistance and mobility problem in $\mathbfit{F}$, $\mathbfit{FT}$ or $\mathbfit{FT}\mathbfsfit{S}$ form in a periodic domain. These functions can additionally handle fixed particles. The project was important in cataloguing some errors in the papers related to lubrication, which in turn helped in the development of @Townsend:2023. The code does not appear to be actively maintained and lacks documentation.
-* [StokesDT](https://github.com/xing-liu/stokesdt) is a C++, parallel toolkit for Stokes flow problems from 2014. The documentation is sparse, but it appears to solve the resistance and mobility problem in $\mathbfit{F}$ form for monodisperse particles in an infinite or periodic domain. It does not appear to include lubrication, preferring instead to use the Rotne--Prager--Yamakawa mobility approximation. The code does not appear to be actively maintained and documentation remains incomplete.
-* [PyStokes](https://github.com/rajeshrinet/pystokes) is a Python (with Cython) library for Stokesian Dynamics from 2014, last updated 2023. It solves the resistance and mobility problem in $\mathbfit{F}$, $\mathbfit{FT}$ or $\mathbfit{FT}\mathbfsfit{S}$ form in an unbounded or periodic domain, as well as a number of more interesting domains such as flow near a wall. It additionally handles autophoresis through solution of Laplace's equation. It does not appear to include lubrication.
+* Hydrolib [@Hydrolib:1995] is a Fortran 77 implementation of Stokesian Dynamics from 1995. It solves the resistance and mobility problem in $\mathbfit{F}$ or $\mathbfit{FT}$ form for monodisperse particles in an infinite or cubically-periodic domain. It can additionally handle fixed particles and rigid body configurations. It continues to receive some citations in recent literature but lacks the flexibility or onboarding of more modern implementations.
+* libstokes [@libstokes:1999] is a C implementation of Stokesian Dynamics from 1999, last updated 2013. It contains functions which solve the resistance and mobility problem in $\mathbfit{F}$, $\mathbfit{FT}$ or $\mathbfit{FT}\mathbfsfit{S}$ form in a periodic domain. These functions can additionally handle fixed particles. The project was important in cataloguing some errors in the papers related to lubrication, which in turn helped in the development of @Townsend:2023. The code does not appear to be actively maintained and lacks documentation.
+* StokesDT [@StokesDT:2015] is a C++, parallel toolkit for Stokes flow problems from 2014. The documentation is sparse, but it appears to solve the resistance and mobility problem in $\mathbfit{F}$ form for monodisperse particles in an infinite or periodic domain. It does not appear to include lubrication, preferring instead to use the Rotne--Prager--Yamakawa mobility approximation. The code does not appear to be actively maintained and documentation remains incomplete.
+* PyStokes [@PyStokes:2020] is a Python (with Cython) library for Stokesian Dynamics from 2014, last updated 2023. It solves the resistance and mobility problem in $\mathbfit{F}$, $\mathbfit{FT}$ or $\mathbfit{FT}\mathbfsfit{S}$ form in an unbounded or periodic domain, as well as a number of more interesting domains such as flow near a wall. It additionally handles autophoresis through solution of Laplace's equation. It does not appear to include lubrication.
 
 
 
