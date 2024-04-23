@@ -6,6 +6,7 @@
 /test/ folder."""
 
 import numpy as np
+from functions.shared import throw_error
 
 
 def input_ftsuoe_tests(n, Fa_in, Ta_in, Ea_in):
@@ -96,7 +97,7 @@ def input_ftsuoe_tests(n, Fa_in, Ta_in, Ea_in):
     #     Ea_in[1] = [[0, 1, 0],[1, 0, 0],[0, 0, 0]]
 
     else:
-        # Just something to flag up on the other side that there's a problem
-        Fa_in = np.array([[99999, -31415, 21718]])
+        throw_error("The input setup number you have requested (" + str(n) +
+                    ") is not listed in setups/tests/inputs.py.")
 
     return (Fa_in, Ta_in, Ea_in)

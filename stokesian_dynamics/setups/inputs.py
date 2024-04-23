@@ -4,7 +4,7 @@
 
 import numpy as np
 from functions.simulation_tools import empty_vectors
-from functions.shared import posdata_data
+from functions.shared import posdata_data, throw_error
 from setups.functions_inputs import (oscillatory_shear, constant_shear,
                                      repulsion_forces)
 from setups.functions_positions import simple_cubic_8
@@ -184,8 +184,8 @@ def input_ftsuoe(n, posdata, frameno, timestep, last_velocities,
         desc = "constant-shear"
 
     else:
-        # Just something to flag up on the other side that there's a problem
-        Fa_in = np.array([[99999, -31415, 21718]])
+        throw_error("The input setup number you have requested (" + str(n) +
+                    ") is not listed in setups/inputs.py.")
 
     return (Fa_in, Ta_in, Sa_in, Sa_c_in, Fb_in, DFb_in, Ua_in, Oa_in, Ea_in,
             Ea_c_in, Ub_in, HalfDUb_in, desc, U_infinity, O_infinity,

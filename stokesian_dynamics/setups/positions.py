@@ -9,7 +9,8 @@ Create a new setup by adding one to the list of 'if' statements in pos_setup.
 """
 
 import numpy as np
-from functions.shared import add_sphere_rotations_to_positions, same_setup_as
+from functions.shared import (add_sphere_rotations_to_positions, same_setup_as,
+                              throw_error)
 import glob
 from settings import setup_number, input_number, num_frames, timestep
 from setups.tests.positions import pos_setup_tests
@@ -172,10 +173,9 @@ def pos_setup(n):
                                                               frameno=0)
 
 
-    try:
-        sphere_sizes
-    except NameError:
-        print("ERROR: You have not inputted a valid position setup number.")
+    else:
+        throw_error("The position setup number you have requested (" + str(n) +
+                    ") is not listed in setups/positions.py.")
 
     posdata = (sphere_sizes, sphere_positions, sphere_rotations,
                dumbbell_sizes, dumbbell_positions, dumbbell_deltax)

@@ -7,6 +7,7 @@ from numpy import sqrt
 import time
 import sys
 from numba import njit
+from textwrap import fill
 
 s3 = sqrt(3)
 s2 = sqrt(2)
@@ -15,14 +16,16 @@ s2 = sqrt(2)
 def throw_error(message):
     """Quit immediately with a given error message."""
     word_error = "\033[41m\033[01m ERROR \033[0m "
-    sys.exit(word_error + message)
+    sys.exit(fill(message, width=88, initial_indent=word_error,
+                  subsequent_indent=" "*8))
     return 1
 
 
 def throw_warning(message):
     """Print a warning message."""
     word_error = "\033[43m\033[30m WARNING \033[0m "
-    print(word_error + message)
+    print(fill(message, width=90, initial_indent=word_error,
+               subsequent_indent=" "*10))
 
 
 @njit

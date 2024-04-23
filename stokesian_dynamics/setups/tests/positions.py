@@ -6,7 +6,7 @@
 folder."""
 
 import numpy as np
-from functions.shared import add_sphere_rotations_to_positions
+from functions.shared import add_sphere_rotations_to_positions, throw_error
 
 
 def pos_setup_tests(n):
@@ -60,10 +60,9 @@ def pos_setup_tests(n):
         sphere_sizes = np.array([0.1, 0.1])
         sphere_positions = np.array([[0, 0, 0], [0.39, 0, 0]])
 
-    try:
-        sphere_sizes
-    except NameError:
-        print("ERROR: You have not inputted a valid position setup number.")
+    else:
+        throw_error("The position setup number you have requested (" + str(n) +
+                    ") is not listed in setups/tests/positions.py.")
 
     sphere_rotations = add_sphere_rotations_to_positions(
         sphere_positions, sphere_sizes, np.array([[1, 0, 0], [0, 0, 1]]))
