@@ -61,10 +61,10 @@ def generate_grand_resistance_matrix(
             element_start_count) = posdata_data(posdata)
         Minfinity_inverse = mu*np.diag(
             [sphere_sizes[i/3] for i in range(3*num_spheres)]
-            + [1/0.75 * sphere_sizes[i/3]**3 for i in range(3*num_spheres)]
-            + [1/0.9 * sphere_sizes[i/5]**3 for i in range(5*num_spheres)]
-            + [2 * dumbbell_sizes[i/3] for i in range(3*num_dumbbells)]
-            + [2 * dumbbell_sizes[i/3] for i in range(3*num_dumbbells)])
+            + [1/0.75 * sphere_sizes[i//3]**3 for i in range(3*num_spheres)]
+            + [1/0.9 * sphere_sizes[i//5]**3 for i in range(5*num_spheres)]
+            + [2 * dumbbell_sizes[i//3] for i in range(3*num_dumbbells)]
+            + [2 * dumbbell_sizes[i//3] for i in range(3*num_dumbbells)])
         Minfinity_elapsed_time = 0
         Minfinity_inverse_elapsed_time = 0
 
