@@ -4,6 +4,7 @@
 
 import numpy as np
 from functions.shared import posdata_data, contraction
+from numba import njit
 
 
 def empty_vectors(posdata):
@@ -51,7 +52,7 @@ def empty_vectors(posdata):
 def condense(s_spheres, num_spheres):
     '''Condense 3x3 matrix to 5-element vector for each sphere.'''
     s_spheres_condensed = [
-        ['pippa' for _ in range(5)] for _ in range(num_spheres)
+        [0.0 for _ in range(5)] for _ in range(num_spheres)
     ]
     for i in range(num_spheres):
         for j in range(5):
@@ -61,6 +62,19 @@ def condense(s_spheres, num_spheres):
                 )
                 for l in range(3)
             )
+    return s_spheres_condensed
+
+
+@njit(cache=True)
+def condense_and_flatten(s_spheres, num_spheres):
+    '''Condense 3x3 matrix to flattened {5-element vector for each sphere}.'''
+    s_spheres_condensed = [0.0 for _ in range(5*num_spheres)]
+    for i in range(num_spheres):
+        for j in range(5):
+            s_spheres_condensed[i*5+j] = 0.0
+            for k in range(3):
+                for l in range(3):
+                    s_spheres_condensed[i*5+j] += contraction(j, k, l) * s_spheres[i,k,l]
     return s_spheres_condensed
 
 
@@ -97,14 +111,15 @@ def construct_force_vector_from_fts(posdata, f_spheres, t_spheres, s_spheres,
      element_sizes, element_positions, element_deltax, num_elements,
      num_elements_array, element_type, uv_start, uv_size,
      element_start_count) = posdata_data(posdata)
-    s_spheres_condensed = condense(s_spheres, num_spheres)
+    s_spheres_condensed_flat = condense_and_flatten(np.array(s_spheres),
+                                                    num_spheres)
     if num_spheres == 0 and num_dumbbells == 0:
         force_vector = np.array([])
     if num_spheres > 0 and num_dumbbells == 0:
-        # Converts from numpy array (possibly) to list
+        # Converts from numpy array (possibly) to flattened list
         fs = [item for sublist in f_spheres for item in sublist]
         ts = [item for sublist in t_spheres for item in sublist]
-        ss = [item for sublist in s_spheres_condensed for item in sublist]
+        ss = s_spheres_condensed_flat
         force_vector = fs + ts + ss
     if num_spheres == 0 and num_dumbbells > 0:
         force_vector = list(np.array([f_dumbbells,
@@ -112,7 +127,7 @@ def construct_force_vector_from_fts(posdata, f_spheres, t_spheres, s_spheres,
     if num_spheres > 0 and num_dumbbells > 0:
         fs = [item for sublist in f_spheres for item in sublist]
         ts = [item for sublist in t_spheres for item in sublist]
-        ss = [item for sublist in s_spheres_condensed for item in sublist]
+        ss = s_spheres_condensed_flat
         fd = [item for sublist in f_dumbbells for item in sublist]
         dfd = [item for sublist in deltaf_dumbbells for item in sublist]
         force_vector = fs + ts + ss + fd + dfd
@@ -142,6 +157,7 @@ def deconstruct_velocity_vector_for_fts(posdata, velocity_vector):
             half_deltau_dumbbells)
 
 
+# Works better without njit
 def vecmat_mat_vecmat(A, B, C, matrix_size, items_in_vector, starts):
     '''{Vector of matrices} times {matrix} times {vector of matrices}.
 
@@ -155,14 +171,16 @@ def vecmat_mat_vecmat(A, B, C, matrix_size, items_in_vector, starts):
         which means that M - {this matrix} is now zero for this element of D.
         Hence we add vec_mat_cross afterwards.
     '''
-    D = np.zeros([matrix_size, matrix_size])
+    D = np.zeros((matrix_size, matrix_size))
     for Ai in range(items_in_vector):
+        E = np.dot(A[Ai], B)
         for Ci in range(items_in_vector):
-            D[starts[Ai]:starts[Ai+1], starts[Ci]:starts[Ci+1]] = np.dot(
-                np.dot(A[Ai], B), C[Ci])
+            D[starts[Ai]:starts[Ai+1],
+              starts[Ci]:starts[Ci+1]] = np.dot(E,C[Ci])
     return D
 
 
+# Works better without njit
 def vec_mat_cross(A, B, C, matrix_size, items_in_vector, starts, crosspoint):
     '''{Vector of matrices} times matrix; and matrix times {vector of matrices}
     in a cross.
@@ -180,8 +198,9 @@ def vec_mat_cross(A, B, C, matrix_size, items_in_vector, starts, crosspoint):
              [ 0,  0,    -m53 t,     0,     0]].
 
     '''
-    D = np.zeros([matrix_size, matrix_size])
+    D = np.zeros((matrix_size, matrix_size))
     for Ai in range(items_in_vector):
+        E = np.dot(A[Ai], B)
         for Ci in range(items_in_vector):
             if Ai == crosspoint and Ci != crosspoint:
                 # it's on the horizontal cross but not the meeting point
@@ -190,7 +209,7 @@ def vec_mat_cross(A, B, C, matrix_size, items_in_vector, starts, crosspoint):
             elif Ai != crosspoint and Ci == crosspoint:
                 # it's on the vertical cross but not the meeting point
                 D[starts[Ai]:starts[Ai+1],
-                  starts[Ci]:starts[Ci+1]] = -np.dot(A[Ai], B)
+                  starts[Ci]:starts[Ci+1]] = -E
             elif Ai == crosspoint:  # and Ci == crosspoint:
                 D[starts[Ai]:starts[Ai+1],
                   starts[Ci]:starts[Ci+1]] = -B
@@ -233,11 +252,12 @@ def fts_to_fte_matrix(posdata, grand_mobility_matrix):
 
     m_inv = np.linalg.inv(m)
     crosspoint = 2  # corresponds to the ghm row/col
+
     if num_spheres > 0:
         if num_dumbbells > 0:
             vec1 = [gt, ht, m, m43, m53]
             vec2 = [g, h, m, m34, m35]
-        if num_dumbbells == 0:
+        else:
             vec1 = [gt, ht, m]
             vec2 = [g, h, m]
 

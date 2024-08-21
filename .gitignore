@@ -12,3 +12,5 @@ stokesian_dynamics/plotting/plot_XYZ.py
 .DS_Store
 */build/*
 */__pycache__/*
+/stokesian_dynamics/functions/__pycache__
+/stokesian_dynamics/setups/__pycache__

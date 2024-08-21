@@ -4,9 +4,10 @@
 
 import numpy as np
 import math
-from functions.shared import (posdata_data, norm, s2, s3, submatrix_coords,
+from functions.shared import (posdata_data, norm, s2, hs3p1, hs3m1, spi,
+                              submatrix_coords_tuple,
                               is_sphere, is_dumbbell_bead_1, is_dumbbell_bead_2,
-                              shear_basis_vectors)
+                              shear_basis_vectors, cond_idx, cond_E)
 from settings import how_far_to_reproduce_gridpoints, bead_bead_interactions
 from scipy.sparse import coo_matrix
 from math import erfc, pi, exp
@@ -20,7 +21,7 @@ from numba import njit
 #     return rj/ss*erfc0 + rj*erfc1
 
 # 2nd derivatives
-@njit
+@njit(cache=True)
 def DD_rerfclr(ri, rj, ss, erfc0, erfc1, erfc2, i, j):
     """Return 2nd derivative of r erfc(lambda r), D_i D_j r erfc(lambda r).
     See PhD thesis section A.2.5.
@@ -39,7 +40,7 @@ def DD_rerfclr(ri, rj, ss, erfc0, erfc1, erfc2, i, j):
             + ri*rj/ss*erfc2)
 
 
-@njit
+@njit(cache=True)
 def Lap_rerfclr(ss, erfc0, erfc1, erfc2):
     """Laplacian of r erfc(lambda r). See PhD thesis section A.2.5."""
     return 2/ss*erfc0 + 4*erfc1 + ss*erfc2
@@ -47,7 +48,7 @@ def Lap_rerfclr(ss, erfc0, erfc1, erfc2):
 # 3rd derivatives
 
 
-@njit
+@njit(cache=True)
 def DDD_rerfclr(ri, rj, rl, ss, erfc0, erfc1, erfc2, erfc3, i, j, l):
     """3rd derivative of r erfc(lambda r), D_i D_j D_l r erfc(lambda r).
     See PhD thesis section A.2.5."""
@@ -58,7 +59,7 @@ def DDD_rerfclr(ri, rj, rl, ss, erfc0, erfc1, erfc2, erfc3, i, j, l):
             + ri*rj*rl/ss**2*erfc3)
 
 
-@njit
+@njit(cache=True)
 def DLap_rerfclr(rl, ss, erfc0, erfc1, erfc2, erfc3):
     """Derivative of Laplacian of r erfc(lambda r), D_l D^2 r erfc(lambda r).
     See PhD thesis section A.2.5."""
@@ -67,7 +68,7 @@ def DLap_rerfclr(rl, ss, erfc0, erfc1, erfc2, erfc3):
 # 4th derivatives
 
 
-@njit
+@njit(cache=True)
 def DDDD_rerfclr(ri, rj, rl, rm, ss, erfc0, erfc1, erfc2, erfc3, erfc4,
                  i, j, l, m):
     """4th derivative of r erfc(lambda r), D_i D_j D_l D_m r erfc(lambda r).
@@ -86,7 +87,7 @@ def DDDD_rerfclr(ri, rj, rl, rm, ss, erfc0, erfc1, erfc2, erfc3, erfc4,
             + rirjrlrm/ss**3 * erfc4)
 
 
-@njit
+@njit(cache=True)
 def DDLap_rerfclr(rl, rm, ss, erfc0, erfc1, erfc2, erfc3, erfc4, l, m):
     """2nd derivative of Laplacian of r erfc(lambda r),
     D_l D_m D^2 r erfc(lambda r). See PhD thesis section A.2.5."""
@@ -100,7 +101,7 @@ def DDLap_rerfclr(rl, rm, ss, erfc0, erfc1, erfc2, erfc3, erfc4, l, m):
             + rlrm/ss * erfc4)
 
 
-@njit
+@njit(cache=True)
 def LapLap_rerfclr(ss, erfc2, erfc3, erfc4):
     """Double Laplacian of r erfc(lambda r), D^4 r erfc(lambda r).
     See PhD thesis section A.2.5."""
@@ -109,7 +110,7 @@ def LapLap_rerfclr(ss, erfc2, erfc3, erfc4):
 # 5th derivatives
 
 
-@njit
+@njit(cache=True)
 def DDDLap_rerfclr(ri, rj, rk, ss, erfc0, erfc1, erfc2, erfc3, erfc4,
                    erfc5, i, j, k):
     """3rd derivative of Laplacian of r erfc(lambda r),
@@ -125,7 +126,7 @@ def DDDLap_rerfclr(ri, rj, rk, ss, erfc0, erfc1, erfc2, erfc3, erfc4,
             + rirjrk/ss**2 * erfc5)
 
 
-@njit
+@njit(cache=True)
 def DLapLap_rerfclr(rk, ss, erfc2, erfc3, erfc4, erfc5):
     """Derivative of double Laplacian of r erfc(lambda r),
     D_k D^4 r erfc(lambda r). See PhD thesis section A.2.5."""
@@ -137,7 +138,7 @@ def DLapLap_rerfclr(rk, ss, erfc2, erfc3, erfc4, erfc5):
 # 6th derivatives
 
 
-@njit
+@njit(cache=True)
 def DDDDLap_rerfclr(ri, rj, rk, rl, ss, erfc0, erfc1, erfc2, erfc3, erfc4,
                     erfc5, erfc6, i, j, k, l):
     """4th derivative of Laplacian of r erfc(lambda r),
@@ -156,7 +157,7 @@ def DDDDLap_rerfclr(ri, rj, rk, rl, ss, erfc0, erfc1, erfc2, erfc3, erfc4,
             + (rirjrkrl/ss**3)*erfc6)
 
 
-@njit
+@njit(cache=True)
 def DDLapLap_rerfclr(rk, rl, ss, erfc2, erfc3, erfc4, erfc5, erfc6, k, l):
     """2nd derivative of double Laplacian of r erfc(lambda r),
     D_k D_l D^4 r erfc(lambda r). See PhD thesis section A.2.5."""
@@ -169,7 +170,7 @@ def DDLapLap_rerfclr(rk, rl, ss, erfc2, erfc3, erfc4, erfc5, erfc6, k, l):
 
 
 # Derivatives of erfc (lambda r)
-@njit
+@njit(cache=True)
 def generate_erfcs(s, lamb):
     """0th to 6th derivatives of erfc(lambda r). See PhD thesis section A.2.6."""
     E = 2/pi**0.5*exp(-s**2*lamb**2)*lamb
@@ -180,7 +181,7 @@ def generate_erfcs(s, lamb):
     erfc4 = 4*lamb**4*s*E*(2*lamb**2*s**2-3)
     erfc5 = -4*lamb**4*E*(4*lamb**4*s**4-12*lamb**2*s**2+3)
     erfc6 = 8*lamb**6*s*E*(4*lamb**4*s**4-20*lamb**2*s**2+15)
-    return erfc0, erfc1, erfc2, erfc3, erfc4, erfc5, erfc6
+    return np.array([erfc0, erfc1, erfc2, erfc3, erfc4, erfc5, erfc6])
 
 # === CONSTANTS ===
 
@@ -221,7 +222,7 @@ kron3tracelessmatrix = np.array([
 # O(J)
 
 
-@njit
+@njit(cache=True)
 def J(r, ss, i, j, erfcs):
     '''Realspace periodic Oseen tensor J^r_ij(r). See PhD thesis section A.2.4.'''
     return (kronmatrix[i][j]*Lap_rerfclr(ss, erfcs[0], erfcs[1], erfcs[2])
@@ -230,7 +231,7 @@ def J(r, ss, i, j, erfcs):
 # O(D J)
 
 
-@njit
+@njit(cache=True)
 def R(r, ss, i, j, erfcs):
     '''Realspace periodic rotlet R^r_ij(r). See PhD thesis section A.2.4.'''
     k = (j+1) % 3
@@ -238,13 +239,13 @@ def R(r, ss, i, j, erfcs):
     return -0.5*(D_J(r, ss, k, i, l, erfcs) - D_J(r, ss, l, i, k, erfcs))
 
 
-@njit
+@njit(cache=True)
 def K(r, ss, i, j, k, erfcs):
     '''Realspace periodic tensor K^r_ijk(r). See PhD thesis section A.2.4.'''
     return 0.5*(D_J(r, ss, k, i, j, erfcs) + D_J(r, ss, j, i, k, erfcs))
 
 
-@njit
+@njit(cache=True)
 def D_J(r, ss, l, i, j, erfcs):
     '''Derivative of realspace periodic Oseen tensor, D_l J^r_ij(r).
     See PhD thesis section A.2.4.'''
@@ -259,7 +260,7 @@ def D_J(r, ss, l, i, j, erfcs):
 # O(D^2 J)
 
 
-@njit
+@njit(cache=True)
 def DD_J(r, ss, m, l, i, j, erfcs):
     '''2nd derivative of realspace periodic Oseen tensor, D_m D_l J^r_ij(r).
     See PhD thesis section A.2.4.'''
@@ -275,7 +276,7 @@ def DD_J(r, ss, m, l, i, j, erfcs):
                            erfcs[3], erfcs[4], i, j, l, m))
 
 
-@njit
+@njit(cache=True)
 def D_R(r, ss, l, i, j, erfcs):
     '''Derivative of realspace periodic rotlet, D_l R^r_ij(r).
     See PhD thesis section A.2.4.'''
@@ -285,14 +286,14 @@ def D_R(r, ss, l, i, j, erfcs):
                    - DD_J(r, ss, l, n, i, m, erfcs))
 
 
-@njit
+@njit(cache=True)
 def D_K(r, ss, l, i, j, k, erfcs):
     '''Derivative of realspace periodic K tensor, D_l K^r_ijk(r).
     See PhD thesis section A.2.4.'''
     return 0.5*(DD_J(r, ss, l, k, i, j, erfcs) + DD_J(r, ss, l, j, i, k, erfcs))
 
 
-@njit
+@njit(cache=True)
 def Lap_J(r, ss, i, j, erfcs):
     '''Laplacian of realspace periodic Oseen tensor, D^2 J^r_ij(r).
     See PhD thesis section A.2.4.'''
@@ -304,7 +305,7 @@ def Lap_J(r, ss, i, j, erfcs):
 # O(D^3 J)
 
 
-@njit
+@njit(cache=True)
 def DLap_J(r, ss, k, i, j, erfcs):
     '''Derivative of Laplacian of periodic Oseen tensor, D_k D^2 J^r_ij(r).
     See PhD thesis section A.2.4.'''
@@ -316,7 +317,7 @@ def DLap_J(r, ss, k, i, j, erfcs):
                              erfcs[3], erfcs[4], erfcs[5], i, j, k))
 
 
-@njit
+@njit(cache=True)
 def Lap_R(r, ss, i, j, erfcs):
     '''Laplacian of realspace periodic rotlet, D^2 J^r_ij(r).
     See PhD thesis section A.2.4.'''
@@ -325,7 +326,7 @@ def Lap_R(r, ss, i, j, erfcs):
     return -0.5*(DLap_J(r, ss, k, i, l, erfcs) - DLap_J(r, ss, l, i, k, erfcs))
 
 
-@njit
+@njit(cache=True)
 def Lap_K(r, ss, i, j, k, erfcs):
     '''Laplacian of realspace periodic K tensor, D^2 K^r_ijk(r).
     See PhD thesis section A.2.4.'''
@@ -334,7 +335,7 @@ def Lap_K(r, ss, i, j, k, erfcs):
 # O(D^4 J)
 
 
-@njit
+@njit(cache=True)
 def DDLap_J(r, ss, l, k, i, j, erfcs):
     '''2nd derivative of Laplacian of realspace periodic Oseen tensor,
     D_l D_k D^2 J^r_ij(r). See PhD thesis section A.2.4.'''
@@ -348,7 +349,7 @@ def DDLap_J(r, ss, l, k, i, j, erfcs):
                               erfcs[4], erfcs[5], erfcs[6], i, j, k, l))
 
 
-@njit
+@njit(cache=True)
 def DLap_K(r, ss, l, i, j, k, erfcs):
     '''Derivative of Laplacian of realspace periodic K tensor,
     D_l D^2 K^r_ijk(r). See PhD thesis section A.2.4.'''
@@ -359,7 +360,7 @@ def DLap_K(r, ss, l, i, j, k, erfcs):
 # a^r
 
 
-@njit
+@njit(cache=True)
 def ar(r, s, a1, a2, i, j, erfcs, c, mu):
     """Element ij of the realspace periodic version of Minfinity submatrix a.
 
@@ -372,7 +373,7 @@ def ar(r, s, a1, a2, i, j, erfcs, c, mu):
         return kronmatrix[i][j]/(6*pi*mu*a1)
 
 
-@njit
+@njit(cache=True)
 def btr(r, s, a1, a2, i, j, erfcs, c, mu):
     """Element ij of the wavespace periodic version of Minfinity submatrix
     b tilde. See docstring for ar."""
@@ -382,7 +383,7 @@ def btr(r, s, a1, a2, i, j, erfcs, c, mu):
         return 0
 
 
-@njit
+@njit(cache=True)
 def cr(r, s, a1, a2, i, j, erfcs, c, mu):
     """Element ij of the wavespace periodic version of Minfinity submatrix c.
     See docstring for ar."""
@@ -393,7 +394,7 @@ def cr(r, s, a1, a2, i, j, erfcs, c, mu):
     return c*0.5*(D_R(r, s, k, l, j, erfcs) - D_R(r, s, l, k, j, erfcs))
 
 
-@njit
+@njit(cache=True)
 def gtr(r, s, a1, a2, i, j, k, erfcs, c, mu):
     """Element ijk of the uncontracted wavespace periodic version of Minfinity
     submatrix g tilde. See docstring for ar."""
@@ -404,7 +405,7 @@ def gtr(r, s, a1, a2, i, j, k, erfcs, c, mu):
         return 0
 
 
-@njit
+@njit(cache=True)
 def htr(r, s, a1, a2, i, j, k, erfcs, c, mu):
     """Element ijk of the uncontracted wavespace periodic version of Minfinity
     submatrix h tilde. See docstring for ar."""
@@ -419,7 +420,7 @@ def htr(r, s, a1, a2, i, j, k, erfcs, c, mu):
         return 0
 
 
-@njit
+@njit(cache=True)
 def mr(r, s, a1, a2, i, j, k, l, erfcs, c, mu):
     """Element ijkl of the uncontracted wavespace periodic version of Minfinity
     submatrix m. See docstring for ar."""
@@ -436,28 +437,28 @@ def mr(r, s, a1, a2, i, j, k, l, erfcs, c, mu):
 # The only ones required are Jtilde, DD_Jtilde, D_Rtilde, D_Ktilde, LapJ_tilde,
 # DLapK_tilde.
 
-@njit
+@njit(cache=True)
 def Jtilde(ki, kj, ss, i, j, RR):
     """Fourier transform of wavespace Oseen tensor J^k_ij(k).
     See PhD thesis section A.2.7."""
-    return -((i == j)*ss**2 + ki*kj)*RR
+    return -((i == j)*ss**2 - ki*kj)*RR
 
 
-@njit
+@njit(cache=True)
 def DD_Jtilde(kkm, kkl, kki, kkj, ss, i, j, RR):
     """Fourier transform of 2nd derivative of wavespace Oseen tensor,
     D_m D_l J^k_ij(k). See PhD thesis section A.2.7."""
     return -kkm*kkl * Jtilde(kki, kkj, ss, i, j, RR)
 
 
-@njit
+@njit(cache=True)
 def Lap_Jtilde(kki, kkj, ss, i, j, RR):
     """Fourier transform of Laplacian of wavespace Oseen tensor, D^2 J^k_ij(k).
     See PhD thesis section A.2.7."""
     return -ss**2 * Jtilde(kki, kkj, ss, i, j, RR)
 
 
-@njit
+@njit(cache=True)
 def D_Ktilde(kkl, kki, kkj, kkk, ss, i, j, k, RR):
     """Fourier transform of derivative of wavespace K tensor,
     D_l K^k_ijk(k). See PhD thesis section A.2.7."""
@@ -465,7 +466,7 @@ def D_Ktilde(kkl, kki, kkj, kkk, ss, i, j, k, RR):
                 + DD_Jtilde(kkl, kkj, kki, kkk, ss, i, k, RR))
 
 
-@njit
+@njit(cache=True)
 def DLap_Ktilde(kkl, kki, kkj, kkk, ss, i, j, k, RR):
     """Fourier transform of derivative of Laplacian of wavespace K tensor,
     D_l D^2 K^k_ijk(k). See PhD thesis section A.2.7."""
@@ -473,7 +474,7 @@ def DLap_Ktilde(kkl, kki, kkj, kkk, ss, i, j, k, RR):
                   + kkl*kkj*ss**2 * Jtilde(kki, kkk, ss, i, k, RR))
 
 
-@njit
+@njit(cache=True)
 def D_Rtilde(kk, ss, l, i, j, RR):
     """Fourier transform of derivative of rotlet, D_l R^k_ij(k).
     See PhD thesis section A.2.7."""
@@ -489,7 +490,7 @@ def D_Rtilde(kk, ss, l, i, j, RR):
 # === FOURIER TRANSFORMED TENSORS ===
 
 
-@njit
+@njit(cache=True)
 def aktilde(kk, ss, a1, a2, i, j, RR, c):
     """Element ij of the wavespace periodic version of Minfinity submatrix a.
 
@@ -502,7 +503,7 @@ def aktilde(kk, ss, a1, a2, i, j, RR, c):
               + (a1**2 + a2**2)/6. * Lap_Jtilde(kki, kkj, ss, i, j, RR))
 
 
-@njit
+@njit(cache=True)
 def cktilde(kk, ss, a1, a2, i, j, RR, c):
     """Element ij of the wavespace periodic version of Minfinity submatrix c.
     See docstring for aktilde."""
@@ -512,7 +513,7 @@ def cktilde(kk, ss, a1, a2, i, j, RR, c):
     return c*0.5*(D_Rtilde(kk, ss, k, l, j, RR) - D_Rtilde(kk, ss, l, k, j, RR))
 
 
-@njit
+@njit(cache=True)
 def htktilde(kk, ss, a1, a2, i, j, k, RR, c):
     """Element ijk of the uncontracted wavespace periodic version of Minfinity
     submatrix h tilde. See docstring for aktilde."""
@@ -528,7 +529,7 @@ def htktilde(kk, ss, a1, a2, i, j, k, RR, c):
                       + (a2**2/6.)*DLap_Ktilde(kkm, kkl, kkj, kkk, ss, l, j, k, RR)))
 
 
-@njit
+@njit(cache=True)
 def mktilde(kk, ss, a1, a2, i, j, k, l, RR, c):
     """Element ijkl of the uncontracted wavespace periodic version of Minfinity
     submatrix m. See docstring for aktilde."""
@@ -546,7 +547,7 @@ def mktilde(kk, ss, a1, a2, i, j, k, l, RR, c):
 # === MATRIX DEFINITIONS ===
 
 
-@njit
+@njit(cache=True)
 def M11(i, j, r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn,
         erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points,
         num_K_points, c, mu, s_lmn, erfcs_lmn):
@@ -557,50 +558,57 @@ def M11(i, j, r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn,
         #            Copies of itself real          Copies of itself wavespace
 
         # (2)
-        sum_ar = sum([
-            ar(r + X_lmn[q], s_lmn[q], a1, a2, i, j, erfcs_lmn[q], c, mu)
-            for q in range(num_X_points)])
+        sum_ar = 0
+        for q in range(num_X_points):
+            sum_ar += ar(r + X_lmn[q], s_lmn[q], a1, a2, i, j, erfcs_lmn[q],
+                         c, mu)
         # (4)
         # Imaginary part of e(i*k.r) always cancels out over the sum I think
         # (should probably try to show this but I'm pretty certain)
-        sum_ak = 1./L**3 * sum([
-            math.cos(np.dot(K_lmn[q], r))
-            * aktilde(K_lmn[q], Ks_lmn[q], a1, a2, i, j, RR_K[q], c)
-            for q in range(num_K_points)])
+        sum_ak = 0
+        for q in range(num_K_points):
+            sum_ak += (math.cos(np.dot(K_lmn[q], r))
+                       * aktilde(K_lmn[q], Ks_lmn[q], a1, a2, i, j, RR_K[q],
+                                 c))
+        sum_ak = 1./L**3 * sum_ak
         return sum_ar + sum_ak
     else:
         # a_aa,rep = a_aa + SUM'_lmn a^r (x_lmn) + 1/L^3 SUM'_lmn atilde^k(k_lmn) - a^k(0)
         #            -(1)-  --------(2)---------   ---------------(4)------------   -(5)--
-        #           Normal  Copies of itself real  Copies of itself wavespace       Forgotten lol
+        #           Normal  Copies of itself real  Copies of itself wavespace  (1)+(5)=a^r(0)
 
         # (1)
         # Technically this calls ar rather than a but when s = 0 it's the same
         a_aa = ar(r, s, a1, a2, i, j, erfcs, c, mu)
         # (2)
-        sum_ar = sum([
-            ar(Xdash_lmn[q], Sdash_lmn[q], a1, a1, i, j,
-               erfcs_Sdash_lmn[q], c, mu)
-            for q in range(num_Xdash_points)])
+        sum_ar = 0.
+        for q in range(num_Xdash_points):
+            sum_ar += ar(Xdash_lmn[q], Sdash_lmn[q], a1, a1, i, j,
+                         erfcs_Sdash_lmn[q], c, mu)
         # (4)
-        sum_ak = 1./L**3 * sum([
-            aktilde(K_lmn[q], Ks_lmn[q], a1, a1, i, j, RR_K[q], c)
-            for q in range(num_K_points)])
+        sum_ak = 0.
+        for q in range(num_K_points):
+            sum_ak += aktilde(K_lmn[q], Ks_lmn[q], a1, a1, i, j, RR_K[q], c)
+        sum_ak *= 1./L**3
         # (5)
-        a_k0 = c*kronmatrix[i][j]*(8*lamb/math.sqrt(math.pi)
-                                   + (a1**2+a2**2)/6.*(-160*lamb**3/(3*math.sqrt(math.pi))))
+        a_k0 = c*kronmatrix[i][j]*(8*lamb/spi
+                                   + (a1**2+a2**2)/6.*(-160*lamb**3/(3*spi)))
+
         return a_aa + sum_ar + sum_ak - a_k0
 
 
-@njit
+@njit(cache=True)
 def M12(i, j, r, s, a1, a2, X_lmn, num_X_points, c, mu, s_lmn, erfcs_lmn):
     """Element ij of Minfinity submatrix b tilde. Same form as PhD thesis
     (2.155)-(2.156), and see note at bottom of page."""
     if s > 1e-10:
         # (2)
         # Return value below is just sum_btr
-        return sum([
-            btr(r + X_lmn[q], s_lmn[q], a1, a2, i, j, erfcs_lmn[q], c, mu)
-            for q in range(num_X_points)])
+        bt = 0.
+        for q in range(num_X_points):
+            bt += btr(r + X_lmn[q], s_lmn[q], a1, a2, i, j, erfcs_lmn[q], c,
+                      mu)
+        return bt
         # (4)
         # I think sum_btk always ends up being 0 (given that it's imaginary,
         # over the sum it looks like it cancels out)
@@ -611,16 +619,18 @@ def M12(i, j, r, s, a1, a2, X_lmn, num_X_points, c, mu, s_lmn, erfcs_lmn):
         return 0
 
 
-@njit
+@njit(cache=True)
 def M13(i, j, k, r, s, a1, a2, X_lmn, num_X_points, c, mu, s_lmn, erfcs_lmn):
     """Element ijk of uncontracted Minfinity submatrix g tilde. Same form as
     PhD thesis (2.155)-(2.156), and see note at bottom of page."""
     if s > 1e-10:
         # (2)
         # Return value below is just sum_gtr
-        return sum([
-            gtr(r + X_lmn[q], s_lmn[q], a1, a2, i, j, k, erfcs_lmn[q], c, mu)
-            for q in range(num_X_points)])
+        gt = 0.
+        for q in range(num_X_points):
+            gt += gtr(r + X_lmn[q], s_lmn[q], a1, a2, i, j, k, erfcs_lmn[q],
+                      c, mu)
+        return gt
         # (4)
         # I think gtk always ends up being 0 (given that it's imaginary, over
         # the sum it looks like it cancels out)
@@ -629,7 +639,7 @@ def M13(i, j, k, r, s, a1, a2, X_lmn, num_X_points, c, mu, s_lmn, erfcs_lmn):
         return 0
 
 
-@njit
+@njit(cache=True)
 def M22(i, j, r, s, a1, a2, erfcs, L, X_lmn, Xdash_lmn, Sdash_lmn,
         erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points,
         num_K_points, c, mu, s_lmn, erfcs_lmn):
@@ -637,33 +647,37 @@ def M22(i, j, r, s, a1, a2, erfcs, L, X_lmn, Xdash_lmn, Sdash_lmn,
     (2.155)-(2.156)."""
     if s > 1e-10:
         # (2)
-        sum_cr = sum([
-            cr(r + X_lmn[q], s_lmn[q], a1, a2, i, j, erfcs_lmn[q], c, mu)
-            for q in range(num_X_points)])
+        sum_cr = 0.
+        for q in range(num_X_points):
+            sum_cr += cr(r + X_lmn[q], s_lmn[q], a1, a2, i, j, erfcs_lmn[q],
+                         c, mu)
         # (4)
-        sum_ck = 1./L**3 * sum([
-            math.cos(np.dot(K_lmn[q], r))
-            * cktilde(K_lmn[q], Ks_lmn[q], a1, a2, i, j, RR_K[q], c)
-            for q in range(num_K_points)])
+        sum_ck = 0.
+        for q in range(num_K_points):
+            sum_ck += (math.cos(np.dot(K_lmn[q], r))
+                       * cktilde(K_lmn[q], Ks_lmn[q], a1, a2, i, j, RR_K[q],
+                                 c))
+        sum_ck *= 1./L**3
         return sum_cr + sum_ck
     else:
         # (1)
         # Technically this calls cr rather than c but when s = 0 it's the same
         c_aa = cr(r, s, a1, a2, i, j, erfcs, c, mu)
         # (2)
-        sum_cr = sum([
-            cr(Xdash_lmn[q], Sdash_lmn[q], a1, a1, i, j,
-               erfcs_Sdash_lmn[q], c, mu)
-            for q in range(num_Xdash_points)])
+        sum_cr = 0.
+        for q in range(num_Xdash_points):
+            sum_cr += cr(Xdash_lmn[q], Sdash_lmn[q], a1, a1, i, j,
+                         erfcs_Sdash_lmn[q], c, mu)
         # (4)
-        sum_ck = 1./L**3 * sum([
-            cktilde(K_lmn[q], Ks_lmn[q], a1, a1, i, j, RR_K[q], c)
-            for q in range(num_K_points)])
+        sum_ck = 0.
+        for q in range(num_K_points):
+            sum_ck += cktilde(K_lmn[q], Ks_lmn[q], a1, a1, i, j, RR_K[q], c)
+        sum_ck *= 1./L**3
         # (5) = 0
         return c_aa + sum_cr + sum_ck
 
 
-@njit
+@njit(cache=True)
 def M23(i, j, k, r, s, a1, a2, L, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn,
         K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points, num_K_points,
         c, mu, s_lmn, erfcs_lmn):
@@ -671,29 +685,33 @@ def M23(i, j, k, r, s, a1, a2, L, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn,
     PhD thesis (2.155)-(2.156)."""
     if s > 1e-10:
         # (2)
-        sum_htr = sum([
-            htr(r + X_lmn[q], s_lmn[q], a1, a2, i, j, k, erfcs_lmn[q], c, mu)
-            for q in range(num_X_points)])
+        sum_htr = 0.
+        for q in range(num_X_points):
+            sum_htr += htr(r + X_lmn[q], s_lmn[q], a1, a2, i, j, k,
+                           erfcs_lmn[q], c, mu)
         # (4)
-        sum_htk = 1./L**3 * sum([
-            math.cos(np.dot(K_lmn[q], r))
-            * htktilde(K_lmn[q], Ks_lmn[q], a1, a2, i, j, k, RR_K[q], c)
-            for q in range(num_K_points)])
+        sum_htk = 0.
+        for q in range(num_K_points):
+            sum_htk += (math.cos(np.dot(K_lmn[q], r))
+                        * htktilde(K_lmn[q], Ks_lmn[q], a1, a2, i, j, k,
+                                   RR_K[q], c))
+        sum_htk *= 1./L**3
         return sum_htr + sum_htk
     else:
         # (2)
-        sum_hr = sum([
-            htr(Xdash_lmn[q], Sdash_lmn[q], a1, a1, i, j, k,
-                erfcs_Sdash_lmn[q], c, mu)
-            for q in range(num_Xdash_points)])
+        sum_hr = 0.
+        for q in range(num_Xdash_points):
+            sum_hr += htr(Xdash_lmn[q], Sdash_lmn[q], a1, a1, i, j, k,
+                          erfcs_Sdash_lmn[q], c, mu)
         # (4)
-        sum_hk = 1./L**3 * sum([
-            htktilde(K_lmn[q], Ks_lmn[q], a1, a1, i, j, k, RR_K[q], c)
-            for q in range(num_K_points)])
+        sum_hk = 0.
+        for q in range(num_K_points):
+            sum_hk += htktilde(K_lmn[q], Ks_lmn[q], a1, a1, i, j, k, RR_K[q], c)
+        sum_hk *= 1./L**3
         return sum_hr + sum_hk
 
 
-@njit
+@njit(cache=True)
 def M33(i, j, k, l, r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn,
         erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points,
         num_K_points, c, mu, s_lmn, erfcs_lmn):
@@ -701,98 +719,72 @@ def M33(i, j, k, l, r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn, Sdash_lmn,
     PhD thesis (2.155)-(2.156)."""
     if s > 1e-10:
         # (2)
-        sum_mr = sum([
-            mr(r + X_lmn[q], s_lmn[q], a1, a2, i, j, k, l, erfcs_lmn[q], c, mu)
-            for q in range(num_X_points)])
+        sum_mr = 0.
+        for q in range(num_X_points):
+            sum_mr += mr(r + X_lmn[q], s_lmn[q], a1, a2, i, j, k, l,
+                         erfcs_lmn[q], c, mu)
         # (4)
-        sum_mk = 1./L**3 * sum([
-            math.cos(np.dot(K_lmn[q], r))
-            * mktilde(K_lmn[q], Ks_lmn[q], a1, a2, i, j, k, l, RR_K[q], c)
-            for q in range(num_K_points)])
+        sum_mk = 0.
+        for q in range(num_K_points):
+            sum_mk += (math.cos(np.dot(K_lmn[q], r))
+                       * mktilde(K_lmn[q], Ks_lmn[q], a1, a2, i, j, k, l,
+                                 RR_K[q], c))
+        sum_mk *= 1./L**3
         return sum_mr + sum_mk
     else:
         # (1)
         # Technically this calls mr rather than m but when s = 0 it's the same
         m_aa = mr(r, s, a1, a2, i, j, k, l, erfcs, c, mu)
         # (2)
-        sum_mr = sum([
-            mr(Xdash_lmn[q], Sdash_lmn[q], a1, a1, i, j, k, l,
-               erfcs_Sdash_lmn[q], c, mu)
-            for q in range(num_Xdash_points)])
+        sum_mr = 0.
+        for q in range(num_Xdash_points):
+            sum_mr += mr(Xdash_lmn[q], Sdash_lmn[q], a1, a1, i, j, k, l,
+                         erfcs_Sdash_lmn[q], c, mu)
         # (4)
-        sum_mk = 1./L**3 * sum([
-            mktilde(K_lmn[q], Ks_lmn[q], a1, a2, i, j, k, l, RR_K[q], c)
-            for q in range(num_K_points)])
+        sum_mk = 0.
+        for q in range(num_K_points):
+            sum_mk += mktilde(K_lmn[q], Ks_lmn[q], a1, a1, i, j, k, l,
+                              RR_K[q], c)
+        sum_mk *= 1./L**3
         # (5)
-        m_k0 = c*(-8*lamb**3/(3*math.sqrt(math.pi))
-                  + ((a1**2 + a2**2)/10.
-                     * (168*lamb**5)/(5*math.sqrt(math.pi))
-                     * -3*kron3tracelessmatrix[i][j][k][l]))
+        m_k0 = c*(
+            (
+                -8*lamb**3/(3*spi)
+                + ((a1**2 + a2**2)/10. * (168*lamb**5)/(5*spi))
+            )
+            * -3*kron3tracelessmatrix[i][j][k][l]
+        )
         return m_aa + sum_mr + sum_mk - m_k0
 
 
-@njit
-def con_M13(i, m, args):
-    """Element im of (condensed) Minfinity submatrix g tilde. See docstring
-    for M13, and see section 2.4.4 for condensation details."""
-    if m == 0:
-        return (0.5*(s3+1)*M13(i, 0, 0, *args) + 0.5*(s3-1)*M13(i, 1, 1, *args))
-    elif m == 1:
-        return s2*M13(i, 0, 1, *args)
-    elif m == 2:
-        return (0.5*(s3-1)*M13(i, 0, 0, *args) + 0.5*(s3+1)*M13(i, 1, 1, *args))
-    elif m == 3:
-        return s2*M13(i, 0, 2, *args)
-    else:
-        return s2*M13(i, 1, 2, *args)
+@njit(cache=True)
+def con_M13_row(i, args):
+    """Elements i[0:5] of (condensed) Minfinity submatrix g tilde. See
+    docstring for M13, and see section 2.4.4 for condensation details."""
+    A = M13(i, 0, 0, *args)
+    B = M13(i, 1, 1, *args)
+    return np.array([
+        (hs3p1*A + hs3m1*B),
+        s2*M13(i, 0, 1, *args),
+        (hs3m1*A + hs3p1*B),
+        s2*M13(i, 0, 2, *args),
+        s2*M13(i, 1, 2, *args)
+    ])
 
 
-@njit
-def con_M23(i, m, args):
-    """Element im of (condensed) Minfinity submatrix h tilde. See docstring
-    for M23, and see section 2.4.4 for condensation details."""
-    if m == 0:
-        return 0.5*(s3+1)*M23(i, 0, 0, *args) + 0.5*(s3-1)*M23(i, 1, 1, *args)
-    elif m == 1:
-        return s2*M23(i, 0, 1, *args)
-    elif m == 2:
-        return 0.5*(s3-1)*M23(i, 0, 0, *args) + 0.5*(s3+1)*M23(i, 1, 1, *args)
-    elif m == 3:
-        return s2*M23(i, 0, 2, *args)
-    else:
-        return s2*M23(i, 1, 2, *args)
-
-
-@njit
-def con1_M33(n, k, l, args):
-    """Element nkl of partially condensed Minfinity submatrix m. See docstring
-    for M33, and see section 2.4.4 for condensation details."""
-    if n == 0:
-        return 0.5*(s3+1)*M33(0, 0, k, l, *args) + 0.5*(s3-1)*M33(1, 1, k, l, *args)
-    elif n == 1:
-        return s2*M33(0, 1, k, l, *args)
-    elif n == 2:
-        return 0.5*(s3-1)*M33(0, 0, k, l, *args) + 0.5*(s3+1)*M33(1, 1, k, l, *args)
-    elif n == 3:
-        return s2*M33(0, 2, k, l, *args)
-    else:
-        return s2*M33(1, 2, k, l, *args)
-
-
-@njit
-def con_M33(n, m, args):
-    """Element nm of (condensed) Minfinity submatrix m. See docstring for M33,
-    and see section 2.4.4 for condensation details."""
-    if m == 0:
-        return 0.5*(s3+1)*con1_M33(n, 0, 0, args) + 0.5*(s3-1)*con1_M33(n, 1, 1, args)
-    elif m == 1:
-        return s2*con1_M33(n, 0, 1, args)
-    elif m == 2:
-        return 0.5*(s3-1)*con1_M33(n, 0, 0, args) + 0.5*(s3+1)*con1_M33(n, 1, 1, args)
-    elif m == 3:
-        return s2*con1_M33(n, 0, 2, args)
-    else:
-        return s2*con1_M33(n, 1, 2, args)
+@njit(cache=True)
+def con_M23_row(i, args):
+    """Elements i[0:5] of (condensed) Minfinity submatrix h tilde. See
+    docstring for M23, and see section 2.4.4 for condensation details."""
+    A = M23(i, 0, 0, *args)
+    B = M23(i, 1, 1, *args)
+    return np.array([
+        (hs3p1*A + hs3m1*B),
+        s2*M23(i, 0, 1, *args),
+        (hs3m1*A + hs3p1*B),
+        s2*M23(i, 0, 2, *args),
+        s2*M23(i, 1, 2, *args)
+    ])
 
 
 def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
@@ -836,7 +828,7 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
     Ly = box_top_right[1] - box_bottom_left[1]
     Lz = box_top_right[2] - box_bottom_left[2]
     L = (Lx*Ly*Lz)**(1./3.)
-    lamb = math.sqrt(math.pi)/L
+    lamb = spi/L  # sqrt(pi)/L
     gridpoints_x = [i for i in range(-how_far_to_reproduce_gridpoints,
                                      how_far_to_reproduce_gridpoints+1)]
     gridpoints_y = [i for i in range(-how_far_to_reproduce_gridpoints,
@@ -879,122 +871,268 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
                      * (1 + ks**2/(4*lamb**2) + ks**4/(8*lamb**4))
                      * math.exp(-ks**2/(4*lamb**2)) for ks in Ks_lmn])
 
+    Minfinity = generate_Minfinity_loop(Minfinity, bead_positions, bead_sizes,
+                                        num_spheres, num_dumbbells, c, mu,
+                                        lamb, X_lmn, Xdash_lmn, Sdash_lmn,
+                                        erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K,
+                                        num_X_points, num_Xdash_points,
+                                        num_K_points, L)
+
+    if num_dumbbells > 0:
+        # Row and column ops I want are equivalent to doing
+        #   [ 1    0    0 ]   [ a b c ]   [ 1    0    0 ]
+        #   [ 0  1/2  1/2 ] . [ d e f ] . [ 0  1/2 -1/2 ]
+        #   [ 0 -1/2  1/2 ]   [ g h i ]   [ 0  1/2  1/2 ]
+        #        "L"                       "R"
+
+        # I know that we could generate L and R elsewhere rather than doing it
+        # every timestep but it takes 0.01s for a few thousand dumbbells so for
+        # now I don't mind
+        Lrow = np.array([i for i in range(11*num_spheres + 6*num_dumbbells)]
+                        + [i + 11*num_spheres for i in range(3*num_dumbbells)]
+                        + [i + 11*num_spheres + 3*num_dumbbells for i in range(3*num_dumbbells)])
+        Lcol = np.array([i for i in range(11*num_spheres + 6*num_dumbbells)]
+                        + [i + 11*num_spheres + 3*num_dumbbells for i in range(3*num_dumbbells)]
+                        + [i + 11*num_spheres for i in range(3*num_dumbbells)])
+        Ldata = np.array([1 for _ in range(11*num_spheres)]
+                         + [0.5 for _ in range(9*num_dumbbells)]
+                         + [-0.5 for _ in range(3*num_dumbbells)])
+        L = coo_matrix((Ldata, (Lrow, Lcol)),
+                       shape=(11*num_spheres+6*num_dumbbells, 11*num_spheres+6*num_dumbbells))
+        R = L.transpose()
+        return ((L*Minfinity*R), "Minfinity")
+    else:
+        return (Minfinity, "Minfinity")
+
+
+@njit(cache=True)
+def generate_Minfinity_loop(Minfinity, bead_positions, bead_sizes, num_spheres,
+                            num_dumbbells, c, mu,
+                            lamb, X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn,
+                            K_lmn, Ks_lmn, RR_K, num_X_points, num_Xdash_points,
+                            num_K_points, L):
+    """Helper function for generating Minfinity matrix for nonperiodic domain.
+    This function can be Numba-d.
+
+    Args:
+        Minfinity: Zeroed Minfinity matrix
+        bead_positions: Bead positions
+        bead_sizes: Bead sizes
+        num_spheres: Number of spheres
+        num_dumbbells: Number of dumbbells
+        c: constant, 1/(8 pi mu)
+        mu: viscosity
+        lamb: The 'switch' between real and wavespace. Beenakker says set
+              this as lambda = sqrt(pi)/L
+        X_lmn: array of vectors pointing to the other periodic cells (the grid)
+        Xdash_lmn: X_lmn with 0 removed
+        Sdash_lmn: Norm of Xdash_lmn
+        erfcs_Sdash_lmn: erfcs of Sdash_lmn
+        K_lmn: Wavespace version of X_lmn
+        Ks_lmn: Norm of K_lmn
+        RR_K: Pre-computed term that appears in F[J^k](k): see thesis (A.126)
+        num_X_points: length of X_lmn
+        num_Xdash_points: length of Xdash_lmn
+        num_K_points: length of K_lmn
+        L: Periodic box side length
+
+    Returns:
+        Minfinity: Minfinity matrix with elements filled in
+    """
+
+    M33_temp = np.empty((5,5), dtype=float)
+    if num_dumbbells > 0:
+        M34_temp = np.empty((5,3), dtype=float)
+        M35_temp = np.empty((5,3), dtype=float)
+
     for a1_index, a2_index in [(u, v)
                                for u in range(len(bead_sizes))
                                for v in range(u, len(bead_sizes))]:
-        r = (bead_positions[a2_index] - bead_positions[a1_index])
+        # Displacement convention for the Minfinity formulae is a1-a2
+        # (inconveniently the opposite of in R2Bexact)
+        r = bead_positions[a1_index] - bead_positions[a2_index]
         a1 = bead_sizes[a1_index]
         a2 = bead_sizes[a2_index]
         s = norm(r)
 
         if s > 1e-8 and 2*s/(a1+a2) < 2.001:
             ss_out = 2.001*(a1+a2)/2
-            r = [r[0]*ss_out/s, r[1]*ss_out/s, r[2]*ss_out/s]
+            r = np.array([r[0]*ss_out/s, r[1]*ss_out/s, r[2]*ss_out/s])
             s = ss_out
 
-        (A_coords, Bt_coords, Bt_coords_21, Gt_coords, Gt_coords_21,
-         C_coords, Ht_coords, Ht_coords_21, M_coords,
-         M14_coords, M24_coords, M34_coords, M44_coords,
-         M15_coords, M25_coords, M35_coords, M45_coords,
-         M55_coords) = submatrix_coords(a1_index, a2_index, num_spheres,
-                                        num_dumbbells)
+        (A_c, Bt_c, Bt21_c, Gt_c, Gt21_c, C_c, Ht_c, Ht21_c, M_c,
+         M14_c, M24_c, M34_c, M44_c, M15_c, M25_c, M35_c, M45_c,
+         M55_c) = submatrix_coords_tuple(a1_index, a2_index, num_spheres,
+                                         num_dumbbells)
 
-        if is_sphere(a1_index, num_spheres) and is_sphere(a2_index, num_spheres):
+        if (is_sphere(a1_index, num_spheres) and
+                is_sphere(a2_index, num_spheres)):
             # Sphere to sphere
 
             erfcs = generate_erfcs(s, lamb)
+            # Strictly only needed if s > 1e-10 but 'if's in Numba are slow
+            # s_lmn = np.linalg.norm(r + X_lmn, axis=1) # Unsupported by Numba
+            s_lmn = np.sqrt(np.sum((r + X_lmn)**2,axis=1))
+            erfcs_lmn = [generate_erfcs(S, lamb) for S in s_lmn]
 
-            # Strictly only needed if s > 1e-10 but an 'if' statement here is
-            # slower for Numba
-            s_lmn = np.linalg.norm(r + X_lmn, axis=1)
-            erfcs_lmn = np.array([generate_erfcs(S, lamb) for S in s_lmn])
+            Minfinity[A_c[0]:A_c[0]+3,
+                      A_c[1]:A_c[1]+3] = np.array([[
+                          M11(i, j, r, s, a1, a2, erfcs, L, lamb,
+                              X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn,
+                              K_lmn, Ks_lmn, RR_K,
+                              num_X_points, num_Xdash_points, num_K_points,
+                              c, mu, s_lmn, erfcs_lmn)
+                          for j in range(3)] for i in range(3)])
 
-            Minfinity[A_coords] = [[M11(
-                i, j, r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn,
-                Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points,
-                num_Xdash_points, num_K_points, c, mu, s_lmn,
-                erfcs_lmn) for j in range(3)] for i in range(3)]
+            Minfinity[Bt_c[0]:Bt_c[0]+3,
+                      Bt_c[1]:Bt_c[1]+3] = np.array([[
+                          M12(i, j, r, s, a1, a2,
+                              X_lmn, num_X_points,
+                              c, mu, s_lmn, erfcs_lmn)
+                          for j in range(3)] for i in range(3)])
 
-            Minfinity[Bt_coords] = [[M12(
-                i, j, r, s, a1, a2, X_lmn, num_X_points, c, mu, s_lmn,
-                erfcs_lmn) for j in range(3)] for i in range(3)]
+            Minfinity[C_c[0]:C_c[0]+3,
+                      C_c[1]:C_c[1]+3] = np.array([[
+                          M22(i, j, r, s, a1, a2, erfcs, L,
+                              X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn,
+                              K_lmn, Ks_lmn, RR_K,
+                              num_X_points, num_Xdash_points, num_K_points,
+                              c, mu, s_lmn, erfcs_lmn)
+                          for j in range(3)] for i in range(3)])
 
-            Minfinity[Bt_coords_21] = -Minfinity[Bt_coords]
+            args = (r, s, a1, a2, X_lmn, num_X_points, c, mu, s_lmn, erfcs_lmn)
+            for i in range(3):
+                Minfinity[Gt_c[0]+i,
+                          Gt_c[1]:Gt_c[1]+5] = con_M13_row(i, args)
 
-            Minfinity[C_coords] = [[M22(
-                i, j, r, s, a1, a2, erfcs, L, X_lmn, Xdash_lmn,
-                Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points,
-                num_Xdash_points, num_K_points, c, mu, s_lmn,
-                erfcs_lmn) for j in range(3)] for i in range(3)]
+            args = (r, s, a1, a2, L, X_lmn, Xdash_lmn,
+                    Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K,
+                    num_X_points, num_Xdash_points, num_K_points,
+                    c, mu, s_lmn, erfcs_lmn)
+            for i in range(3):
+                Minfinity[Ht_c[0]+i,
+                          Ht_c[1]:Ht_c[1]+5] = con_M23_row(i, args)
 
-            Minfinity[Gt_coords] = [[con_M13(
-                i, j, (r, s, a1, a2, X_lmn, num_X_points, c, mu, s_lmn,
-                       erfcs_lmn)) for j in range(5)] for i in range(3)]
+            args = (r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn,
+                    Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K,
+                    num_X_points, num_Xdash_points, num_K_points,
+                    c, mu, s_lmn, erfcs_lmn)
+            for i in range(5):
+                for j in range(5):
+                    M33_temp[i,j] = M33(*cond_idx[i], *cond_idx[j], *args)
+            Minfinity[M_c[0]:M_c[0]+5,
+                      M_c[1]:M_c[1]+5] = cond_E @ M33_temp @ cond_E
 
-            Minfinity[Gt_coords_21] = -Minfinity[Gt_coords]
+            if a1 == a2:
+                Minfinity[Bt21_c[0]:Bt21_c[0]+3,
+                          Bt21_c[1]:Bt21_c[1]+3] = -Minfinity[
+                    Bt_c[0]:Bt_c[0]+3,
+                    Bt_c[1]:Bt_c[1]+3]
+                Minfinity[Gt21_c[0]:Gt21_c[0]+3,
+                          Gt21_c[1]:Gt21_c[1]+5] = -Minfinity[
+                    Gt_c[0]:Gt_c[0]+3,
+                    Gt_c[1]:Gt_c[1]+5]
+                Minfinity[Ht21_c[0]:Ht21_c[0]+3,
+                          Ht21_c[1]:Ht21_c[1]+5] = Minfinity[
+                    Ht_c[0]:Ht_c[0]+3,
+                    Ht_c[1]:Ht_c[1]+5]
+            else:
+                mr = np.array([-r[0], -r[1], -r[2]])
+                m_s_lmn = np.sqrt(np.sum((mr + X_lmn)**2,axis=1))
+                m_erfcs_lmn = [generate_erfcs(S, lamb) for S in m_s_lmn]
+                Minfinity[Bt21_c[0]:Bt21_c[0]+3,
+                          Bt21_c[1]:Bt21_c[1]+3] = np.array([[
+                              M12(i, j, mr, s, a2, a1,
+                                  X_lmn, num_X_points,
+                                  c, mu, m_s_lmn, m_erfcs_lmn)
+                              for j in range(3)] for i in range(3)])
 
-            Minfinity[Ht_coords] = [[con_M23(
-                i, j, (r, s, a1, a2, L, X_lmn, Xdash_lmn, Sdash_lmn,
-                       erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points,
-                       num_Xdash_points, num_K_points, c, mu, s_lmn,
-                       erfcs_lmn)) for j in range(5)] for i in range(3)]
+                args = (mr, s, a2, a1, X_lmn, num_X_points, c, mu,
+                        m_s_lmn, m_erfcs_lmn)
+                for i in range(3):
+                    Minfinity[Gt21_c[0]+i,
+                              Gt21_c[1]:Gt21_c[1]+5
+                              ] = con_M13_row(i, args)
 
-            Minfinity[Ht_coords_21] = Minfinity[Ht_coords]
-
-            Minfinity[M_coords] = [[con_M33(
-                i, j, (r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn,
-                       Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K,
-                       num_X_points, num_Xdash_points, num_K_points,
-                       c, mu, s_lmn,
-                       erfcs_lmn)) for j in range(5)] for i in range(5)]
+                args = (mr, s, a2, a1, L, X_lmn, Xdash_lmn,
+                        Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K,
+                        num_X_points, num_Xdash_points, num_K_points,
+                        c, mu, m_s_lmn, m_erfcs_lmn)
+                for i in range(3):
+                    Minfinity[Ht21_c[0]+i,
+                              Ht21_c[1]:Ht21_c[1]+5
+                              ] = con_M23_row(i, args)
 
         elif (is_sphere(a1_index, num_spheres)
               and is_dumbbell_bead_1(a2_index, num_spheres, num_dumbbells)):
             # Sphere to dumbbell bead 1
-            mr = [-r[0], -r[1], -r[2]]
+            mr = np.array([-r[0], -r[1], -r[2]])
 
-            # Strictly only needed if s > 1e-10 but an 'if' statement here is
-            # slower for Numba
-            s_lmn = np.linalg.norm(r + X_lmn, axis=1)
-            m_s_lmn = np.linalg.norm(mr + X_lmn, axis=1)
-            m_erfcs_lmn = np.array([generate_erfcs(S, lamb) for S in s_lmn])
+            # Strictly only needed if s > 1e-10 but 'if's in Numba are slow
+            # s_lmn = np.linalg.norm(r + X_lmn, axis=1)  # Unsupported by Numba
+            # m_s_lmn = np.linalg.norm(mr + X_lmn, axis=1)
+            s_lmn = np.sqrt(np.sum((r + X_lmn)**2,axis=1))
+            m_s_lmn = np.sqrt(np.sum((mr + X_lmn)**2,axis=1))
+            erfcs_lmn = [generate_erfcs(S, lamb) for S in s_lmn]
+            m_erfcs_lmn = [generate_erfcs(S, lamb) for S in m_s_lmn]
 
-            Minfinity[M14_coords] = [[M11(
-                i, j, r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn,
-                Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K, num_X_points,
-                num_Xdash_points, num_K_points, c, mu, m_s_lmn,
-                m_erfcs_lmn) for j in range(3)] for i in range(3)]
+            Minfinity[M14_c[0]:M14_c[0]+3,
+                      M14_c[1]:M14_c[1]+3] = np.array([[
+                          M11(i, j, r, s, a1, a2, erfcs, L, lamb,
+                              X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn,
+                              K_lmn, Ks_lmn, RR_K,
+                              num_X_points, num_Xdash_points, num_K_points,
+                              c, mu, s_lmn, erfcs_lmn)
+                          for j in range(3)] for i in range(3)])
 
-            Minfinity[M24_coords] = [[M12(
-                j, i, mr, s, a2, a1, X_lmn, num_X_points, c, mu, m_s_lmn,
-                m_erfcs_lmn) for j in range(3)] for i in range(3)]
+            Minfinity[M24_c[0]:M24_c[0]+3,
+                      M24_c[1]:M24_c[1]+3] = np.array([[
+                          M12(j, i, mr, s, a1, a2,
+                              X_lmn, num_X_points,
+                              c, mu, m_s_lmn, m_erfcs_lmn)
+                          for j in range(3)] for i in range(3)])
 
-            Minfinity[M34_coords] = [[con_M13(
-                j, i, (mr, s, a1, a2, X_lmn, num_X_points, c, mu, m_s_lmn,
-                       m_erfcs_lmn)) for j in range(3)] for i in range(5)]
+            args = (mr, s, a1, a2, X_lmn, num_X_points, c, mu, m_s_lmn,
+                    m_erfcs_lmn)
+            for i in range(5):
+                for j in range(3):
+                    M34_temp[i,j] = M13(j, *cond_idx[i], *args)
+            Minfinity[M34_c[0]:M34_c[0]+5,
+                      M34_c[1]:M34_c[1]+3] = cond_E @ M34_temp
 
         elif is_sphere(a1_index, num_spheres):
             # Sphere to dumbbell bead 2
-            mr = [-r[0], -r[1], -r[2]]
+            mr = np.array([-r[0], -r[1], -r[2]])
 
-            # Strictly only needed if s > 1e-10 but an 'if' statement here is
-            # slower for Numba
-            s_lmn = np.linalg.norm(r + X_lmn, axis=1)
-            erfcs_lmn = np.array([generate_erfcs(S, lamb) for S in s_lmn])
-            m_s_lmn = np.linalg.norm(mr + X_lmn, axis=1)
-            m_erfcs_lmn = np.array([generate_erfcs(S, lamb) for S in s_lmn])
+            # Strictly only needed if s > 1e-10 but 'if's in Numba are slow
+            # s_lmn = np.linalg.norm(r + X_lmn, axis=1)  # Unsupported by Numba
+            # m_s_lmn = np.linalg.norm(mr + X_lmn, axis=1)
+            s_lmn = np.sqrt(np.sum((r + X_lmn)**2,axis=1))
+            m_s_lmn = np.sqrt(np.sum((mr + X_lmn)**2,axis=1))
+            erfcs_lmn = [generate_erfcs(S, lamb) for S in s_lmn]
+            m_erfcs_lmn = [generate_erfcs(S, lamb) for S in m_s_lmn]
 
-            Minfinity[M15_coords] = [[M11(
-                i, j, r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn,
-                Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K,
-                num_X_points, num_Xdash_points, num_K_points, c, mu, s_lmn,
-                erfcs_lmn) for j in range(3)] for i in range(3)]
-            Minfinity[M25_coords] = [[M12(
-                j, i, mr, s, a2, a1, X_lmn, num_X_points, c, mu, m_s_lmn,
-                m_erfcs_lmn) for j in range(3)] for i in range(3)]
-            Minfinity[M35_coords] = [[con_M13(
-                j, i, (mr, s, a1, a2, X_lmn, num_X_points, c, mu, m_s_lmn,
-                       m_erfcs_lmn)) for j in range(3)] for i in range(5)]
+            Minfinity[M15_c[0]:M15_c[0]+3,
+                      M15_c[1]:M15_c[1]+3] = np.array([[
+                          M11(i, j, r, s, a1, a2, erfcs, L, lamb,
+                              X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn,
+                              K_lmn, Ks_lmn, RR_K,
+                              num_X_points, num_Xdash_points, num_K_points,
+                              c, mu, s_lmn, erfcs_lmn)
+                          for j in range(3)] for i in range(3)])
+            Minfinity[M25_c[0]:M25_c[0]+3,
+                      M25_c[1]:M25_c[1]+3] = np.array([[
+                          M12(j, i, mr, s, a1, a2, X_lmn, num_X_points,
+                              c, mu, m_s_lmn, m_erfcs_lmn)
+                          for j in range(3)] for i in range(3)])
+
+            args = (mr, s, a1, a2, X_lmn, num_X_points, c, mu, m_s_lmn,
+                    m_erfcs_lmn)
+            for i in range(5):
+                for j in range(3):
+                    M35_temp[i,j] = M13(j, *cond_idx[i], *args)
+            Minfinity[M35_c[0]:M35_c[0]+5,
+                      M35_c[1]:M35_c[1]+3] = cond_E @ M35_temp
 
         elif (is_dumbbell_bead_1(a1_index, num_spheres, num_dumbbells)
               and is_dumbbell_bead_1(a2_index, num_spheres, num_dumbbells)):
@@ -1003,17 +1141,18 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
             a2_index_d = a2_index-num_spheres
             if bead_bead_interactions or a1_index_d == a2_index_d:
                 erfcs = generate_erfcs(s, lamb)
+                # s_lmn = np.linalg.norm(r + X_lmn, axis=1) # Unsupported Numba
+                s_lmn = np.sqrt(np.sum((r + X_lmn)**2,axis=1))
+                erfcs_lmn = [generate_erfcs(S, lamb) for S in s_lmn]
 
-                # Strictly only needed if s > 1e-10 but an 'if' statement here
-                # is slower for Numba
-                s_lmn = np.linalg.norm(r + X_lmn, axis=1)
-                erfcs_lmn = np.array([generate_erfcs(S, lamb) for S in s_lmn])
-
-                Minfinity[M44_coords] = [[M11(
-                    i, j, r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn,
-                    Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K,
-                    num_X_points, num_Xdash_points, num_K_points, c, mu, s_lmn,
-                    erfcs_lmn) for j in range(3)] for i in range(3)]
+                Minfinity[M44_c[0]:M44_c[0]+3,
+                          M44_c[1]:M44_c[1]+3] = np.array([[
+                              M11(i, j, r, s, a1, a2, erfcs, L, lamb,
+                                  X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn,
+                                  K_lmn, Ks_lmn, RR_K,
+                                  num_X_points, num_Xdash_points, num_K_points,
+                                  c, mu, s_lmn, erfcs_lmn)
+                              for j in range(3)] for i in range(3)])
 
         elif (is_dumbbell_bead_1(a1_index, num_spheres, num_dumbbells)
               and is_dumbbell_bead_2(a2_index, num_spheres, num_dumbbells)):
@@ -1022,17 +1161,18 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
             a2_index_d = a2_index-num_spheres-num_dumbbells
             if bead_bead_interactions or a1_index_d == a2_index_d:
                 erfcs = generate_erfcs(s, lamb)
+                # s_lmn = np.linalg.norm(r + X_lmn, axis=1) # Unsupported Numba
+                s_lmn = np.sqrt(np.sum((r + X_lmn)**2,axis=1))
+                erfcs_lmn = [generate_erfcs(S, lamb) for S in s_lmn]
 
-                # Strictly only needed if s > 1e-10 but an 'if' statement here
-                # is slower for Numba
-                s_lmn = np.linalg.norm(r + X_lmn, axis=1)
-                erfcs_lmn = np.array([generate_erfcs(S, lamb) for S in s_lmn])
-
-                Minfinity[M45_coords] = [[M11(
-                    i, j, r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn,
-                    Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K,
-                    num_X_points, num_Xdash_points, num_K_points, c, mu, s_lmn,
-                    erfcs_lmn) for j in range(3)] for i in range(3)]
+                Minfinity[M45_c[0]:M45_c[0]+3,
+                          M45_c[1]:M45_c[1]+3] = np.array([[
+                              M11(i, j, r, s, a1, a2, erfcs, L, lamb,
+                                  X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn,
+                                  K_lmn, Ks_lmn, RR_K,
+                                  num_X_points, num_Xdash_points, num_K_points,
+                                  c, mu, s_lmn, erfcs_lmn)
+                              for j in range(3)] for i in range(3)])
 
         else:
             # Dumbbell bead 2 to dumbbell bead 2
@@ -1040,38 +1180,20 @@ def generate_Minfinity_periodic(posdata, box_bottom_left, box_top_right,
             a2_index_d = a2_index-num_spheres-num_dumbbells
             if bead_bead_interactions or a1_index_d == a2_index_d:
                 erfcs = generate_erfcs(s, lamb)
+                # s_lmn = np.linalg.norm(r + X_lmn, axis=1) # Unsupported Numba
+                s_lmn = np.sqrt(np.sum((r + X_lmn)**2,axis=1))
+                erfcs_lmn = [generate_erfcs(S, lamb) for S in s_lmn]
 
-                s_lmn = np.linalg.norm(r + X_lmn, axis=1)
-                erfcs_lmn = np.array([generate_erfcs(S, lamb) for S in s_lmn])
-
-                Minfinity[M55_coords] = [[M11(
-                    i, j, r, s, a1, a2, erfcs, L, lamb, X_lmn, Xdash_lmn,
-                    Sdash_lmn, erfcs_Sdash_lmn, K_lmn, Ks_lmn, RR_K,
-                    num_X_points, num_Xdash_points, num_K_points, c, mu,
-                    s_lmn, erfcs_lmn) for j in range(3)] for i in range(3)]
+                Minfinity[M55_c[0]:M55_c[0]+3,
+                          M55_c[1]:M55_c[1]+3] = np.array([[
+                              M11(i, j, r, s, a1, a2, erfcs, L, lamb,
+                                  X_lmn, Xdash_lmn, Sdash_lmn, erfcs_Sdash_lmn,
+                                  K_lmn, Ks_lmn, RR_K,
+                                  num_X_points, num_Xdash_points, num_K_points,
+                                  c, mu, s_lmn, erfcs_lmn)
+                              for j in range(3)] for i in range(3)])
 
     # symmetrise
     Minfinity = np.triu(Minfinity) + np.triu(Minfinity, k=1).transpose()
 
-    # Row and column ops I want are equivalent to doing
-    #   [ 1    0    0 ]   [ a b c ]   [ 1    0    0 ]
-    #   [ 0  1/2  1/2 ] . [ d e f ] . [ 0  1/2 -1/2 ]
-    #   [ 0 -1/2  1/2 ]   [ g h i ]   [ 0  1/2  1/2 ]
-    #        "L"                       "R"
-
-    # I know that we could generate L and R elsewhere rather than doing it
-    # every timestep but it takes 0.01s for a few thousand dumbbells so for
-    # now I don't mind
-    Lrow = np.array([i for i in range(11*num_spheres + 6*num_dumbbells)]
-                    + [i + 11*num_spheres for i in range(3*num_dumbbells)]
-                    + [i + 11*num_spheres + 3*num_dumbbells for i in range(3*num_dumbbells)])
-    Lcol = np.array([i for i in range(11*num_spheres + 6*num_dumbbells)]
-                    + [i + 11*num_spheres + 3*num_dumbbells for i in range(3*num_dumbbells)]
-                    + [i + 11*num_spheres for i in range(3*num_dumbbells)])
-    Ldata = np.array([1 for _ in range(11*num_spheres)]
-                     + [0.5 for _ in range(9*num_dumbbells)]
-                     + [-0.5 for _ in range(3*num_dumbbells)])
-    L = coo_matrix((Ldata, (Lrow, Lcol)),
-                   shape=(11*num_spheres+6*num_dumbbells, 11*num_spheres+6*num_dumbbells))
-    R = L.transpose()
-    return ((L*Minfinity*R), "Minfinity")
+    return Minfinity

@@ -8,9 +8,25 @@ import time
 import sys
 from numba import njit
 from textwrap import fill
+from scipy.spatial.distance import pdist, squareform
 
+# Constants used in the code
 s3 = sqrt(3)
 s2 = sqrt(2)
+hs3p1 = 0.5*(s3+1)
+hs3m1 = 0.5*(s3-1)
+spi = sqrt(np.pi)
+
+# Contraction matrix \mathcal{E} for M33, and relevant indices
+cond_idx = ((0,0),(0,1),(1,1),(0,2),(1,2))
+cond_E = np.zeros((5,5))
+cond_E[0,0] = hs3p1
+cond_E[0,2] = hs3m1
+cond_E[1,1] = s2
+cond_E[2,0] = hs3m1
+cond_E[2,2] = hs3p1
+cond_E[3,3] = s2
+cond_E[4,4] = s2
 
 
 def throw_error(message):
@@ -28,13 +44,13 @@ def throw_warning(message):
                subsequent_indent=" "*10))
 
 
-@njit
+@njit(cache=True)
 def norm(x):
     """Returns Euclidean norm of a vector x."""
     return (x[0]**2 + x[1]**2 + x[2]**2)**0.5
 
 
-@njit
+@njit(cache=True)
 def levi(i, j, k):
     """Levi-Civita symbol:  epsilon_ijk"""
     if i == j or j == k or k == i:
@@ -45,26 +61,23 @@ def levi(i, j, k):
         return -1
 
 
+@njit(cache=True)
 def contraction(i, j, k):
     """Element of contraction matrix \\mathcal{E}_ijk.
 
     Use for converting 3x3 symmetric traceless matrix to 5-element vector."""
-    return np.array([[[0.5*(sqrt(3)+1), 0, 0],
-                      [0, 0.5*(sqrt(3)-1), 0],
-                      [0, 0, 0]],
-                     [[0, sqrt(2), 0],
-                      [0, 0, 0],
-                      [0, 0, 0]],
-                     [[0.5*(sqrt(3)-1), 0, 0],
-                      [0, 0.5*(sqrt(3)+1), 0],
-                      [0, 0, 0]],
-                     [[0, 0, sqrt(2)],
-                      [0, 0, 0],
-                      [0, 0, 0]],
-                     [[0, 0, 0],
-                      [0, 0, sqrt(2)],
-                      [0, 0, 0]]]
-                    )[i, j, k]
+    if ((i == 0 and j == 0 and k == 0) or
+            (i == 2 and j == 1 and k == 1)):
+        return 1.3660254037844386  # 0.5 * (sqrt(3) + 1)
+    elif ((i == 0 and j == 1 and k == 1) or
+          (i == 2 and j == 0 and k == 0)):
+        return 0.3660254037844386  # 0.5 * (sqrt(3) - 1)
+    elif ((i == 1 and j == 0 and k == 1) or
+          (i == 3 and j == 0 and k == 2) or
+          (i == 4 and j == 1 and k == 2)):
+        return 1.4142135623730951  # sqrt(2)
+    else:
+        return 0.0
 
 
 def sizeof_fmt(num, suffix='B'):
@@ -88,7 +101,7 @@ def save_matrix(matrix, heading, filename):
 
 
 def submatrix_coords(a1_index, a2_index, num_spheres, num_dumbbells):
-    """Return a tuple of the coordinates for the submatrices of a pair of
+    """Return a slice of the coordinates for the submatrices of a pair of
     particles."""
     R1 = np.s_[a1_index*3:(a1_index+1)*3]
     R2 = np.s_[3*num_spheres+a1_index*3:3*num_spheres+(a1_index+1)*3]
@@ -125,6 +138,50 @@ def submatrix_coords(a1_index, a2_index, num_spheres, num_dumbbells):
     M35_coords = np.s_[R3, C5]
     M45_coords = np.s_[R4, C5]
     M55_coords = np.s_[R5, C5]
+
+    return (A_coords, Bt_coords, Bt_coords_21, Gt_coords, Gt_coords_21,
+            C_coords, Ht_coords, Ht_coords_21, M_coords,
+            M14_coords, M24_coords, M34_coords, M44_coords,
+            M15_coords, M25_coords, M35_coords, M45_coords, M55_coords)
+
+
+@njit(cache=True)
+def submatrix_coords_tuple(a1_index, a2_index, num_spheres, num_dumbbells):
+    """Return a tuple of the coordinates for the submatrices of a pair of
+    particles."""
+    R1 = a1_index*3
+    R2 = 3*num_spheres+a1_index*3
+    R3 = 6*num_spheres+a1_index*5
+    C1 = a2_index*3
+    C2 = 3*num_spheres+a2_index*3
+    C3 = 6*num_spheres+a2_index*5
+    a1_index_d = a1_index-num_spheres
+    a2_index_d = a2_index-num_spheres
+    R4 = 11*num_spheres+a1_index_d*3
+    C4 = 11*num_spheres+a2_index_d*3
+    a1_index_d2 = a1_index-num_spheres-num_dumbbells
+    a2_index_d2 = a2_index-num_spheres-num_dumbbells
+    R5 = 11*num_spheres+3*num_dumbbells+a1_index_d2*3
+    C5 = 11*num_spheres+3*num_dumbbells+a2_index_d2*3
+
+    A_coords = (R1, C1)
+    Bt_coords = (R1, C2)
+    Bt_coords_21 = (C1, R2)
+    Gt_coords = (R1, C3)
+    Gt_coords_21 = (C1, R3)
+    C_coords = (R2, C2)
+    Ht_coords = (R2, C3)
+    Ht_coords_21 = (C2, R3)
+    M_coords = (R3, C3)
+    M14_coords = (R1, C4)
+    M24_coords = (R2, C4)
+    M34_coords = (R3, C4)
+    M44_coords = (R4, C4)
+    M15_coords = (R1, C5)
+    M25_coords = (R2, C5)
+    M35_coords = (R3, C5)
+    M45_coords = (R4, C5)
+    M55_coords = (R5, C5)
 
     return (A_coords, Bt_coords, Bt_coords_21, Gt_coords, Gt_coords_21,
             C_coords, Ht_coords, Ht_coords_21, M_coords,
@@ -191,14 +248,17 @@ def is_dumbbell(a_index, num_spheres):
     return a_index >= num_spheres
 
 
+@njit(cache=True)
 def is_dumbbell_bead_1(a_index, num_spheres, num_dumbbells):
     return (a_index >= num_spheres) and (a_index < num_spheres + num_dumbbells)
 
 
+@njit(cache=True)
 def is_dumbbell_bead_2(a_index, num_spheres, num_dumbbells):
     return a_index >= num_spheres + num_dumbbells
 
 
+@njit(cache=True)
 def is_sphere(a_index, num_spheres):
     return a_index < num_spheres
 
@@ -364,6 +424,7 @@ def feed_particles_from_bottom(posdata, feed_every_n_timesteps, feed_from_file,
             new_dumbbell_sizes, new_dumbbell_positions, new_dumbbell_deltax)
 
 
+@njit(cache=True)
 def shear_basis_vectors(basis_canonical, box_dimensions,
                         Ot_infinity, Et_infinity):
     """Shear the basis vectors representing the periodic box."""
@@ -383,7 +444,6 @@ def close_particles(bead_positions, bead_sizes, cutoff_factor,
                     Et_infinity=np.array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])):
     """Find particles that are closer than a given cutoff."""
 
-    from scipy.spatial.distance import pdist, squareform
     cutoff = 2*cutoff_factor
     box_dimensions = box_top_right - box_bottom_left
     periodic = not np.array_equal(box_dimensions, np.array([0, 0, 0]))
@@ -453,5 +513,5 @@ def close_particles(bead_positions, bead_sizes, cutoff_factor,
         distances_pairs_scaled = [distance_over_average_size[a, b]
                                   for (a, b) in closer_than_cutoff]
 
-    return (closer_than_cutoff, displacements_pairs_scaled,
-            distances_pairs_scaled, size_ratios)
+    return (np.array(closer_than_cutoff), np.array(displacements_pairs_scaled),
+            np.array(distances_pairs_scaled), np.array(size_ratios))

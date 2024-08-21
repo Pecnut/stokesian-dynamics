@@ -4,6 +4,7 @@
 
 import numpy as np
 import numba
+from numba import njit
 import time
 import datetime
 from numpy import linalg
@@ -18,9 +19,10 @@ from functions.simulation_tools import (
 from setups.inputs import input_ftsuoe
 
 
+@njit(cache=True)
 def euler_timestep(x, u, timestep):
     """Returns the next Euler timestep, `x + timestep * u`."""
-    return (x + timestep * u).astype('float')
+    return x + timestep * u
 
 
 def ab2_timestep(x, u, u_previous, timestep):
@@ -67,6 +69,7 @@ def did_something_go_wrong_with_dumbells(error, dumbbell_deltax,
     return error
 
 
+@njit(cache=True)
 def euler_timestep_rotation(sphere_positions, sphere_rotations,
                             new_sphere_positions, new_sphere_rotations,
                             Oa_out, timestep):
@@ -75,6 +78,7 @@ def euler_timestep_rotation(sphere_positions, sphere_rotations,
 
     See comments inside the function for details."""
 
+    rot_matrix = np.empty((3,3))
     for i in range(sphere_positions.shape[0]):
         R0 = sphere_positions[i]
         O = (Oa_out[i][0] ** 2 + Oa_out[i][1] ** 2 + Oa_out[i][2] ** 2) ** 0.5
@@ -92,18 +96,17 @@ def euler_timestep_rotation(sphere_positions, sphere_rotations,
         That's it! [Only took me three days...]
         '''
 
-        if np.array_equal(Oa_out[i], [0, 0, 0]):
+        if np.array_equal(Oa_out[i], np.array([0., 0., 0.])):
             rot_matrix = np.identity(3)
         else:
-            Otest = (abs(Oa_out[i] / O)).astype('float')
-            perp1 = [0, 0, 1] if np.allclose(Otest, [1, 0, 0]) else [1, 0, 0]
-            rot_matrix = np.array([np.cross(Oa_out[i], perp1) / O,
-                                   np.cross(
-                                       Oa_out[i],
-                                       np.cross(Oa_out[i], perp1))
-                                   / O**2,
-                                   Oa_out[i] / O]
-                                  ).transpose()
+            Otest = (np.abs(Oa_out[i] / O)).astype('float')
+            if np.allclose(Otest, np.array([1., 0., 0.])):
+                perp1 = np.array([0., 0., 1.])
+            else:
+                perp1 = np.array([1., 0., 0.])
+            rot_matrix[:,0] = np.cross(Oa_out[i], perp1) / O
+            rot_matrix[:,1] = np.cross(Oa_out[i],np.cross(Oa_out[i], perp1)) / O**2
+            rot_matrix[:,2] = Oa_out[i] / O
 
         for j in range(2):
             ''' rb0 is the position ("r") of the endpoint of the pointy
@@ -121,7 +124,7 @@ def euler_timestep_rotation(sphere_positions, sphere_rotations,
 
             r0 = (x0 ** 2 + y0 ** 2 + z0 ** 2) ** 0.5
             t0 = np.arccos(z0 / r0)
-            p0 = 0 if (x0 == 0 and y0 == 0) else np.arctan2(y0, x0)
+            p0 = 0.0 if (x0 == 0 and y0 == 0) else np.arctan2(y0, x0)
             r = r0
             t = t0
             p = euler_timestep(p0, O, timestep)

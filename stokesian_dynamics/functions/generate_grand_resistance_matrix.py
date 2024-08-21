@@ -40,12 +40,13 @@ def generate_grand_resistance_matrix(
     Minfinity_start_time = time.time()
     if not use_drag_Minfinity:
         if regenerate_Minfinity:
+            # Minfinity is a Numpy (dense) matrix
             (Minfinity, headingM) = generate_Minfinity(posdata, printout,
                                                        frameno=frameno, mu=mu)
             Minfinity_elapsed_time = time.time() - Minfinity_start_time
             Minfinity_inverse_start_time = time.time()
             Minfinity_inverse = np.linalg.inv(Minfinity)
-            if printout > 0:
+            if printout > 1:
                 print("Minfinity[0:12]")
                 print(np.array_str(Minfinity[0:12, 0:12], max_line_width=100000))
         else:
@@ -60,7 +61,7 @@ def generate_grand_resistance_matrix(
             num_elements_array, element_type, uv_start, uv_size,
             element_start_count) = posdata_data(posdata)
         Minfinity_inverse = mu*np.diag(
-            [sphere_sizes[i/3] for i in range(3*num_spheres)]
+            [sphere_sizes[i//3] for i in range(3*num_spheres)]
             + [1/0.75 * sphere_sizes[i//3]**3 for i in range(3*num_spheres)]
             + [1/0.9 * sphere_sizes[i//5]**3 for i in range(5*num_spheres)]
             + [2 * dumbbell_sizes[i//3] for i in range(3*num_dumbbells)]
@@ -68,7 +69,7 @@ def generate_grand_resistance_matrix(
         Minfinity_elapsed_time = 0
         Minfinity_inverse_elapsed_time = 0
 
-    if printout > 0:
+    if printout > 1:
         print("Minfinity_inverse")
         print(np.array_str(Minfinity_inverse, max_line_width=100000))
 
@@ -81,12 +82,13 @@ def generate_grand_resistance_matrix(
                                                 cutoff_factor=cutoff_factor,
                                                 frameno=frameno, mu=mu)
         R2Bexact_elapsed_time = time.time() - R2Bexact_start_time
-        if printout > 0:
+        if printout > 1:
             print("R2Bexact")
             print(np.array_str(R2Bexact.toarray(), max_line_width=100000))
 
-        grand_resistance_matrix = Minfinity_inverse + R2Bexact.toarray()
-        if printout > 0:
+        grand_resistance_matrix = R2Bexact  # shallow copy for better naming
+        grand_resistance_matrix += Minfinity_inverse  # in-place addition
+        if printout > 1:
             print("grand R")
             print(np.array_str(grand_resistance_matrix, max_line_width=100000))
 
@@ -99,8 +101,6 @@ def generate_grand_resistance_matrix(
     if (printout > 1):
         print("M infinity")
         print(np.array_str(Minfinity, max_line_width=100000))
-        print("\n\nR2Bexact")
-        print(np.array_str(R2Bexact.toarray(), max_line_width=100000))
         print("\n\nGrand resistance matrix")
         print(np.array_str(grand_resistance_matrix, max_line_width=100000))
         save_matrix(grand_resistance_matrix, "Grand Resistance Matrix",
@@ -186,7 +186,7 @@ def generate_grand_resistance_matrix_periodic(
             box_bottom_left=box_bottom_left, box_top_right=box_top_right,
             Ot_infinity=Ot_infinity, Et_infinity=Et_infinity)
         R2Bexact_elapsed_time = time.time() - R2Bexact_start_time
-        grand_resistance_matrix = Minfinity_inverse + R2Bexact.toarray()
+        grand_resistance_matrix = Minfinity_inverse + R2Bexact
     else:
         grand_resistance_matrix = Minfinity_inverse
         R2Bexact = 0
