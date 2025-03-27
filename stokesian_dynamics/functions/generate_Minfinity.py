@@ -139,7 +139,7 @@ def DLap_J(r, ss, k, i, j):
 
 @njit(cache=True)
 def Lap_R(r, ss, i, j):
-    '''Laplacian of rotlet, D^2 R_ij. See PhD thesis section A.2.3.'''
+    """Laplacian of rotlet, D^2 R_ij. See PhD thesis section A.2.3."""
     return -0.5*sum([
         levi(j, k, l) * DLap_J(r, ss, k, i, l)
         for k in range(3) for l in range(3) if k != l and j != k and j != k])
@@ -147,7 +147,8 @@ def Lap_R(r, ss, i, j):
 
 @njit(cache=True)
 def Lap_K(r, ss, i, j, k):
-    '''Laplacian of K tensor, D^2 K_ijk. See PhD thesis section A.2.3.'''
+    """Laplacian of K tensor, D^2 K_ijk. See PhD thesis section A.2.3.
+    Equivalent to DLap_J(r, ss, k, i, j) as written in thesis."""
     return DLap_J(r, ss, i, j, k)
 
 # O(D^4 J)
@@ -214,11 +215,11 @@ def M22(r, s, a1, a2, i, j, c, mu):
 @njit(cache=True)
 def M23(r, s, a1, a2, i, j, k, c, mu):
     """Element ijk of uncondensed Minfinity submatrix h tilde. See PhD thesis
-    table 2.1."""
+    table 2.1. No need to add levi(i,l,m)*(a2**2/10.)*DLap_K(r, s, l, m, j, k)
+    as you might expect because it's always zero."""
     if abs(r[0]) + abs(r[1]) + abs(r[2]) > 1e-10:
         return c*-0.5*sum([
-            levi(i, l, m) * (D_K(r, s, l, m, j, k)
-                             + (a2**2/6.)*DLap_K(r, s, l, m, j, k))
+            levi(i, l, m) * D_K(r, s, l, m, j, k)
             for l in range(3) for m in range(3)
             if l != m and i != l and i != m])
     else:
@@ -228,7 +229,7 @@ def M23(r, s, a1, a2, i, j, k, c, mu):
 @njit(cache=True)
 def M33(r, s, a1, a2, i, j, k, l, c, mu):
     """Element ijkl of uncondensed Minfinity submatrix m. See PhD thesis table
-    2.1."""
+    2.1. Only called for off-diagonal elements."""
     return -0.5*c*((D_K(r, s, j, i, k, l) + D_K(r, s, i, j, k, l))
                    + (a1**2 + a2**2)/10. * (DLap_K(r, s, j, i, k, l)
                                             + DLap_K(r, s, i, j, k, l)))
